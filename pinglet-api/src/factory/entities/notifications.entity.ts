@@ -12,6 +12,7 @@ import {
 } from "typeorm";
 import { NotificationLogEntity } from "./notifications-log.entity";
 import { ProjectEntity } from "./project.entity";
+import { TemplateCategoryEntity } from './template-category.entity';
 
 @Entity("notifications")
 export class NotificationEntity {
@@ -21,22 +22,24 @@ export class NotificationEntity {
 	@Column()
 	name!: string;
 
-	@Column({ type: "text" })
+	@Column()
 	template!: string;
-
-	@Column({ type: "jsonb", default: {} })
-	variables!: Record<string, string>; // Default vars or schema
-
-	@Column({ default: true })
-	is_active!: boolean;
 
 	@ManyToOne(
 		() => ProjectEntity,
-		(project) => project.notifications,
+		(project) => project.category,
 		{ onDelete: "CASCADE" },
 	)
 	@JoinColumn({ name: "project_id" })
 	project!: Relation<ProjectEntity>;
+
+
+	@Column()
+	category_id!: string;
+
+	@Column({ default: true })
+	is_active!: boolean;
+
 
 	@Column()
 	project_id!: string;

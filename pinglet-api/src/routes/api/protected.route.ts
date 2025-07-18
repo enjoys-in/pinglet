@@ -1,10 +1,14 @@
+
 import pushNtfyController from "@/handlers/controllers/push-ntfy.controller";
+
 import {
 	NotificationController,
 	ProjectController,
 	UserAuthController,
 	WebhookController,
 	WebsiteController,
+	TemplateCategoryController,
+	TemplateController
 } from "@handlers/controllers/user";
 import { Router } from "express";
 import { WebSocketServer } from "ws";
@@ -12,14 +16,26 @@ const router: Router = Router();
 
 // Notification
 // router.use("/notification", NotificationController.default);
-// // Project
-// router.use("/project", ProjectController.default);
+// Project
+router.get("/projects", ProjectController.default.getAllProjects);
+router.post("/project", ProjectController.default.createNewProject);
+router.delete("/project/:id", ProjectController.default.deleteProject);
+router.get("/project/:id", ProjectController.default.getProject);
+
 // // User
 // router.use("/user", UserAuthController.default);
-// // Website
-// router.use("/website", WebsiteController.default);
+// Website
+router.get("/website", WebsiteController.default.getWebsite);
+router.get("/websites", WebsiteController.default.getWebsites);
+router.post("/website", WebsiteController.default.createWebsite);
+router.delete("/website/:id", WebsiteController.default.deleteWebsite);
+router.put("/website/:id", WebsiteController.default.updateWebsite);
 // // Webhook
 // router.use("/webhook", WebhookController.default);
+// // Template
+// router.use("/template", TemplateController.default);
+// // Template Category
+router.get("/template-categories", TemplateCategoryController.default.getTemplateCategories);
 
 const sockets = new Map<string, Set<WebSocket>>();
 

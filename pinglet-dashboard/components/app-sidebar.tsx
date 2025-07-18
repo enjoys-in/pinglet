@@ -13,6 +13,7 @@ import {
   Heart,
   ChevronUp,
   User2,
+  Globe2,
 } from "lucide-react"
 
 import {
@@ -53,14 +54,20 @@ const data = {
       title: "Management",
       items: [
         {
-          title: "Notifications",
-          url: "/notifications",
-          icon: Bell,
+          title: "Websites",
+          url: "/websites",
+          icon: Globe2,
         },
+
         {
           title: "Projects",
           url: "/projects",
           icon: FolderOpen,
+        },
+        {
+          title: "Notifications",
+          url: "/notifications",
+          icon: Bell,
         },
         {
           title: "Domains",

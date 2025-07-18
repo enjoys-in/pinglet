@@ -72,16 +72,15 @@ export class JwtAuth {
 					.end();
 				return;
 			}
-			if (decodedToken.role !== "User") {
-				res
-					.json({ message: "Access Denied", result: null, success: false })
-					.end();
-				return;
-			}
-			// req.session["user"] = decodedToken
+			// if (decodedToken.role !== "User") {
+			// 	res
+			// 		.json({ message: "Access Denied", result: null, success: false })
+			// 		.end();
+			// 	return;
+			// }
+		 
 			req.user = decodedToken;
-			// fetch client secerert from db or redis connection, for eg we use uid as secret
-			req.clientSecret = decodedToken.uid || __CONFIG__.SECRETS.APP_SECRET;
+		 
 			next();
 		} catch (error: any) {
 			res

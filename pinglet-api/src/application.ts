@@ -60,6 +60,10 @@ class AppServer {
 		AppServer.App.use(
 			cors({
 				origin: ["http://localhost:3000", "https://pinglet.enjoys.in"],
+				credentials: true,
+				optionsSuccessStatus: 200,
+				preflightContinue: true,
+
 			}),
 		);
 		AppServer.App.use(bodyParser.json());

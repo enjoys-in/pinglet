@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useLayoutEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -27,6 +27,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { db } from "@/lib/db"
 
 // Mock data
 const projects = [
@@ -43,45 +44,7 @@ const projects = [
     updatedAt: "2024-01-20",
     template: "welcome-series",
   },
-  {
-    id: "PRJ002",
-    name: "Flash Sale Campaign",
-    category: "E-commerce",
-    website: "shop.example.com",
-    notifications: 32,
-    subscribers: 2100,
-    clickRate: 18.3,
-    status: "active",
-    createdAt: "2024-01-16",
-    updatedAt: "2024-01-21",
-    template: "sale-promotion",
-  },
-  {
-    id: "PRJ003",
-    name: "Payment Reminders",
-    category: "Payment",
-    website: "app.example.com",
-    notifications: 28,
-    subscribers: 890,
-    clickRate: 8.7,
-    status: "paused",
-    createdAt: "2024-01-17",
-    updatedAt: "2024-01-22",
-    template: "payment-reminder",
-  },
-  {
-    id: "PRJ004",
-    name: "Product Updates",
-    category: "Marketing",
-    website: "app.example.com",
-    notifications: 15,
-    subscribers: 3200,
-    clickRate: 15.2,
-    status: "draft",
-    createdAt: "2024-01-18",
-    updatedAt: "2024-01-23",
-    template: "product-announcement",
-  },
+   
 ]
 
 const getCategoryIcon = (category: string) => {
@@ -131,6 +94,17 @@ export default function ProjectsPage() {
   })
 
   const categories = [...new Set(projects.map((p) => p.category))]
+  const fetchTemplateCategories = async () => {
+    try {
+      // const itmes = await db.getAllItems("template-categories") 
+
+    } catch (error) {
+      
+    }
+  }
+  useLayoutEffect(() => {
+    fetchTemplateCategories()
+  },[])
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">

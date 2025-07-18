@@ -1,34 +1,47 @@
 import {
+	BeforeInsert,
 	Column,
 	CreateDateColumn,
 	DeleteDateColumn,
 	Entity,
+	Index,
 	JoinColumn,
 	ManyToOne,
 	OneToMany,
+	OneToOne,
 	PrimaryGeneratedColumn,
 	type Relation,
+	Unique,
 	UpdateDateColumn,
 } from "typeorm";
 import { NotificationEntity } from "./notifications.entity";
 import { WebhookEntity } from "./webhook.entity";
 import { WebsiteEntity } from "./website.entity";
+import { TemplateCategoryEntity } from "./template-category.entity";
+import { UserEntity } from "./users.entity";
+import helpers from "@/utils/helpers";
+
 
 @Entity("projects")
+@Unique(["unique_id"])
 export class ProjectEntity {
 	@PrimaryGeneratedColumn()
 	id!: string;
 
+	@Column({ type: "varchar", length: 255, unique: true})
+	@Index()
+	unique_id!: string;
+
 	@Column({ type: "varchar", length: 255 })
 	name!: string;
 
-	@Column({ type: "text" })
+	@Column({ type: "text", nullable: true })
 	description!: string;
 
-	@Column({ type: "varchar", length: 255 })
+	@Column({ type: "varchar", length: 255, nullable: true })
 	logo!: string;
 
-	@Column({ type: "varchar", length: 255 })
+	@Column({ type: "varchar", length: 255, nullable: true })
 	banner!: string;
 
 	@CreateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
@@ -54,15 +67,39 @@ export class ProjectEntity {
 	@JoinColumn({ name: "website_id" })
 	website!: Relation<WebsiteEntity>;
 
+
+	@ManyToOne(
+		() => UserEntity,
+		(u) => u.id,
+	)
+	@JoinColumn({ name: "user_id" })
+	user!: Relation<UserEntity>;
+
 	@OneToMany(
 		() => NotificationEntity,
-		(notif) => notif.project,
+		(notif) => notif.project, {
+		nullable: true
+	}
 	)
 	notifications!: NotificationEntity[];
+
+	@OneToOne(
+		() => TemplateCategoryEntity,
+		(p) => p.id, { nullable: true, onDelete: "SET NULL", }
+	)
+	@JoinColumn({ name: "category_id" })
+	category!: Relation<TemplateCategoryEntity>;
+
 
 	@OneToMany(
 		() => WebhookEntity,
 		(notif) => notif.project,
+		{ nullable: true }
 	)
 	webhooks!: WebhookEntity[];
+
+	@BeforeInsert()
+	setProjectId() {
+		this.unique_id = helpers.RequestId();
+	}
 }

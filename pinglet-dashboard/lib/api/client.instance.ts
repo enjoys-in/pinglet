@@ -5,7 +5,6 @@ import { ApiResponse } from '../types';
 
 const security = new Security();
 
-
 const instance = axios.create({
     baseURL: __config.APP.BASE_URL,
     withCredentials: true,
@@ -18,7 +17,7 @@ instance.defaults.headers["common"] = {
     "Accept": "application/json",
     "Content-Type": "application/json",
     'X-App-Version': '1.0.0',
-    'X-App-Name': 'AirSend',
+    'X-App-Name': 'Pinglet',
     'x-api-key': __config.APP.API_KEY,
 }
 

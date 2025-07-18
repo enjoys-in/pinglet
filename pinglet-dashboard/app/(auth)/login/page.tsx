@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Separator } from "@/components/ui/separator"
-import { Mail, Lock, Eye, EyeOff } from "lucide-react"
+import { Mail, Lock, Eye, EyeOff, User, UserPlus } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { API } from "@/lib/api/handler"
 import { useAuthStore } from "@/store/auth.store"
@@ -26,13 +26,12 @@ type LoginForm = z.infer<typeof loginSchema>
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [authType, setAuthType] = useState("signin")
   const { toast } = useToast()
   const { setUser } = useAuthStore()
 
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword)
-  }
+
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
@@ -41,13 +40,6 @@ export default function LoginPage() {
     }
   }
 
-
-  const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "Enter") {
-      event.preventDefault()
-      form.handleSubmit(onSubmit)()
-    }
-  }
 
   const form = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
@@ -60,17 +52,29 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginForm) => {
     setIsLoading(true)
     try {
-
-      const { data: res } = await API.handleLogin(data)
+      if (authType === "signin") {
+        const { data: res } = await API.handleLogin(data)
+        if (!res.success) {
+          throw new Error(res.message)
+        }
+        setUser(res.result)
+        toast({
+          title: "Login successful",
+          description: "Welcome back to Pinglet!",
+        })
+        window.location.href = "/dashboard"
+      }
+      const { data: res } = await API.handleRegister(data)
       if (!res.success) {
         throw new Error(res.message)
       }
       setUser(res.result)
       toast({
-        title: "Login successful",
-        description: "Welcome back to Pinglet!",
+        title: "Registration successful",
+        description: "Welcome  to Pinglet!",
       })
       window.location.href = "/dashboard"
+
     } catch (error: Error | any) {
       toast({
         title: "Login failed",
@@ -81,6 +85,12 @@ export default function LoginPage() {
       setIsLoading(false)
     }
   }
+  // useEffect(() => {
+  //   document.addEventListener("keydown", handleKeyDown)
+  //   return () => {
+  //     document.removeEventListener("keydown", handleKeyDown)
+  //   }
+  // }, [])
 
   return (
     <Card className="w-full">
@@ -91,7 +101,7 @@ export default function LoginPage() {
           </div>
         </div>
         <CardTitle className="text-2xl text-center">Welcome back</CardTitle>
-        <CardDescription className="text-center">Sign in to your Pinglet account</CardDescription>
+        <CardDescription className="text-center">Made with ❤️ by Enjoys</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <Button variant="outline" className="w-full bg-transparent" type="button">
@@ -182,17 +192,31 @@ export default function LoginPage() {
             </div>
 
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Signing in..." : "Sign in"}
+              {
+                authType === "signin" ?
+                  <User className="mr-2 h-4 w-4" /> : <UserPlus className="mr-2 h-4 w-4" />
+              }
+              {authType === "signin" ? isLoading ? "Signing in..." : "Sign in" : isLoading ? "Registering..." : "Register"} 
             </Button>
           </form>
         </Form>
+        {
+          authType === "signup" ?
+            <div className="text-center text-sm">
+              Already have an account?{" "}
+              <Button variant="link" type="button" onClick={() => setAuthType("signin")} className="text-primary hover:underline">
+                Sign in
+              </Button>
+            </div>
+            :
+            <div className="text-center text-sm">
+              Don&apos;t have an account?{" "}
+              <Button variant="link" type="button" onClick={() => setAuthType("signup")} className="text-primary hover:underline">
+                Sign up
+              </Button>
+            </div>
+        }
 
-        <div className="text-center text-sm">
-          Don't have an account?{" "}
-          <Link href="/signup" className="text-primary hover:underline">
-            Sign up
-          </Link>
-        </div>
       </CardContent>
     </Card>
   )

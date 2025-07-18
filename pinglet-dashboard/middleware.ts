@@ -4,7 +4,7 @@ import type { NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
-    const access_token = request.cookies.get('token')?.value;
+    const access_token = request.cookies.get('access_token')?.value;
 
     const isLoginPage = pathname === '/login';
     const isProtectedPath = pathname.startsWith('/dashboard');

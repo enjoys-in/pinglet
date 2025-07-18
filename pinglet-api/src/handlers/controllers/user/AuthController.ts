@@ -20,6 +20,108 @@ class AuthController {
 		try {
 			const is_user = await userService.findUser(req.body.email);
 			if (!is_user) {
+				throw new Error("Invalid Credentials");
+
+			}
+			const tokenBody = {
+				id: is_user.id,
+				email: req.body.email,
+			};
+			const exp = 1000 * 60 * 60 * 24 * 30;
+			const signJWT = utils.signJWT(tokenBody, is_user.id.toString(), "30d");
+			res.cookie("access_token", signJWT, {
+				httpOnly: true,
+				maxAge: exp, // 30 day
+				secure: __CONFIG__.APP.APP_ENV !== "DEV",
+				sameSite: __CONFIG__.APP.APP_ENV === "DEV" ? "lax" : "strict",
+				expires: new Date(Date.now() + exp),
+			});
+
+			res
+				.json({
+					message: "Logged In",
+					result: {
+						id: tokenBody.id,
+						email: is_user.email,
+						first_name: is_user.first_name,
+						last_name: is_user.last_name,
+					},
+					success: true,
+				})
+				.end();
+		} catch (error: any) {
+			if (error instanceof Error) {
+				res
+					.json({ message: error.message, result: null, success: false })
+					.end();
+				return;
+			}
+			res
+				.json({
+					message: "Something went wrong",
+					result: null,
+					success: false,
+				})
+				.end();
+		}
+	}
+	async Register(req: Request, res: Response) {
+		try {
+			const is_user = await userService.findUser(req.body.email);
+			if (is_user) {
+				throw new Error("Email already exists");
+
+			}
+			const createUser = await userService.createUser({
+				email: req.body.email,
+				password: await utils.HashPassword(req.body.password),
+			})
+			const tokenBody = {
+				id: createUser.id,
+				email: req.body.email,
+			};
+			const exp = 1000 * 60 * 60 * 24 * 30;
+			const signJWT = utils.signJWT(tokenBody, createUser.id.toString(), "30d");
+			res.cookie("access_token", signJWT, {
+				httpOnly: true,
+				maxAge: exp, // 30 day
+				secure: __CONFIG__.APP.APP_ENV !== "DEV",
+				sameSite: __CONFIG__.APP.APP_ENV === "DEV" ? "lax" : "strict",
+				expires: new Date(Date.now() + exp),
+			});
+
+			res
+				.json({
+					message: "Logged In",
+					result: {
+						id: tokenBody.id,
+						email: createUser.email,
+						first_name: createUser.first_name || null,
+						last_name: createUser.last_name || null,
+					},
+					success: true,
+				})
+				.end();
+		} catch (error: any) {
+			if (error instanceof Error) {
+				res
+					.json({ message: error.message, result: null, success: false })
+					.end();
+				return;
+			}
+			res
+				.json({
+					message: "Something went wrong",
+					result: null,
+					success: false,
+				})
+				.end();
+		}
+	}
+	async googleLogin(req: Request, res: Response) {
+		try {
+			const is_user = await userService.findUser(req.body.email);
+			if (!is_user) {
 				res
 					.json({
 						message: "Initiate Login",

@@ -16,8 +16,13 @@ import { UserEntity } from "./users.entity";
 
 @Entity("websites")
 export class WebsiteEntity {
-	@PrimaryGeneratedColumn()
+	@PrimaryGeneratedColumn("increment")
 	id!: number;
+	@Column({ type: "varchar",  length: 255 })	 
+	name!: string;
+
+	@Column({ type: "varchar", default: [], array: true ,nullable: true })	 
+	tags!: string[];
 
 	@Column({ type: "varchar", unique: true, length: 255 })
 	@Index()

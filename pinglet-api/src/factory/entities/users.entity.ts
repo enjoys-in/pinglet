@@ -14,13 +14,13 @@ import { WebsiteEntity } from "./website.entity";
 
 @Entity("users")
 export class UserEntity {
-	@PrimaryGeneratedColumn()
+	@PrimaryGeneratedColumn("increment")
 	id!: number;
 
-	@Column({ type: "varchar", length: 255 })
+	@Column({ type: "varchar", length: 255,nullable: true })
 	first_name!: string;
 
-	@Column({ type: "varchar", length: 255 })
+	@Column({ type: "varchar", length: 255,nullable: true })
 	last_name!: string;
 
 	@Column({ type: "varchar", length: 255, unique: true })
@@ -46,12 +46,13 @@ export class UserEntity {
 	is_active!: boolean;
 
 	@OneToOne(() => UserSettingsEntity)
-	@JoinColumn()
+	@JoinColumn({ name: "settings_id" })
 	settings!: UserSettingsEntity;
 
 	@OneToMany(
 		() => WebsiteEntity,
 		(website) => website.user,
 	)
+	@JoinColumn({ name: "website_id" })
 	websites!: WebsiteEntity[];
 }

@@ -1,6 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import type React from "react"
+import { useLayoutEffect, useState, useRef } from "react"
+
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -13,9 +15,44 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Upload, ImageIcon, Video, Music, X, Plus, Calendar, Eye, ArrowLeft } from "lucide-react"
+import {
+  Upload,
+  ImageIcon,
+  Video,
+  Music,
+  X,
+  Plus,
+  Calendar,
+  Eye,
+  ArrowLeft,
+  Loader2,
+  Play,
+  Volume2,
+} from "lucide-react"
 import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
+
+interface AllWebsitesResponse {
+  id: string
+  name: string
+  domain: string
+  createdAt?: string
+  updatedAt?: string
+}
+
+const db = {
+  async getAllItems(table: string) {
+    await new Promise((resolve) => setTimeout(resolve, 100))
+    if (table === "websites") {
+      return [
+        { id: "1", name: "app.example.com", domain: "app.example.com" },
+        { id: "2", name: "shop.example.com", domain: "shop.example.com" },
+        { id: "3", name: "blog.example.com", domain: "blog.example.com" },
+      ]
+    }
+    return []
+  },
+}
 
 const notificationSchema = z.object({
   website: z.string().min(1, "Please select a website"),
@@ -60,9 +97,24 @@ const projects = [
   { id: "4", name: "System Alerts", websiteId: "1" },
 ]
 
+interface UploadedFile {
+  file: File
+  url: string
+  uploading: boolean
+  uploaded: boolean
+  error?: string
+}
+
 export default function CreateNotificationPage() {
   const [selectedButtons, setSelectedButtons] = useState<Array<{ text: string; action: string; value: string }>>([])
   const [previewData, setPreviewData] = useState<any>(null)
+  const [websites, setWebsites] = useState<AllWebsitesResponse[]>([])
+  const [iconFile, setIconFile] = useState<UploadedFile | null>(null)
+  const [mediaFile, setMediaFile] = useState<UploadedFile | null>(null)
+
+  const iconInputRef = useRef<HTMLInputElement>(null)
+  const mediaInputRef = useRef<HTMLInputElement>(null)
+
   const { toast } = useToast()
 
   const form = useForm<NotificationForm>({
@@ -85,6 +137,252 @@ export default function CreateNotificationPage() {
   const selectedWebsite = websites.find((w) => w.id === watchedValues.website)
   const availableProjects = projects.filter((p) => p.websiteId === watchedValues.website)
 
+  // File validation
+  const validateFile = (file: File, type: "icon" | "media") => {
+    const maxSizes = {
+      icon: 100 * 1024, // 100KB
+      image: 5 * 1024 * 1024, // 5MB
+      video: 50 * 1024 * 1024, // 50MB
+      audio: 10 * 1024 * 1024, // 10MB
+    }
+
+    const allowedTypes = {
+      icon: ["image/jpeg", "image/png", "image/gif", "image/webp"],
+      image: ["image/jpeg", "image/png", "image/gif", "image/webp"],
+      video: ["video/mp4", "video/webm", "video/ogg"],
+      audio: ["audio/mp3", "audio/wav", "audio/ogg", "audio/m4a"],
+    }
+
+    if (type === "icon") {
+      if (file.size > maxSizes.icon) {
+        return "Icon file size must be less than 100KB"
+      }
+      if (!allowedTypes.icon.includes(file.type)) {
+        return "Icon must be an image file (JPEG, PNG, GIF, WebP)"
+      }
+    } else {
+      const mediaType = watchedValues.mediaType
+      if (mediaType === "image") {
+        if (file.size > maxSizes.image) {
+          return "Image file size must be less than 5MB"
+        }
+        if (!allowedTypes.image.includes(file.type)) {
+          return "Please select a valid image file"
+        }
+      } else if (mediaType === "video") {
+        if (file.size > maxSizes.video) {
+          return "Video file size must be less than 50MB"
+        }
+        if (!allowedTypes.video.includes(file.type)) {
+          return "Please select a valid video file"
+        }
+      } else if (mediaType === "audio") {
+        if (file.size > maxSizes.audio) {
+          return "Audio file size must be less than 10MB"
+        }
+        if (!allowedTypes.audio.includes(file.type)) {
+          return "Please select a valid audio file"
+        }
+      }
+    }
+    return null
+  }
+
+  // Upload file to server
+  const uploadFile = async (file: File, type: "icon" | "media"): Promise<string> => {
+    const formData = new FormData()
+    formData.append("file", file)
+    formData.append("type", type)
+
+    const response = await fetch("/api/upload", {
+      method: "POST",
+      body: formData,
+    })
+
+    if (!response.ok) {
+      throw new Error("Upload failed")
+    }
+
+    const data = await response.json()
+    return data.url
+  }
+
+  // Handle icon file selection
+  const handleIconSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    const error = validateFile(file, "icon")
+    if (error) {
+      toast({
+        title: "Invalid file",
+        description: error,
+        variant: "destructive",
+      })
+      return
+    }
+
+    const url = URL.createObjectURL(file)
+    setIconFile({
+      file,
+      url,
+      uploading: false,
+      uploaded: false,
+    })
+  }
+
+  // Handle media file selection
+  const handleMediaSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    const error = validateFile(file, "media")
+    if (error) {
+      toast({
+        title: "Invalid file",
+        description: error,
+        variant: "destructive",
+      })
+      return
+    }
+
+    const url = URL.createObjectURL(file)
+    setMediaFile({
+      file,
+      url,
+      uploading: false,
+      uploaded: false,
+    })
+  }
+
+  // Upload icon
+  const handleIconUpload = async () => {
+    if (!iconFile) return
+
+    setIconFile((prev) => (prev ? { ...prev, uploading: true, error: undefined } : null))
+
+    try {
+      const uploadedUrl = await uploadFile(iconFile.file, "icon")
+      setIconFile((prev) =>
+        prev
+          ? {
+              ...prev,
+              uploading: false,
+              uploaded: true,
+              url: uploadedUrl,
+            }
+          : null,
+      )
+      form.setValue("icon", uploadedUrl)
+      toast({
+        title: "Success",
+        description: "Icon uploaded successfully",
+      })
+    } catch (error) {
+      setIconFile((prev) =>
+        prev
+          ? {
+              ...prev,
+              uploading: false,
+              error: "Upload failed",
+            }
+          : null,
+      )
+      toast({
+        title: "Upload failed",
+        description: "Failed to upload icon. Please try again.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  // Upload media
+  const handleMediaUpload = async () => {
+    if (!mediaFile) return
+
+    setMediaFile((prev) => (prev ? { ...prev, uploading: true, error: undefined } : null))
+
+    try {
+      const uploadedUrl = await uploadFile(mediaFile.file, "media")
+      setMediaFile((prev) =>
+        prev
+          ? {
+              ...prev,
+              uploading: false,
+              uploaded: true,
+              url: uploadedUrl,
+            }
+          : null,
+      )
+      form.setValue("mediaFile", uploadedUrl)
+      toast({
+        title: "Success",
+        description: "Media uploaded successfully",
+      })
+    } catch (error) {
+      setMediaFile((prev) =>
+        prev
+          ? {
+              ...prev,
+              uploading: false,
+              error: "Upload failed",
+            }
+          : null,
+      )
+      toast({
+        title: "Upload failed",
+        description: "Failed to upload media. Please try again.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  // Remove icon
+  const removeIcon = () => {
+    if (iconFile) {
+      URL.revokeObjectURL(iconFile.url)
+    }
+    setIconFile(null)
+    form.setValue("icon", undefined)
+    if (iconInputRef.current) {
+      iconInputRef.current.value = ""
+    }
+  }
+
+  // Remove media
+  const removeMedia = () => {
+    if (mediaFile) {
+      URL.revokeObjectURL(mediaFile.url)
+    }
+    setMediaFile(null)
+    form.setValue("mediaFile", undefined)
+    if (mediaInputRef.current) {
+      mediaInputRef.current.value = ""
+    }
+  }
+
+  // Get accepted file types for media input
+  const getAcceptedTypes = () => {
+    switch (watchedValues.mediaType) {
+      case "image":
+        return "image/jpeg,image/png,image/gif,image/webp"
+      case "video":
+        return "video/mp4,video/webm,video/ogg"
+      case "audio":
+        return "audio/mp3,audio/wav,audio/ogg,audio/m4a"
+      default:
+        return ""
+    }
+  }
+
+  // Clear media when type changes
+  const handleMediaTypeChange = (value: string) => {
+    if (value === "none" && mediaFile) {
+      removeMedia()
+    }
+    form.setValue("mediaType", value as any)
+  }
+
   const addButton = () => {
     if (selectedButtons.length < 2) {
       setSelectedButtons([...selectedButtons, { text: "", action: "redirect", value: "" }])
@@ -106,6 +404,25 @@ export default function CreateNotificationPage() {
 
   const onSubmit = async (data: NotificationForm) => {
     try {
+      // Check if files need to be uploaded
+      if (iconFile && !iconFile.uploaded) {
+        toast({
+          title: "Upload required",
+          description: "Please upload the icon before submitting.",
+          variant: "destructive",
+        })
+        return
+      }
+
+      if (mediaFile && !mediaFile.uploaded) {
+        toast({
+          title: "Upload required",
+          description: "Please upload the media file before submitting.",
+          variant: "destructive",
+        })
+        return
+      }
+
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000))
       toast({
@@ -123,30 +440,37 @@ export default function CreateNotificationPage() {
     }
   }
 
-  // Live preview update
   const updatePreview = () => {
     const values = form.getValues()
     setPreviewData({
       title: values.title || "Notification Title",
       description: values.description || "Notification description will appear here",
       buttons: selectedButtons.filter((b) => b.text.trim() !== ""),
-      icon: "/placeholder.svg?height=64&width=64",
+      icon: iconFile?.url || "/placeholder.svg?height=64&width=64",
     })
   }
 
+  useLayoutEffect(() => {
+    db.getAllItems("websites").then((response) => {
+      if (response.length > 0) {
+        setWebsites(response as AllWebsitesResponse[])
+      }
+    })
+  }, [])
+
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <div className="flex items-center space-x-4">
+      <div className="flex justify-between space-x-4">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Create Notification</h2>
+          <p className="text-muted-foreground">Create a new push notification for your users</p>
+        </div>
         <Button variant="ghost" size="sm" asChild>
           <Link href="/notifications">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Notifications
           </Link>
         </Button>
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">Create Notification</h2>
-          <p className="text-muted-foreground">Create a new push notification for your users</p>
-        </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -186,7 +510,6 @@ export default function CreateNotificationPage() {
                         </FormItem>
                       )}
                     />
-
                     <FormField
                       control={form.control}
                       name="project"
@@ -216,7 +539,6 @@ export default function CreateNotificationPage() {
                       )}
                     />
                   </div>
-
                   <FormField
                     control={form.control}
                     name="title"
@@ -238,7 +560,6 @@ export default function CreateNotificationPage() {
                       </FormItem>
                     )}
                   />
-
                   <FormField
                     control={form.control}
                     name="description"
@@ -275,16 +596,60 @@ export default function CreateNotificationPage() {
                   <div>
                     <Label>Icon/Logo</Label>
                     <div className="mt-2 flex items-center gap-4">
-                      <div className="w-16 h-16 border-2 border-dashed border-muted-foreground/25 rounded-lg flex items-center justify-center">
-                        <Upload className="h-6 w-6 text-muted-foreground" />
+                      <div className="w-16 h-16 border-2 border-dashed border-muted-foreground/25 rounded-lg flex items-center justify-center overflow-hidden">
+                        {iconFile ? (
+                          <img
+                            src={iconFile.url || "/placeholder.svg"}
+                            alt="Icon preview"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <Upload className="h-6 w-6 text-muted-foreground" />
+                        )}
                       </div>
                       <div className="flex-1">
-                        <Button variant="outline" size="sm">
-                          Upload Icon
-                        </Button>
-                        <p className="text-xs text-muted-foreground mt-1">Max 100KB, square preferred</p>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            type="button"
+                            onClick={() => iconInputRef.current?.click()}
+                            disabled={iconFile?.uploading}
+                          >
+                            {iconFile ? "Change Icon" : "Select Icon"}
+                          </Button>
+                          {iconFile && !iconFile.uploaded && (
+                            <Button size="sm" type="button" onClick={handleIconUpload} disabled={iconFile.uploading}>
+                              {iconFile.uploading ? (
+                                <>
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                  Uploading...
+                                </>
+                              ) : (
+                                "Upload"
+                              )}
+                            </Button>
+                          )}
+                          {iconFile && (
+                            <Button variant="outline" size="sm" type="button" onClick={removeIcon}>
+                              <X className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Max 100KB, square preferred (JPEG, PNG, GIF, WebP)
+                        </p>
+                        {iconFile?.uploaded && <p className="text-xs text-green-600 mt-1">✓ Uploaded successfully</p>}
+                        {iconFile?.error && <p className="text-xs text-red-600 mt-1">{iconFile.error}</p>}
                       </div>
                     </div>
+                    <input
+                      ref={iconInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/gif,image/webp"
+                      onChange={handleIconSelect}
+                      className="hidden"
+                    />
                   </div>
 
                   <FormField
@@ -293,7 +658,7 @@ export default function CreateNotificationPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Media Type</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select onValueChange={handleMediaTypeChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue />
@@ -314,21 +679,113 @@ export default function CreateNotificationPage() {
                   {watchedValues.mediaType !== "none" && (
                     <div>
                       <Label>Media File</Label>
-                      <div className="mt-2 border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
-                        <div className="flex flex-col items-center gap-2">
-                          {watchedValues.mediaType === "image" && (
-                            <ImageIcon className="h-8 w-8 text-muted-foreground" />
-                          )}
-                          {watchedValues.mediaType === "video" && <Video className="h-8 w-8 text-muted-foreground" />}
-                          {watchedValues.mediaType === "audio" && <Music className="h-8 w-8 text-muted-foreground" />}
-                          <div>
-                            <Button variant="outline" size="sm">
-                              Upload {watchedValues.mediaType}
-                            </Button>
-                            <p className="text-xs text-muted-foreground mt-1">Drag and drop or click to upload</p>
+                      <div className="mt-2 border-2 border-dashed border-muted-foreground/25 rounded-lg p-6">
+                        {mediaFile ? (
+                          <div className="space-y-4">
+                            {/* File Preview */}
+                            <div className="flex items-center gap-4">
+                              <div className="w-16 h-16 border rounded-lg flex items-center justify-center overflow-hidden bg-muted">
+                                {watchedValues.mediaType === "image" && (
+                                  <img
+                                    src={mediaFile.url || "/placeholder.svg"}
+                                    alt="Media preview"
+                                    className="w-full h-full object-cover"
+                                  />
+                                )}
+                                {watchedValues.mediaType === "video" && (
+                                  <div className="relative w-full h-full">
+                                    <video src={mediaFile.url} className="w-full h-full object-cover" />
+                                    <Play className="absolute inset-0 m-auto h-6 w-6 text-white" />
+                                  </div>
+                                )}
+                                {watchedValues.mediaType === "audio" && (
+                                  <Volume2 className="h-8 w-8 text-muted-foreground" />
+                                )}
+                              </div>
+                              <div className="flex-1">
+                                <p className="text-sm font-medium">{mediaFile.file.name}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {(mediaFile.file.size / 1024 / 1024).toFixed(2)} MB
+                                </p>
+                                {mediaFile.uploaded && (
+                                  <p className="text-xs text-green-600">✓ Uploaded successfully</p>
+                                )}
+                                {mediaFile.error && <p className="text-xs text-red-600">{mediaFile.error}</p>}
+                              </div>
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="flex gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                type="button"
+                                onClick={() => mediaInputRef.current?.click()}
+                                disabled={mediaFile.uploading}
+                              >
+                                Change File
+                              </Button>
+                              {!mediaFile.uploaded && (
+                                <Button
+                                  size="sm"
+                                  type="button"
+                                  onClick={handleMediaUpload}
+                                  disabled={mediaFile.uploading}
+                                >
+                                  {mediaFile.uploading ? (
+                                    <>
+                                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                      Uploading...
+                                    </>
+                                  ) : (
+                                    "Upload"
+                                  )}
+                                </Button>
+                              )}
+                              <Button variant="outline" size="sm" type="button" onClick={removeMedia}>
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </div>
-                        </div>
+                        ) : (
+                          <div className="text-center">
+                            <div className="flex flex-col items-center gap-2">
+                              {watchedValues.mediaType === "image" && (
+                                <ImageIcon className="h-8 w-8 text-muted-foreground" />
+                              )}
+                              {watchedValues.mediaType === "video" && (
+                                <Video className="h-8 w-8 text-muted-foreground" />
+                              )}
+                              {watchedValues.mediaType === "audio" && (
+                                <Music className="h-8 w-8 text-muted-foreground" />
+                              )}
+                              <div>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  type="button"
+                                  onClick={() => mediaInputRef.current?.click()}
+                                >
+                                  Select {watchedValues.mediaType}
+                                </Button>
+                                <p className="text-xs text-muted-foreground mt-1">Drag and drop or click to upload</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {watchedValues.mediaType === "image" && "Max 5MB (JPEG, PNG, GIF, WebP)"}
+                                  {watchedValues.mediaType === "video" && "Max 50MB (MP4, WebM, OGG)"}
+                                  {watchedValues.mediaType === "audio" && "Max 10MB (MP3, WAV, OGG, M4A)"}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
+                      <input
+                        ref={mediaInputRef}
+                        type="file"
+                        accept={getAcceptedTypes()}
+                        onChange={handleMediaSelect}
+                        className="hidden"
+                      />
                     </div>
                   )}
                 </CardContent>
@@ -349,7 +806,6 @@ export default function CreateNotificationPage() {
                           <X className="h-4 w-4" />
                         </Button>
                       </div>
-
                       <div className="grid gap-3 md:grid-cols-3">
                         <div>
                           <Label className="text-xs">Button Text</Label>
@@ -359,7 +815,6 @@ export default function CreateNotificationPage() {
                             onChange={(e) => updateButton(index, "text", e.target.value)}
                           />
                         </div>
-
                         <div>
                           <Label className="text-xs">Action Type</Label>
                           <Select value={button.action} onValueChange={(value) => updateButton(index, "action", value)}>
@@ -373,7 +828,6 @@ export default function CreateNotificationPage() {
                             </SelectContent>
                           </Select>
                         </div>
-
                         <div>
                           <Label className="text-xs">
                             {button.action === "redirect"
@@ -397,7 +851,6 @@ export default function CreateNotificationPage() {
                       </div>
                     </div>
                   ))}
-
                   {selectedButtons.length < 2 && (
                     <Button type="button" variant="outline" onClick={addButton} className="w-full bg-transparent">
                       <Plus className="mr-2 h-4 w-4" />
@@ -427,7 +880,6 @@ export default function CreateNotificationPage() {
                         </FormItem>
                       )}
                     />
-
                     <FormField
                       control={form.control}
                       name="utmMedium"
@@ -440,7 +892,6 @@ export default function CreateNotificationPage() {
                         </FormItem>
                       )}
                     />
-
                     <FormField
                       control={form.control}
                       name="utmCampaign"
@@ -495,7 +946,6 @@ export default function CreateNotificationPage() {
                           </FormItem>
                         )}
                       />
-
                       <FormField
                         control={form.control}
                         name="scheduleTime"
@@ -551,7 +1001,6 @@ export default function CreateNotificationPage() {
                         </FormItem>
                       )}
                     />
-
                     <FormField
                       control={form.control}
                       name="autoRemove"
@@ -599,7 +1048,11 @@ export default function CreateNotificationPage() {
                   <Label className="text-xs font-medium text-muted-foreground">DESKTOP</Label>
                   <div className="mt-2 bg-background border rounded-lg p-4 shadow-lg max-w-sm">
                     <div className="flex items-start gap-3">
-                      <img src="/placeholder.svg?height=40&width=40" alt="Icon" className="w-10 h-10 rounded" />
+                      <img
+                        src={iconFile?.url || "/placeholder.svg?height=40&width=40"}
+                        alt="Icon"
+                        className="w-10 h-10 rounded"
+                      />
                       <div className="flex-1 min-w-0">
                         <div className="font-medium text-sm line-clamp-1">
                           {watchedValues.title || "Notification Title"}
@@ -616,6 +1069,7 @@ export default function CreateNotificationPage() {
                               (button, index) =>
                                 button.text && (
                                   <Button
+                                    type="button"
                                     key={index}
                                     variant="outline"
                                     size="sm"
@@ -637,7 +1091,11 @@ export default function CreateNotificationPage() {
                   <Label className="text-xs font-medium text-muted-foreground">MOBILE</Label>
                   <div className="mt-2 bg-background border rounded-lg p-3 shadow-lg">
                     <div className="flex items-start gap-2">
-                      <img src="/placeholder.svg?height=32&width=32" alt="Icon" className="w-8 h-8 rounded" />
+                      <img
+                        src={iconFile?.url || "/placeholder.svg?height=32&width=32"}
+                        alt="Icon"
+                        className="w-8 h-8 rounded"
+                      />
                       <div className="flex-1 min-w-0">
                         <div className="font-medium text-sm line-clamp-1">
                           {watchedValues.title || "Notification Title"}
@@ -660,6 +1118,14 @@ export default function CreateNotificationPage() {
                         {watchedValues.priority || "normal"}
                       </Badge>
                     </div>
+                    {watchedValues.mediaType !== "none" && (
+                      <div className="flex items-center justify-between text-xs">
+                        <span>Media:</span>
+                        <Badge variant="outline" className="text-xs">
+                          {watchedValues.mediaType}
+                        </Badge>
+                      </div>
+                    )}
                     {watchedValues.scheduled && (
                       <div className="flex items-center justify-between text-xs">
                         <span>Scheduled:</span>

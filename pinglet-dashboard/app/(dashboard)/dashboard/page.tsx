@@ -4,261 +4,209 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Progress } from "@/components/ui/progress"
-import {
-  Bell,
-  MousePointer,
-  TrendingDown,
-  AlertTriangle,
-  FolderOpen,
-  Globe,
-  Users,
-  ArrowUpRight,
-  ArrowDownRight,
-  MoreHorizontal,
-  Calendar,
-  Clock,
-  MapPin,
-  Monitor,
-  Smartphone,
-  Tablet,
-} from "lucide-react"
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts"
+import { Bell, Users, Globe, TrendingUp, TrendingDown, Calendar, Edit, MapPin, Monitor, Clock } from "lucide-react"
 
 // Mock data
-const analyticsData = [
-  { name: "Jan", sent: 4000, failed: 240, clicks: 2400, drops: 400 },
-  { name: "Feb", sent: 3000, failed: 139, clicks: 1398, drops: 300 },
-  { name: "Mar", sent: 2000, failed: 980, clicks: 9800, drops: 200 },
-  { name: "Apr", sent: 2780, failed: 390, clicks: 3908, drops: 278 },
-  { name: "May", sent: 1890, failed: 480, clicks: 4800, drops: 189 },
-  { name: "Jun", sent: 2390, failed: 380, clicks: 3800, drops: 239 },
+const statsData = [
+  {
+    title: "Total Notifications Sent",
+    value: "12,345",
+    change: "+12%",
+    trend: "up",
+    icon: Bell,
+  },
+  {
+    title: "Click Rate",
+    value: "8.2%",
+    change: "+2.1%",
+    trend: "up",
+    icon: TrendingUp,
+  },
+  {
+    title: "Drop Rate",
+    value: "3.1%",
+    change: "-0.5%",
+    trend: "down",
+    icon: TrendingDown,
+  },
+  {
+    title: "Failed Notifications",
+    value: "234",
+    change: "-15%",
+    trend: "down",
+    icon: Bell,
+  },
+  {
+    title: "Total Websites",
+    value: "8",
+    change: "+2",
+    trend: "up",
+    icon: Globe,
+  },
+  {
+    title: "Total Projects",
+    value: "15",
+    change: "+3",
+    trend: "up",
+    icon: Calendar,
+  },
+  {
+    title: "Subscribed Users",
+    value: "2,847",
+    change: "+156",
+    trend: "up",
+    icon: Users,
+  },
 ]
 
-const subscribers = [
+const subscribersData = [
   {
     id: "SUB001",
-    device: "Desktop",
-    notifications: 45,
-    createdAt: "2024-01-15",
-    updatedAt: "2024-01-20",
+    deviceType: "Mobile",
+    notificationsSent: 45,
+    createdOn: "2024-01-15",
+    updatedOn: "2024-01-20",
     country: "US",
     browser: "Chrome",
-    subscribedTime: "2024-01-15 10:30:00",
+    subscribedTime: "14:30",
   },
   {
     id: "SUB002",
-    device: "Mobile",
-    notifications: 32,
-    createdAt: "2024-01-16",
-    updatedAt: "2024-01-21",
+    deviceType: "Desktop",
+    notificationsSent: 32,
+    createdOn: "2024-01-14",
+    updatedOn: "2024-01-19",
     country: "UK",
-    browser: "Safari",
-    subscribedTime: "2024-01-16 14:20:00",
+    browser: "Firefox",
+    subscribedTime: "09:15",
   },
   {
     id: "SUB003",
-    device: "Tablet",
-    notifications: 28,
-    createdAt: "2024-01-17",
-    updatedAt: "2024-01-22",
+    deviceType: "Tablet",
+    notificationsSent: 28,
+    createdOn: "2024-01-13",
+    updatedOn: "2024-01-18",
     country: "CA",
-    browser: "Firefox",
-    subscribedTime: "2024-01-17 09:15:00",
+    browser: "Safari",
+    subscribedTime: "16:45",
   },
 ]
 
-const getDeviceIcon = (device: string) => {
-  switch (device) {
-    case "Desktop":
-      return <Monitor className="h-4 w-4" />
-    case "Mobile":
-      return <Smartphone className="h-4 w-4" />
-    case "Tablet":
-      return <Tablet className="h-4 w-4" />
-    default:
-      return <Monitor className="h-4 w-4" />
-  }
-}
+const notificationChartData = [
+  { name: "Mon", sent: 120, failed: 8 },
+  { name: "Tue", sent: 150, failed: 12 },
+  { name: "Wed", sent: 180, failed: 6 },
+  { name: "Thu", sent: 200, failed: 15 },
+  { name: "Fri", sent: 170, failed: 9 },
+  { name: "Sat", sent: 90, failed: 4 },
+  { name: "Sun", sent: 110, failed: 7 },
+]
+
+const rateChartData = [
+  { name: "Mon", clickRate: 8.2, dropRate: 3.1 },
+  { name: "Tue", clickRate: 7.8, dropRate: 3.5 },
+  { name: "Wed", clickRate: 9.1, dropRate: 2.8 },
+  { name: "Thu", clickRate: 8.7, dropRate: 3.2 },
+  { name: "Fri", clickRate: 8.9, dropRate: 2.9 },
+  { name: "Sat", clickRate: 7.5, dropRate: 3.8 },
+  { name: "Sun", clickRate: 8.3, dropRate: 3.0 },
+]
 
 export default function DashboardPage() {
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
-        <div className="flex items-center space-x-2">
-          <Button>
-            <Bell className="mr-2 h-4 w-4" />
-            New Notification
-          </Button>
-        </div>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+        <p className="text-muted-foreground">Overview of your notification analytics and performance</p>
       </div>
 
-      {/* Analytics Cards */}
+      {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Notifications Sent</CardTitle>
-            <Bell className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">45,231</div>
-            <p className="text-xs text-muted-foreground">
-              <span className="text-green-600 flex items-center">
-                <ArrowUpRight className="h-3 w-3 mr-1" />
-                +20.1%
-              </span>
-              from last month
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Click Rate</CardTitle>
-            <MousePointer className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">12.5%</div>
-            <p className="text-xs text-muted-foreground">
-              <span className="text-green-600 flex items-center">
-                <ArrowUpRight className="h-3 w-3 mr-1" />
-                +2.1%
-              </span>
-              from last month
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Drop Rate</CardTitle>
-            <TrendingDown className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">3.2%</div>
-            <p className="text-xs text-muted-foreground">
-              <span className="text-red-600 flex items-center">
-                <ArrowDownRight className="h-3 w-3 mr-1" />
-                +0.5%
-              </span>
-              from last month
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Failed Notifications</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">1,429</div>
-            <p className="text-xs text-muted-foreground">
-              <span className="text-red-600 flex items-center">
-                <ArrowDownRight className="h-3 w-3 mr-1" />
-                -5.2%
-              </span>
-              from last month
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Secondary Stats */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Projects</CardTitle>
-            <FolderOpen className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">24</div>
-            <Progress value={75} className="mt-2" />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Websites</CardTitle>
-            <Globe className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">12</div>
-            <Progress value={60} className="mt-2" />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Subscribed Users</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">8,429</div>
-            <Progress value={85} className="mt-2" />
-          </CardContent>
-        </Card>
+        {statsData.map((stat, index) => (
+          <Card key={index}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
+              <stat.icon className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stat.value}</div>
+              <p className={`text-xs ${stat.trend === "up" ? "text-green-600" : "text-red-600"}`}>
+                {stat.change} from last month
+              </p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       {/* Charts */}
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Notification Analytics</CardTitle>
-            <CardDescription>Notifications sent vs failed over time</CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Notification Analytics</CardTitle>
+                <CardDescription>Sent vs Failed notifications</CardDescription>
+              </div>
+              <Select defaultValue="weekly">
+                <SelectTrigger className="w-32">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="today">Today</SelectItem>
+                  <SelectItem value="hourly">Hourly</SelectItem>
+                  <SelectItem value="weekly">Weekly</SelectItem>
+                  <SelectItem value="monthly">Monthly</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="today" className="space-y-4">
-              <TabsList>
-                <TabsTrigger value="today">Today</TabsTrigger>
-                <TabsTrigger value="hourly">Hourly</TabsTrigger>
-                <TabsTrigger value="weekly">Weekly</TabsTrigger>
-                <TabsTrigger value="monthly">Monthly</TabsTrigger>
-              </TabsList>
-              <TabsContent value="today" className="space-y-4">
-                <div className="h-[300px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={analyticsData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" />
-                      <YAxis />
-                      <Tooltip />
-                      <Line type="monotone" dataKey="sent" stroke="hsl(var(--primary))" strokeWidth={2} name="Sent" />
-                      <Line
-                        type="monotone"
-                        dataKey="failed"
-                        stroke="hsl(var(--destructive))"
-                        strokeWidth={2}
-                        name="Failed"
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-              </TabsContent>
-            </Tabs>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={notificationChartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="sent" fill="#3b82f6" name="Sent" />
+                <Bar dataKey="failed" fill="#ef4444" name="Failed" />
+              </BarChart>
+            </ResponsiveContainer>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Engagement Metrics</CardTitle>
-            <CardDescription>Click rate vs drop rate comparison</CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Performance Rates</CardTitle>
+                <CardDescription>Click rate vs Drop rate percentage</CardDescription>
+              </div>
+              <Select defaultValue="weekly">
+                <SelectTrigger className="w-32">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="today">Today</SelectItem>
+                  <SelectItem value="hourly">Hourly</SelectItem>
+                  <SelectItem value="weekly">Weekly</SelectItem>
+                  <SelectItem value="monthly">Monthly</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={analyticsData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="clicks" fill="hsl(var(--chart-1))" name="Clicks" />
-                  <Bar dataKey="drops" fill="hsl(var(--chart-2))" name="Drops" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={rateChartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Line type="monotone" dataKey="clickRate" stroke="#10b981" name="Click Rate %" />
+                <Line type="monotone" dataKey="dropRate" stroke="#f59e0b" name="Drop Rate %" />
+              </LineChart>
+            </ResponsiveContainer>
           </CardContent>
         </Card>
       </div>
@@ -266,8 +214,8 @@ export default function DashboardPage() {
       {/* Subscribers Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Recent Subscribers</CardTitle>
-          <CardDescription>Latest subscribers and their notification activity</CardDescription>
+          <CardTitle>Subscribers</CardTitle>
+          <CardDescription>Manage your notification subscribers</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
@@ -276,47 +224,38 @@ export default function DashboardPage() {
                 <TableHead>Subscriber ID</TableHead>
                 <TableHead>Device Type</TableHead>
                 <TableHead>Notifications Sent</TableHead>
-                <TableHead>Details</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {subscribers.map((subscriber) => (
+              {subscribersData.map((subscriber) => (
                 <TableRow key={subscriber.id}>
                   <TableCell className="font-medium">{subscriber.id}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      {getDeviceIcon(subscriber.device)}
-                      <span>{subscriber.device}</span>
+                      <Monitor className="h-4 w-4" />
+                      <Badge variant="outline">{subscriber.deviceType}</Badge>
                     </div>
                   </TableCell>
+                  <TableCell>{subscriber.notificationsSent}</TableCell>
                   <TableCell>
-                    <Badge variant="secondary">{subscriber.notifications}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-1" title="Created At">
-                        <Calendar className="h-3 w-3" />
-                        {subscriber.createdAt}
-                      </div>
-                      <div className="flex items-center gap-1" title="Updated At">
-                        <Clock className="h-3 w-3" />
-                        {subscriber.updatedAt}
-                      </div>
-                      <div className="flex items-center gap-1" title="Country">
-                        <MapPin className="h-3 w-3" />
-                        {subscriber.country}
-                      </div>
-                      <div className="flex items-center gap-1" title="Browser">
-                        <Monitor className="h-3 w-3" />
-                        {subscriber.browser}
-                      </div>
+                    <div className="flex items-center gap-2">
+                      <Button variant="ghost" size="sm" title={`Created: ${subscriber.createdOn}`}>
+                        <Calendar className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm" title={`Updated: ${subscriber.updatedOn}`}>
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm" title={`Country: ${subscriber.country}`}>
+                        <MapPin className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm" title={`Browser: ${subscriber.browser}`}>
+                        <Monitor className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm" title={`Subscribed: ${subscriber.subscribedTime}`}>
+                        <Clock className="h-4 w-4" />
+                      </Button>
                     </div>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="ghost" size="sm">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
                   </TableCell>
                 </TableRow>
               ))}

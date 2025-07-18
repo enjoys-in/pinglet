@@ -1,20 +1,16 @@
 import type React from "react"
-import { AppSidebar } from "@/components/app-sidebar"
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
-import { DashboardHeader } from "@/components/dashboard-header"
+import DashboardLayout from "@/components/layout/dashboard"
 
-export default function DashboardLayout({
+
+export default function Layout({
   children,
 }: {
   children: React.ReactNode
 }) {
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <DashboardHeader />
-        <main className="flex-1 overflow-auto">{children}</main>
-      </SidebarInset>
-    </SidebarProvider>
+    <DashboardLayout>
+      <main className="flex-1 overflow-auto">{children}</main>
+
+    </DashboardLayout>
   )
 }

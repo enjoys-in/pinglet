@@ -1,8 +1,11 @@
 export interface IUser {
-	uid?: string;
-	email?: string;
-	role?: string;
-	status?: string;
+	id: number;
+	email: string;
+	first_name: string;
+	last_name: string;
+	role: AppRoles;
+	status: USER_STATUS;
+	 
 }
 export enum USER_STATUS {
 	ACTIVE = "ACTIVE",
