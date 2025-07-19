@@ -1,5 +1,6 @@
 import type React from "react"
 import DashboardLayout from "@/components/layout/dashboard"
+import ToastContainer from "@/components/brand-toaster/toastContainer"
 
 
 export default function Layout({
@@ -9,6 +10,7 @@ export default function Layout({
 }) {
   return (
     <DashboardLayout>
+       <ToastContainer position="top-right" />
       <main className="flex-1 overflow-auto">{children}</main>
 
     </DashboardLayout>

@@ -6,7 +6,23 @@ class ProjectController {
         try {
             const userId = req.user!.id
             const website = await projectService.getAllProjects({
-                where: { user: { id: userId } }
+                relations: {
+                    website: true,
+                    category: true,
+                },
+                where: { user: { id: userId } },
+                select: {
+                    website: {
+                        id: true,
+                        domain: true,
+                    },
+                    category: {
+                        id: true,
+                        name: true,
+                        slug: true,
+                    }
+                }
+
             });
             res
                 .json({
@@ -105,6 +121,42 @@ class ProjectController {
                 })
                 .end();
 
+        } catch (error) {
+            if (error instanceof Error) {
+                res
+                    .json({ message: error.message, result: null, success: false })
+                    .end();
+                return;
+            }
+            res
+                .json({
+                    message: "Something went wrong",
+                    result: null,
+                    success: false,
+                })
+                .end();
+        }
+    }
+    async updateProject(req: Request, res: Response) {
+        try {
+            const id = +req.params.id;
+            const body = req.body;
+            const userId = req.user!.id
+            await projectService.updateProject(id, {
+                ...body,
+                user: {
+                    id: userId
+                }
+            });
+            res
+                .json({
+                    message: "Project Updated",
+                    result: {
+                        id
+                    },
+                    success: true,
+                })
+                .end();
         } catch (error) {
             if (error instanceof Error) {
                 res

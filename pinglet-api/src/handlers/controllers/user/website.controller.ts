@@ -94,6 +94,26 @@ class WebsiteController {
 	}
 	async updateWebsite(req: Request, res: Response) {
 		try {
+			const id = +req.params.id;
+			const body = req.body;
+			const website = await websiteService.updateWebsite(id, body);
+			if (!website) {
+				throw new Error("Website not found");
+			}
+			// if (body?.favicon) {
+			// 	await websiteService.updateFavicon(id, body.favicon);
+			// }
+			// if (body?.logo) {
+			// 	await websiteService.updateLogo(id, body.logo);
+			// }
+			res
+				.json({
+					message: "Website Updated",
+					result: website,
+					success: true,
+				})
+				.end();
+			return;
 
 		} catch (error) {
 			if (error instanceof Error) {
@@ -114,8 +134,31 @@ class WebsiteController {
 	}
 	async deleteWebsite(req: Request, res: Response) {
 		try {
-
+			const id = +req.params.id;
+			await websiteService.deleteWebsite(id);
+			res
+				.json({
+					message: "Website Deleted",
+					result: null,
+					success: true,
+				})
+				.end();
+			return;
 		} catch (error) {
+			if (error instanceof Error) {
+				res
+					.json({ message: error.message, result: null, success: false })
+					.end();
+				return;
+			}
+			res
+				.json({
+					message: "Something went wrong",
+					result: null,
+					success: false,
+				})
+				.end();
+
 
 		}
 	}

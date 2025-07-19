@@ -1,9 +1,5 @@
-import React from 'react'
+import PingletLoader from "@/components/loader/PingletLoader";
 
-const loading = () => {
-  return (
-    <div>loading</div>
-  )
+export default function Loading() {
+  return <PingletLoader variant="component" message="Loading projects..." />
 }
-
-export default loading

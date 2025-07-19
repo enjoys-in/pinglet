@@ -4,7 +4,7 @@ import { useLayoutEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { Plus, Edit, Trash2, MoreHorizontal } from "lucide-react"
+import { Plus, Edit, Trash2, MoreHorizontal, RefreshCcw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -147,6 +147,7 @@ export default function WebsitesPage() {
       }
       setWebsites((prev) => prev.filter((w) => w.id !== id))
       setDeleteWebsiteId(null)
+      db.deleteItem("websites", id)
       toast({
         title: "Website deleted",
         description: "Website has been deleted successfully.",
@@ -172,6 +173,14 @@ export default function WebsitesPage() {
     form.reset()
     setEditingWebsite(null)
   }
+  const refreshWebsites = () => {
+    API.getWebsites().then((response) => {
+      if (response.data.success) {
+        setWebsites(response.data.result)
+        db.bulkPutItems("websites", response.data.result as any)
+      }
+    })
+  }
   const fetchWebsites = async () => {
     // fecth from IDB
     const items = await db.getAllItems("websites")
@@ -179,12 +188,7 @@ export default function WebsitesPage() {
       setWebsites(items as AllWebsitesResponse[])
       return
     }
-    API.getWebsites().then((response) => {
-      if (response.data.success) {
-        setWebsites(response.data.result)
-        db.bulkPutItems("websites", response.data.result as any)
-      }
-    })
+    refreshWebsites()
   }
   useLayoutEffect(() => {
     fetchWebsites()
@@ -197,6 +201,7 @@ export default function WebsitesPage() {
           <h1 className="text-3xl font-bold tracking-tight">Websites</h1>
           <p className="text-muted-foreground">Manage your websites and their notification settings</p>
         </div>
+        
         <Dialog
           open={isAddDialogOpen}
           onOpenChange={(open) => {
@@ -290,9 +295,15 @@ export default function WebsitesPage() {
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Your Websites</CardTitle>
+        <CardHeader className="flex  flex-row items-center justify-between">
+        <div>
+            <CardTitle>Your Websites</CardTitle>
           <CardDescription>Manage all your registered websites and their notification statistics</CardDescription>
+        </div>
+           <Button variant="outline" className="cursor-pointer" onClick={refreshWebsites}>
+              <RefreshCcw className="mr-2 h-4 w-4" />
+              Refresh Data
+            </Button>
         </CardHeader>
         <CardContent>
           <Table>

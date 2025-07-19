@@ -39,3 +39,18 @@ interface Category {
   templates: any[];
 }
 
+
+export interface AllProjectsResponse {
+  id: number;
+  unique_id: string;
+  name: string;
+  description: null;
+  logo: null;
+  banner: null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: null;
+  is_active: boolean;
+  website: Website;
+  category: Category;
+}

@@ -21,6 +21,7 @@ router.get("/projects", ProjectController.default.getAllProjects);
 router.post("/project", ProjectController.default.createNewProject);
 router.delete("/project/:id", ProjectController.default.deleteProject);
 router.get("/project/:id", ProjectController.default.getProject);
+router.put("/project/:id", ProjectController.default.updateProject);
 
 // // User
 // router.use("/user", UserAuthController.default);
