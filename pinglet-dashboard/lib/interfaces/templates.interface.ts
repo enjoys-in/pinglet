@@ -35,7 +35,7 @@ export interface TemplateResponse {
   created_at: string;
   updated_at: string;
   deleted_at: null;
-  variants: Variants
+  variants: TemplateResponse[] | Variants
   config: TemplateConfigs
 }
 type Variants = Omit<TemplateResponse, 'variants'>[]

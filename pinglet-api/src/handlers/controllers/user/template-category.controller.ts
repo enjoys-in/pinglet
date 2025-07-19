@@ -1,6 +1,6 @@
 import { templateCategoryService } from "@/handlers/services/template-category.service";
 import type { Request, Response } from "express";
-import { Or, And, IsNull } from 'typeorm'
+import { IsNull } from 'typeorm'
 
 class TemplateCategoryController {
 
@@ -36,6 +36,9 @@ class TemplateCategoryController {
                 where: {
                     id: +req.params.id,
                     user: [{ id: req.user?.id }, { id: IsNull() }],
+                    templates: {
+                        parent: IsNull()
+                    }
                 },
                 select: {
                     id: true,

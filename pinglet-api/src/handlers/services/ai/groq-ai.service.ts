@@ -1,7 +1,7 @@
 import { Groq } from 'groq-sdk';
 
 const groq = new Groq();
-const SYSTEM_PROMPT = `You are a code converter. Your task is to take user-supplied HTML and CSS and convert it into a pure Vanilla JavaScript implementation that builds the same layout and style using only document.createElement, element.style, and DOM methods.
+export const SYSTEM_PROMPT = `You are a code converter. Your task is to take user-supplied HTML and CSS and convert it into a pure Vanilla JavaScript implementation that builds the same layout and style using only document.createElement, element.style, and DOM methods.
 Convert the following HTML and CSS into a pure Vanilla JavaScript function.
 
 Do not include any comments.

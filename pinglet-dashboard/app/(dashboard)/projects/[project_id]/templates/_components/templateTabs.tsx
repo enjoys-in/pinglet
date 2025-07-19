@@ -122,9 +122,11 @@ export function TemplateTabs({ templateGroups }: TemplateTabsProps) {
             </div>
 
             {templates[selectedCategoryId]?.length > 0 ? templates[selectedCategoryId]?.map(template => (
-              <div key={template.id} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 <TemplateCard key={template.id} template={template} />
-              </div>))
+              </div>
+
+            ))
               :
               <div className="flex-1 flex items-center justify-center">
                 <EmptyState icon="🥲" title={`${selectedCategory.name} has no templates`} />
@@ -141,7 +143,7 @@ export function TemplateTabs({ templateGroups }: TemplateTabsProps) {
               <p className="text-gray-600">Explore different variations of this template</p>
             </div>
             {selectedTemplate.variants.length > 0 ? selectedTemplate.variants.map(variant => (
-              <div key={variant.id} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div key={variant.id} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 <TemplateCard template={variant} variant="compact" />
               </div>
             )) :
@@ -182,7 +184,6 @@ function EmptyState({ icon, title, message }: { icon: string; title: string; mes
         </div>
         <h3 className="text-lg font-medium text-gray-900 mb-2">{title}</h3>
         {message && <p className="text-gray-500">{message}</p>}
-
       </div>
     </div>
   )

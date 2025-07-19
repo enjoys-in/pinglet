@@ -13,14 +13,22 @@ export function TemplateCard({ template, variant = "default" }: TemplateCardProp
   const { selectedTemplateId, setSelectedTemplate } = useTemplateStore()
   const isSelected = selectedTemplateId === String(template.id)
 
+  const handleClick = () => {
+    setSelectedTemplate(isSelected ? null : String(template.id))
+  }
+
+  const media = template?.config?.media
+  const hasImage = !!media?.image?.src
+  const hasIcon = !!media?.icon?.src
+
   return (
     <div
       className={cn(
-        "border rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-md",
+        "flex flex-col justify-between border rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-md",
         isSelected ? "border-blue-300 bg-blue-50 shadow-sm" : "border-gray-200 hover:border-gray-300",
-        variant === "compact" && "p-3",
+        variant === "compact" && "p-3"
       )}
-      onClick={() => setSelectedTemplate(isSelected ? null : String(template.id))}
+      onClick={handleClick}
     >
       <div className="space-y-3">
         <div>
@@ -32,16 +40,18 @@ export function TemplateCard({ template, variant = "default" }: TemplateCardProp
           </p>
         </div>
 
-        {template?.config?.media && variant === "default" && (
+        {variant === "default" && (
           <div className="w-full h-32 bg-gray-100 rounded-lg overflow-hidden">
-            {template?.config?.media?.image ? (
+            {hasImage ? (
               <img
-                src={template?.config?.media?.image.src || "/placeholder.svg"}
-                alt={template?.config?.media?.image.alt || template.name}
+                src={media.image.src|| "/placeholder.png"}
+                alt={media.image.alt || template.name}
                 className="w-full h-full object-cover"
               />
-            ) : template?.config?.media?.icon ? (
-              <div className="w-full h-full flex items-center justify-center text-4xl">{template?.config?.media?.icon.src || "/placeholder.svg"}</div>
+            ) : hasIcon ? (
+              <div className="w-full h-full flex items-center justify-center text-4xl">
+                {media.icon.src}
+              </div>
             ) : (
               <div className="w-full h-full flex items-center justify-center text-gray-400">
                 <span className="text-sm">Video Preview</span>
@@ -50,11 +60,10 @@ export function TemplateCard({ template, variant = "default" }: TemplateCardProp
           </div>
         )}
 
-
         <div className="flex items-center justify-between text-xs text-gray-500">
-          <div className="flex space-x-4">
-            {template.variants && <span>{template.variants.length} variants</span>}
-          </div>
+          {template.variants?.length > 0 && (
+            <span>{template.variants.length} variant{template.variants.length > 1 ? "s" : ""}</span>
+          )}
           <span>ID: {template.id}</span>
         </div>
       </div>

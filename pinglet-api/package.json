@@ -28,6 +28,7 @@
 	"dependencies": {
 		"@biomejs/biome": "^1.9.4",
 		"@enjoys/exception": "^1.1.2",
+		"@google/genai": "^1.10.0",
 		"@nestjs/cli": "^10.4.9",
 		"@swc/cli": "^0.4.1-nightly.20240914",
 		"@swc/core": "^1.11.31",

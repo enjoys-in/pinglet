@@ -6,7 +6,7 @@ import ProjectDetails from './_components/projectDetails'
 
 const page = async ({ params }: any) => {
   try {
-    const { project_id } = params as { project_id: string }
+    const { project_id } = await params as { project_id: string }
     const { data } = await serverAxios.get<ApiResponse<ProjectDetailsResponse>>('/api/v1/project/' + project_id)
 
     return <ProjectDetails project={data.result} />

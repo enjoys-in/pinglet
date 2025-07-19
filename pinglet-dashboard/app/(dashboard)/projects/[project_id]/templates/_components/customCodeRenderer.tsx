@@ -8,8 +8,38 @@ import {
   SandpackCodeEditor,
   SandpackPreview,
 } from "@codesandbox/sandpack-react";
+import { html } from "@codemirror/lang-html";
+import { css } from "@codemirror/lang-css";
+// import { highlightActiveLine, highlightSpecialChars } from "@codemirror/view";
+import { autocompletion, closeBrackets } from "@codemirror/autocomplete";
+
+import { indentWithTab, defaultKeymap } from "@codemirror/commands";
+import {
+  keymap, highlightActiveLine, highlightSpecialChars,
+  highlightActiveLineGutter, 
+  highlightTrailingWhitespace,
+gutters,
+  lineNumbers,
+  EditorView,
+  tooltips,
+  rectangularSelection
+} from "@codemirror/view";
 import SyncCode from "./syncCode";
 
+
+const customAutocompleteTheme = EditorView.theme({
+  ".cm-tooltip-autocomplete": {
+    backgroundColor: "#1e1e1e",
+    color: "#fff",
+    border: "1px solid #444",
+  },
+  ".cm-tooltip-autocomplete .cm-completionLabel": {
+    color: "#fff"
+  },
+  ".cm-tooltip-autocomplete .cm-completionMatchedText": {
+    color: "#6cf"
+  }
+});
 interface CustomCodeRendererProps {
   template: TemplateResponse
 }
@@ -25,6 +55,7 @@ export function CustomCodeRenderer({ template }: CustomCodeRendererProps) {
     <SandpackProvider
       template="vanilla"
       theme="dark"
+
       files={{
         "/index.html": {
           code: template.raw_text?.html || `<!DOCTYPE html>
@@ -81,8 +112,30 @@ export function CustomCodeRenderer({ template }: CustomCodeRendererProps) {
               <SandpackLayout>
                 <SandpackCodeEditor
                   showTabs
+                  extensions={[
+                    highlightActiveLine(),
+                    highlightSpecialChars(),
+                    autocompletion(),
+                    closeBrackets(),
+                    keymap.of([indentWithTab]),
+                    keymap.of([...defaultKeymap]),
+                    html(),
+                    css(),
+                    customAutocompleteTheme,
+                    highlightActiveLineGutter(),                   
+                    highlightTrailingWhitespace(),
+                    lineNumbers(),
+                    gutters(),
+                    tooltips(),
+                    rectangularSelection()
+                  ]
+                  }
+                  showInlineErrors
                   showLineNumbers
-                  wrapContent                  
+                  wrapContent
+                  readOnly
+                  showReadOnly
+
                   style={{ height: 600 }}
                 />
                 <SandpackPreview style={{ height: 600 }} />

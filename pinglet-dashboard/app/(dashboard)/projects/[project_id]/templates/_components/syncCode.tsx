@@ -20,10 +20,7 @@ const SyncCode = () => {
     // Replace <link rel="stylesheet" ...> with <style> block
     const replacedLinkWithStyle = withoutScripts.replace(
         /<link\s+[^>]*rel=["']stylesheet["'][^>]*>/gi,
-        cssCode ?
-            `<style>
-    ${cssCode}
-</style>`: "<style></style>"
+        cssCode ? `<style> ${cssCode}</style>` : "<style></style>"
     );
 
     // (Optional) Remove <meta> tags (you can comment this line if not needed)
@@ -41,6 +38,7 @@ const SyncCode = () => {
                     indent_size: 2,
                     preserve_newlines: true,
                 });
+                sandpack.updateFile("/index.html", formatted)
                 console.log(formatted);
             }}
             type="button"

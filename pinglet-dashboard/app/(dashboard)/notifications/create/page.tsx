@@ -1,20 +1,40 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useLayoutEffect, useState, useRef } from "react"
+import type React from "react";
+import { useLayoutEffect, useState, useRef } from "react";
 
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Switch } from "@/components/ui/switch"
-import { Badge } from "@/components/ui/badge"
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import {
   Upload,
   ImageIcon,
@@ -28,37 +48,31 @@ import {
   Loader2,
   Play,
   Volume2,
-} from "lucide-react"
-import Link from "next/link"
-import { useToast } from "@/hooks/use-toast"
+} from "lucide-react";
+import Link from "next/link";
+import { useToast } from "@/hooks/use-toast";
 
 interface AllWebsitesResponse {
-  id: string
-  name: string
-  domain: string
-  createdAt?: string
-  updatedAt?: string
+  id: string;
+  name: string;
+  domain: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
-const db = {
-  async getAllItems(table: string) {
-    await new Promise((resolve) => setTimeout(resolve, 100))
-    if (table === "websites") {
-      return [
-        { id: "1", name: "app.example.com", domain: "app.example.com" },
-        { id: "2", name: "shop.example.com", domain: "shop.example.com" },
-        { id: "3", name: "blog.example.com", domain: "blog.example.com" },
-      ]
-    }
-    return []
-  },
-}
+import { db } from "@/lib/db";
 
 const notificationSchema = z.object({
   website: z.string().min(1, "Please select a website"),
   project: z.string().min(1, "Please select a project"),
-  title: z.string().min(1, "Title is required").max(100, "Title must be less than 100 characters"),
-  description: z.string().min(1, "Description is required").max(300, "Description must be less than 300 characters"),
+  title: z
+    .string()
+    .min(1, "Title is required")
+    .max(100, "Title must be less than 100 characters"),
+  description: z
+    .string()
+    .min(1, "Description is required")
+    .max(300, "Description must be less than 300 characters"),
   icon: z.any().optional(),
   mediaType: z.enum(["none", "image", "video", "audio"]).default("none"),
   mediaFile: z.any().optional(),
@@ -68,7 +82,7 @@ const notificationSchema = z.object({
         text: z.string().min(1, "Button text is required"),
         action: z.enum(["redirect", "alert", "custom"]),
         value: z.string().min(1, "Action value is required"),
-      }),
+      })
     )
     .max(2, "Maximum 2 buttons allowed"),
   utmSource: z.string().optional(),
@@ -80,42 +94,39 @@ const notificationSchema = z.object({
   priority: z.enum(["low", "normal", "high"]).default("normal"),
   silent: z.boolean().default(false),
   autoRemove: z.boolean().default(false),
-})
+});
 
-type NotificationForm = z.infer<typeof notificationSchema>
+type NotificationForm = z.infer<typeof notificationSchema>;
 
-const websites = [
-  { id: "1", name: "app.example.com", domain: "app.example.com" },
-  { id: "2", name: "shop.example.com", domain: "shop.example.com" },
-  { id: "3", name: "blog.example.com", domain: "blog.example.com" },
-]
 
 const projects = [
   { id: "1", name: "Onboarding", websiteId: "1" },
   { id: "2", name: "Marketing", websiteId: "2" },
   { id: "3", name: "Product Updates", websiteId: "1" },
   { id: "4", name: "System Alerts", websiteId: "1" },
-]
+];
 
 interface UploadedFile {
-  file: File
-  url: string
-  uploading: boolean
-  uploaded: boolean
-  error?: string
+  file: File;
+  url: string;
+  uploading: boolean;
+  uploaded: boolean;
+  error?: string;
 }
 
 export default function CreateNotificationPage() {
-  const [selectedButtons, setSelectedButtons] = useState<Array<{ text: string; action: string; value: string }>>([])
-  const [previewData, setPreviewData] = useState<any>(null)
-  const [websites, setWebsites] = useState<AllWebsitesResponse[]>([])
-  const [iconFile, setIconFile] = useState<UploadedFile | null>(null)
-  const [mediaFile, setMediaFile] = useState<UploadedFile | null>(null)
+  const [selectedButtons, setSelectedButtons] = useState<
+    Array<{ text: string; action: string; value: string }>
+  >([]);
+  const [previewData, setPreviewData] = useState<any>(null);
+  const [websites, setWebsites] = useState<AllWebsitesResponse[]>([]);
+  const [iconFile, setIconFile] = useState<UploadedFile | null>(null);
+  const [mediaFile, setMediaFile] = useState<UploadedFile | null>(null);
 
-  const iconInputRef = useRef<HTMLInputElement>(null)
-  const mediaInputRef = useRef<HTMLInputElement>(null)
+  const iconInputRef = useRef<HTMLInputElement>(null);
+  const mediaInputRef = useRef<HTMLInputElement>(null);
 
-  const { toast } = useToast()
+  const { toast } = useToast();
 
   const form = useForm<NotificationForm>({
     resolver: zodResolver(notificationSchema),
@@ -131,11 +142,13 @@ export default function CreateNotificationPage() {
       silent: false,
       autoRemove: false,
     },
-  })
+  });
 
-  const watchedValues = form.watch()
-  const selectedWebsite = websites.find((w) => w.id === watchedValues.website)
-  const availableProjects = projects.filter((p) => p.websiteId === watchedValues.website)
+  const watchedValues = form.watch();
+  const selectedWebsite = websites.find((w) => w.id === watchedValues.website);
+  const availableProjects = projects.filter(
+    (p) => p.websiteId === watchedValues.website
+  );
 
   // File validation
   const validateFile = (file: File, type: "icon" | "media") => {
@@ -144,263 +157,280 @@ export default function CreateNotificationPage() {
       image: 5 * 1024 * 1024, // 5MB
       video: 50 * 1024 * 1024, // 50MB
       audio: 10 * 1024 * 1024, // 10MB
-    }
+    };
 
     const allowedTypes = {
       icon: ["image/jpeg", "image/png", "image/gif", "image/webp"],
       image: ["image/jpeg", "image/png", "image/gif", "image/webp"],
       video: ["video/mp4", "video/webm", "video/ogg"],
-      audio: ["audio/mp3", "audio/wav", "audio/ogg", "audio/m4a"],
-    }
+      audio: [
+        "audio/mp3",
+        "audio/wav",
+        "audio/ogg",
+        "audio/m4a",
+        "audio/aac",
+        "audio/mpeg",
+      ],
+    };
 
     if (type === "icon") {
       if (file.size > maxSizes.icon) {
-        return "Icon file size must be less than 100KB"
+        return "Icon file size must be less than 100KB";
       }
       if (!allowedTypes.icon.includes(file.type)) {
-        return "Icon must be an image file (JPEG, PNG, GIF, WebP)"
+        return "Icon must be an image file (JPEG, PNG, GIF, WebP)";
       }
     } else {
-      const mediaType = watchedValues.mediaType
+      const mediaType = watchedValues.mediaType;
       if (mediaType === "image") {
         if (file.size > maxSizes.image) {
-          return "Image file size must be less than 5MB"
+          return "Image file size must be less than 5MB";
         }
         if (!allowedTypes.image.includes(file.type)) {
-          return "Please select a valid image file"
+          return "Please select a valid image file";
         }
       } else if (mediaType === "video") {
         if (file.size > maxSizes.video) {
-          return "Video file size must be less than 50MB"
+          return "Video file size must be less than 50MB";
         }
         if (!allowedTypes.video.includes(file.type)) {
-          return "Please select a valid video file"
+          return "Please select a valid video file";
         }
       } else if (mediaType === "audio") {
         if (file.size > maxSizes.audio) {
-          return "Audio file size must be less than 10MB"
+          return "Audio file size must be less than 10MB";
         }
         if (!allowedTypes.audio.includes(file.type)) {
-          return "Please select a valid audio file"
+          return "Please select a valid audio file";
         }
       }
     }
-    return null
-  }
+    return null;
+  };
 
   // Upload file to server
-  const uploadFile = async (file: File, type: "icon" | "media"): Promise<string> => {
-    const formData = new FormData()
-    formData.append("file", file)
-    formData.append("type", type)
+  const uploadFile = async (
+    file: File,
+    type: "icon" | "media"
+  ): Promise<string> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("type", type);
 
     const response = await fetch("/api/upload", {
       method: "POST",
       body: formData,
-    })
+    });
 
     if (!response.ok) {
-      throw new Error("Upload failed")
+      throw new Error("Upload failed");
     }
 
-    const data = await response.json()
-    return data.url
-  }
+    const data = await response.json();
+    return data.url;
+  };
 
   // Handle icon file selection
   const handleIconSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file) return
+    const file = event.target.files?.[0];
+    if (!file) return;
 
-    const error = validateFile(file, "icon")
+    const error = validateFile(file, "icon");
     if (error) {
       toast({
         title: "Invalid file",
         description: error,
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
-    const url = URL.createObjectURL(file)
+    const url = URL.createObjectURL(file);
     setIconFile({
       file,
       url,
       uploading: false,
       uploaded: false,
-    })
-  }
+    });
+  };
 
   // Handle media file selection
   const handleMediaSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file) return
+    const file = event.target.files?.[0];
+    if (!file) return;
 
-    const error = validateFile(file, "media")
+    const error = validateFile(file, "media");
     if (error) {
       toast({
         title: "Invalid file",
         description: error,
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
-    const url = URL.createObjectURL(file)
+    const url = URL.createObjectURL(file);
     setMediaFile({
       file,
       url,
       uploading: false,
       uploaded: false,
-    })
-  }
+    });
+  };
 
   // Upload icon
   const handleIconUpload = async () => {
-    if (!iconFile) return
+    if (!iconFile) return;
 
-    setIconFile((prev) => (prev ? { ...prev, uploading: true, error: undefined } : null))
+    setIconFile((prev) =>
+      prev ? { ...prev, uploading: true, error: undefined } : null
+    );
 
     try {
-      const uploadedUrl = await uploadFile(iconFile.file, "icon")
+      const uploadedUrl = await uploadFile(iconFile.file, "icon");
       setIconFile((prev) =>
         prev
           ? {
-              ...prev,
-              uploading: false,
-              uploaded: true,
-              url: uploadedUrl,
-            }
-          : null,
-      )
-      form.setValue("icon", uploadedUrl)
+            ...prev,
+            uploading: false,
+            uploaded: true,
+            url: uploadedUrl,
+          }
+          : null
+      );
+      form.setValue("icon", uploadedUrl);
       toast({
         title: "Success",
         description: "Icon uploaded successfully",
-      })
+      });
     } catch (error) {
       setIconFile((prev) =>
         prev
           ? {
-              ...prev,
-              uploading: false,
-              error: "Upload failed",
-            }
-          : null,
-      )
+            ...prev,
+            uploading: false,
+            error: "Upload failed",
+          }
+          : null
+      );
       toast({
         title: "Upload failed",
         description: "Failed to upload icon. Please try again.",
         variant: "destructive",
-      })
+      });
     }
-  }
+  };
 
   // Upload media
   const handleMediaUpload = async () => {
-    if (!mediaFile) return
+    if (!mediaFile) return;
 
-    setMediaFile((prev) => (prev ? { ...prev, uploading: true, error: undefined } : null))
+    setMediaFile((prev) =>
+      prev ? { ...prev, uploading: true, error: undefined } : null
+    );
 
     try {
-      const uploadedUrl = await uploadFile(mediaFile.file, "media")
+      const uploadedUrl = await uploadFile(mediaFile.file, "media");
       setMediaFile((prev) =>
         prev
           ? {
-              ...prev,
-              uploading: false,
-              uploaded: true,
-              url: uploadedUrl,
-            }
-          : null,
-      )
-      form.setValue("mediaFile", uploadedUrl)
+            ...prev,
+            uploading: false,
+            uploaded: true,
+            url: uploadedUrl,
+          }
+          : null
+      );
+      form.setValue("mediaFile", uploadedUrl);
       toast({
         title: "Success",
         description: "Media uploaded successfully",
-      })
+      });
     } catch (error) {
       setMediaFile((prev) =>
         prev
           ? {
-              ...prev,
-              uploading: false,
-              error: "Upload failed",
-            }
-          : null,
-      )
+            ...prev,
+            uploading: false,
+            error: "Upload failed",
+          }
+          : null
+      );
       toast({
         title: "Upload failed",
         description: "Failed to upload media. Please try again.",
         variant: "destructive",
-      })
+      });
     }
-  }
+  };
 
   // Remove icon
   const removeIcon = () => {
     if (iconFile) {
-      URL.revokeObjectURL(iconFile.url)
+      URL.revokeObjectURL(iconFile.url);
     }
-    setIconFile(null)
-    form.setValue("icon", undefined)
+    setIconFile(null);
+    form.setValue("icon", undefined);
     if (iconInputRef.current) {
-      iconInputRef.current.value = ""
+      iconInputRef.current.value = "";
     }
-  }
+  };
 
   // Remove media
   const removeMedia = () => {
     if (mediaFile) {
-      URL.revokeObjectURL(mediaFile.url)
+      URL.revokeObjectURL(mediaFile.url);
     }
-    setMediaFile(null)
-    form.setValue("mediaFile", undefined)
+    setMediaFile(null);
+    form.setValue("mediaFile", undefined);
     if (mediaInputRef.current) {
-      mediaInputRef.current.value = ""
+      mediaInputRef.current.value = "";
     }
-  }
+  };
 
   // Get accepted file types for media input
   const getAcceptedTypes = () => {
     switch (watchedValues.mediaType) {
       case "image":
-        return "image/jpeg,image/png,image/gif,image/webp"
+        return "image/jpeg,image/png,image/gif,image/webp";
       case "video":
-        return "video/mp4,video/webm,video/ogg"
+        return "video/mp4,video/webm,video/ogg";
       case "audio":
-        return "audio/mp3,audio/wav,audio/ogg,audio/m4a"
+        return "audio/mp3,audio/wav,audio/ogg,audio/m4a,audio/aac,audio/mpeg";
       default:
-        return ""
+        return "";
     }
-  }
+  };
 
   // Clear media when type changes
   const handleMediaTypeChange = (value: string) => {
     if (value === "none" && mediaFile) {
-      removeMedia()
+      removeMedia();
     }
-    form.setValue("mediaType", value as any)
-  }
+    form.setValue("mediaType", value as any);
+  };
 
   const addButton = () => {
     if (selectedButtons.length < 2) {
-      setSelectedButtons([...selectedButtons, { text: "", action: "redirect", value: "" }])
+      setSelectedButtons([
+        ...selectedButtons,
+        { text: "", action: "redirect", value: "" },
+      ]);
     }
-  }
+  };
 
   const removeButton = (index: number) => {
-    const newButtons = selectedButtons.filter((_, i) => i !== index)
-    setSelectedButtons(newButtons)
-    form.setValue("buttons", newButtons)
-  }
+    const newButtons = selectedButtons.filter((_, i) => i !== index);
+    setSelectedButtons(newButtons);
+    form.setValue("buttons", newButtons);
+  };
 
   const updateButton = (index: number, field: string, value: string) => {
-    const newButtons = [...selectedButtons]
-    newButtons[index] = { ...newButtons[index], [field]: value }
-    setSelectedButtons(newButtons)
-    form.setValue("buttons", newButtons)
-  }
+    const newButtons = [...selectedButtons];
+    newButtons[index] = { ...newButtons[index], [field]: value };
+    setSelectedButtons(newButtons);
+    form.setValue("buttons", newButtons);
+  };
 
   const onSubmit = async (data: NotificationForm) => {
     try {
@@ -410,8 +440,8 @@ export default function CreateNotificationPage() {
           title: "Upload required",
           description: "Please upload the icon before submitting.",
           variant: "destructive",
-        })
-        return
+        });
+        return;
       }
 
       if (mediaFile && !mediaFile.uploaded) {
@@ -419,51 +449,56 @@ export default function CreateNotificationPage() {
           title: "Upload required",
           description: "Please upload the media file before submitting.",
           variant: "destructive",
-        })
-        return
+        });
+        return;
       }
 
       // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       toast({
         title: "Notification created",
         description: "Your notification has been created successfully.",
-      })
+      });
       // Redirect to notifications list
-      window.location.href = "/notifications"
+      window.location.href = "/notifications";
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to create notification. Please try again.",
         variant: "destructive",
-      })
+      });
     }
-  }
+  };
 
   const updatePreview = () => {
-    const values = form.getValues()
+    const values = form.getValues();
     setPreviewData({
       title: values.title || "Notification Title",
-      description: values.description || "Notification description will appear here",
+      description:
+        values.description || "Notification description will appear here",
       buttons: selectedButtons.filter((b) => b.text.trim() !== ""),
       icon: iconFile?.url || "/placeholder.svg?height=64&width=64",
-    })
-  }
+    });
+  };
 
   useLayoutEffect(() => {
     db.getAllItems("websites").then((response) => {
       if (response.length > 0) {
-        setWebsites(response as AllWebsitesResponse[])
+        setWebsites(response as any);
       }
-    })
-  }, [])
+    });
+  }, []);
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex justify-between space-x-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Create Notification</h2>
-          <p className="text-muted-foreground">Create a new push notification for your users</p>
+          <h2 className="text-3xl font-bold tracking-tight">
+            Create Notification
+          </h2>
+          <p className="text-muted-foreground">
+            Create a new push notification for your users
+          </p>
         </div>
         <Button variant="ghost" size="sm" asChild>
           <Link href="/notifications">
@@ -482,7 +517,9 @@ export default function CreateNotificationPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Basic Information</CardTitle>
-                  <CardDescription>Configure the basic details of your notification</CardDescription>
+                  <CardDescription>
+                    Configure the basic details of your notification
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid gap-4 md:grid-cols-2">
@@ -492,7 +529,10 @@ export default function CreateNotificationPage() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Website</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder="Select website" />
@@ -550,12 +590,14 @@ export default function CreateNotificationPage() {
                             placeholder="Enter notification title"
                             {...field}
                             onChange={(e) => {
-                              field.onChange(e)
-                              updatePreview()
+                              field.onChange(e);
+                              updatePreview();
                             }}
                           />
                         </FormControl>
-                        <FormDescription>{field.value?.length || 0}/100 characters</FormDescription>
+                        <FormDescription>
+                          {field.value?.length || 0}/100 characters
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -573,12 +615,14 @@ export default function CreateNotificationPage() {
                             rows={3}
                             {...field}
                             onChange={(e) => {
-                              field.onChange(e)
-                              updatePreview()
+                              field.onChange(e);
+                              updatePreview();
                             }}
                           />
                         </FormControl>
-                        <FormDescription>{field.value?.length || 0}/300 characters</FormDescription>
+                        <FormDescription>
+                          {field.value?.length || 0}/300 characters
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -590,7 +634,9 @@ export default function CreateNotificationPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Media & Icon</CardTitle>
-                  <CardDescription>Add an icon and optional media to your notification</CardDescription>
+                  <CardDescription>
+                    Add an icon and optional media to your notification
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
@@ -619,7 +665,12 @@ export default function CreateNotificationPage() {
                             {iconFile ? "Change Icon" : "Select Icon"}
                           </Button>
                           {iconFile && !iconFile.uploaded && (
-                            <Button size="sm" type="button" onClick={handleIconUpload} disabled={iconFile.uploading}>
+                            <Button
+                              size="sm"
+                              type="button"
+                              onClick={handleIconUpload}
+                              disabled={iconFile.uploading}
+                            >
                               {iconFile.uploading ? (
                                 <>
                                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -631,7 +682,12 @@ export default function CreateNotificationPage() {
                             </Button>
                           )}
                           {iconFile && (
-                            <Button variant="outline" size="sm" type="button" onClick={removeIcon}>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              type="button"
+                              onClick={removeIcon}
+                            >
                               <X className="h-4 w-4" />
                             </Button>
                           )}
@@ -639,8 +695,16 @@ export default function CreateNotificationPage() {
                         <p className="text-xs text-muted-foreground mt-1">
                           Max 100KB, square preferred (JPEG, PNG, GIF, WebP)
                         </p>
-                        {iconFile?.uploaded && <p className="text-xs text-green-600 mt-1">✓ Uploaded successfully</p>}
-                        {iconFile?.error && <p className="text-xs text-red-600 mt-1">{iconFile.error}</p>}
+                        {iconFile?.uploaded && (
+                          <p className="text-xs text-green-600 mt-1">
+                            ✓ Uploaded successfully
+                          </p>
+                        )}
+                        {iconFile?.error && (
+                          <p className="text-xs text-red-600 mt-1">
+                            {iconFile.error}
+                          </p>
+                        )}
                       </div>
                     </div>
                     <input
@@ -658,7 +722,10 @@ export default function CreateNotificationPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Media Type</FormLabel>
-                        <Select onValueChange={handleMediaTypeChange} defaultValue={field.value}>
+                        <Select
+                          onValueChange={handleMediaTypeChange}
+                          defaultValue={field.value}
+                        >
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue />
@@ -694,7 +761,10 @@ export default function CreateNotificationPage() {
                                 )}
                                 {watchedValues.mediaType === "video" && (
                                   <div className="relative w-full h-full">
-                                    <video src={mediaFile.url} className="w-full h-full object-cover" />
+                                    <video
+                                      src={mediaFile.url}
+                                      className="w-full h-full object-cover"
+                                    />
                                     <Play className="absolute inset-0 m-auto h-6 w-6 text-white" />
                                   </div>
                                 )}
@@ -703,14 +773,25 @@ export default function CreateNotificationPage() {
                                 )}
                               </div>
                               <div className="flex-1">
-                                <p className="text-sm font-medium">{mediaFile.file.name}</p>
+                                <p className="text-sm font-medium">
+                                  {mediaFile.file.name}
+                                </p>
                                 <p className="text-xs text-muted-foreground">
-                                  {(mediaFile.file.size / 1024 / 1024).toFixed(2)} MB
+                                  {(mediaFile.file.size / 1024 / 1024).toFixed(
+                                    2
+                                  )}{" "}
+                                  MB
                                 </p>
                                 {mediaFile.uploaded && (
-                                  <p className="text-xs text-green-600">✓ Uploaded successfully</p>
+                                  <p className="text-xs text-green-600">
+                                    ✓ Uploaded successfully
+                                  </p>
                                 )}
-                                {mediaFile.error && <p className="text-xs text-red-600">{mediaFile.error}</p>}
+                                {mediaFile.error && (
+                                  <p className="text-xs text-red-600">
+                                    {mediaFile.error}
+                                  </p>
+                                )}
                               </div>
                             </div>
 
@@ -742,7 +823,12 @@ export default function CreateNotificationPage() {
                                   )}
                                 </Button>
                               )}
-                              <Button variant="outline" size="sm" type="button" onClick={removeMedia}>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                type="button"
+                                onClick={removeMedia}
+                              >
                                 <X className="h-4 w-4" />
                               </Button>
                             </div>
@@ -768,11 +854,16 @@ export default function CreateNotificationPage() {
                                 >
                                   Select {watchedValues.mediaType}
                                 </Button>
-                                <p className="text-xs text-muted-foreground mt-1">Drag and drop or click to upload</p>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  Drag and drop or click to upload
+                                </p>
                                 <p className="text-xs text-muted-foreground">
-                                  {watchedValues.mediaType === "image" && "Max 5MB (JPEG, PNG, GIF, WebP)"}
-                                  {watchedValues.mediaType === "video" && "Max 50MB (MP4, WebM, OGG)"}
-                                  {watchedValues.mediaType === "audio" && "Max 10MB (MP3, WAV, OGG, M4A)"}
+                                  {watchedValues.mediaType === "image" &&
+                                    "Max 5MB (JPEG, PNG, GIF, WebP)"}
+                                  {watchedValues.mediaType === "video" &&
+                                    "Max 50MB (MP4, WebM, OGG)"}
+                                  {watchedValues.mediaType === "audio" &&
+                                    "Max 10MB (MP3, WAV, OGG, M4A)"}
                                 </p>
                               </div>
                             </div>
@@ -795,14 +886,24 @@ export default function CreateNotificationPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Action Buttons</CardTitle>
-                  <CardDescription>Add up to 2 action buttons to your notification</CardDescription>
+                  <CardDescription>
+                    Add up to 2 action buttons to your notification
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {selectedButtons.map((button, index) => (
-                    <div key={index} className="border rounded-lg p-4 space-y-3">
+                    <div
+                      key={index}
+                      className="border rounded-lg p-4 space-y-3"
+                    >
                       <div className="flex items-center justify-between">
                         <Label>Button {index + 1}</Label>
-                        <Button type="button" variant="ghost" size="sm" onClick={() => removeButton(index)}>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeButton(index)}
+                        >
                           <X className="h-4 w-4" />
                         </Button>
                       </div>
@@ -812,12 +913,19 @@ export default function CreateNotificationPage() {
                           <Input
                             placeholder="Button text"
                             value={button.text}
-                            onChange={(e) => updateButton(index, "text", e.target.value)}
+                            onChange={(e) =>
+                              updateButton(index, "text", e.target.value)
+                            }
                           />
                         </div>
                         <div>
                           <Label className="text-xs">Action Type</Label>
-                          <Select value={button.action} onValueChange={(value) => updateButton(index, "action", value)}>
+                          <Select
+                            value={button.action}
+                            onValueChange={(value) =>
+                              updateButton(index, "action", value)
+                            }
+                          >
                             <SelectTrigger>
                               <SelectValue />
                             </SelectTrigger>
@@ -845,14 +953,21 @@ export default function CreateNotificationPage() {
                                   : "console.log('clicked')"
                             }
                             value={button.value}
-                            onChange={(e) => updateButton(index, "value", e.target.value)}
+                            onChange={(e) =>
+                              updateButton(index, "value", e.target.value)
+                            }
                           />
                         </div>
                       </div>
                     </div>
                   ))}
                   {selectedButtons.length < 2 && (
-                    <Button type="button" variant="outline" onClick={addButton} className="w-full bg-transparent">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={addButton}
+                      className="w-full bg-transparent"
+                    >
                       <Plus className="mr-2 h-4 w-4" />
                       Add Button
                     </Button>
@@ -864,7 +979,9 @@ export default function CreateNotificationPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>UTM Parameters</CardTitle>
-                  <CardDescription>Track your notification performance with UTM parameters</CardDescription>
+                  <CardDescription>
+                    Track your notification performance with UTM parameters
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid gap-4 md:grid-cols-3">
@@ -912,7 +1029,9 @@ export default function CreateNotificationPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Schedule & Settings</CardTitle>
-                  <CardDescription>Configure when and how your notification will be sent</CardDescription>
+                  <CardDescription>
+                    Configure when and how your notification will be sent
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <FormField
@@ -921,11 +1040,18 @@ export default function CreateNotificationPage() {
                     render={({ field }) => (
                       <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                         <div className="space-y-0.5">
-                          <FormLabel className="text-base">Schedule Notification</FormLabel>
-                          <FormDescription>Send this notification at a specific date and time</FormDescription>
+                          <FormLabel className="text-base">
+                            Schedule Notification
+                          </FormLabel>
+                          <FormDescription>
+                            Send this notification at a specific date and time
+                          </FormDescription>
                         </div>
                         <FormControl>
-                          <Switch checked={field.value} onCheckedChange={field.onChange} />
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
                         </FormControl>
                       </FormItem>
                     )}
@@ -968,7 +1094,10 @@ export default function CreateNotificationPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Priority</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue />
@@ -992,11 +1121,18 @@ export default function CreateNotificationPage() {
                       render={({ field }) => (
                         <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                           <div className="space-y-0.5">
-                            <FormLabel className="text-base">Silent Notification</FormLabel>
-                            <FormDescription>Send without sound or vibration</FormDescription>
+                            <FormLabel className="text-base">
+                              Silent Notification
+                            </FormLabel>
+                            <FormDescription>
+                              Send without sound or vibration
+                            </FormDescription>
                           </div>
                           <FormControl>
-                            <Switch checked={field.value} onCheckedChange={field.onChange} />
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
                           </FormControl>
                         </FormItem>
                       )}
@@ -1007,11 +1143,19 @@ export default function CreateNotificationPage() {
                       render={({ field }) => (
                         <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                           <div className="space-y-0.5">
-                            <FormLabel className="text-base">Auto Remove</FormLabel>
-                            <FormDescription>Automatically remove notification after interaction</FormDescription>
+                            <FormLabel className="text-base">
+                              Auto Remove
+                            </FormLabel>
+                            <FormDescription>
+                              Automatically remove notification after
+                              interaction
+                            </FormDescription>
                           </div>
                           <FormControl>
-                            <Switch checked={field.value} onCheckedChange={field.onChange} />
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
                           </FormControl>
                         </FormItem>
                       )}
@@ -1025,7 +1169,11 @@ export default function CreateNotificationPage() {
                 <Button type="button" variant="outline">
                   Save as Draft
                 </Button>
-                <Button type="submit">{watchedValues.scheduled ? "Schedule Notification" : "Send Now"}</Button>
+                <Button type="submit">
+                  {watchedValues.scheduled
+                    ? "Schedule Notification"
+                    : "Send Now"}
+                </Button>
               </div>
             </form>
           </Form>
@@ -1039,17 +1187,23 @@ export default function CreateNotificationPage() {
                 <Eye className="h-4 w-4" />
                 Live Preview
               </CardTitle>
-              <CardDescription>See how your notification will appear</CardDescription>
+              <CardDescription>
+                See how your notification will appear
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {/* Desktop Preview */}
                 <div>
-                  <Label className="text-xs font-medium text-muted-foreground">DESKTOP</Label>
+                  <Label className="text-xs font-medium text-muted-foreground">
+                    DESKTOP
+                  </Label>
                   <div className="mt-2 bg-background border rounded-lg p-4 shadow-lg max-w-sm">
                     <div className="flex items-start gap-3">
                       <img
-                        src={iconFile?.url || "/placeholder.svg?height=40&width=40"}
+                        src={
+                          iconFile?.url || "/placeholder.svg?height=40&width=40"
+                        }
                         alt="Icon"
                         className="w-10 h-10 rounded"
                       />
@@ -1058,10 +1212,13 @@ export default function CreateNotificationPage() {
                           {watchedValues.title || "Notification Title"}
                         </div>
                         <div className="text-xs text-muted-foreground line-clamp-2 mt-1">
-                          {watchedValues.description || "Notification description will appear here"}
+                          {watchedValues.description ||
+                            "Notification description will appear here"}
                         </div>
                         {selectedWebsite && (
-                          <div className="text-xs text-muted-foreground mt-1">{selectedWebsite.domain}</div>
+                          <div className="text-xs text-muted-foreground mt-1">
+                            {selectedWebsite.domain}
+                          </div>
                         )}
                         {selectedButtons.length > 0 && (
                           <div className="flex gap-2 mt-2">
@@ -1077,7 +1234,7 @@ export default function CreateNotificationPage() {
                                   >
                                     {button.text}
                                   </Button>
-                                ),
+                                )
                             )}
                           </div>
                         )}
@@ -1088,11 +1245,15 @@ export default function CreateNotificationPage() {
 
                 {/* Mobile Preview */}
                 <div>
-                  <Label className="text-xs font-medium text-muted-foreground">MOBILE</Label>
+                  <Label className="text-xs font-medium text-muted-foreground">
+                    MOBILE
+                  </Label>
                   <div className="mt-2 bg-background border rounded-lg p-3 shadow-lg">
                     <div className="flex items-start gap-2">
                       <img
-                        src={iconFile?.url || "/placeholder.svg?height=32&width=32"}
+                        src={
+                          iconFile?.url || "/placeholder.svg?height=32&width=32"
+                        }
                         alt="Icon"
                         className="w-8 h-8 rounded"
                       />
@@ -1101,7 +1262,8 @@ export default function CreateNotificationPage() {
                           {watchedValues.title || "Notification Title"}
                         </div>
                         <div className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
-                          {watchedValues.description || "Notification description"}
+                          {watchedValues.description ||
+                            "Notification description"}
                         </div>
                       </div>
                     </div>
@@ -1110,7 +1272,9 @@ export default function CreateNotificationPage() {
 
                 {/* Settings Summary */}
                 <div className="space-y-2">
-                  <Label className="text-xs font-medium text-muted-foreground">SETTINGS</Label>
+                  <Label className="text-xs font-medium text-muted-foreground">
+                    SETTINGS
+                  </Label>
                   <div className="space-y-1">
                     <div className="flex items-center justify-between text-xs">
                       <span>Priority:</span>
@@ -1151,5 +1315,5 @@ export default function CreateNotificationPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }
