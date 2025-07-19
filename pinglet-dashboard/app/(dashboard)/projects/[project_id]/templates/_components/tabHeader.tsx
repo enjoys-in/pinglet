@@ -12,9 +12,9 @@ const tabs: { id: TabType; label: string; description: string }[] = [
 ]
 
 export function TabHeader() {
-    const { activeTab, setTab, selectedCategorySlug } = useTemplateStore()
+    const { activeTab, setTab, selectedCategoryId } = useTemplateStore()
 
-    if (!selectedCategorySlug) {
+    if (!selectedCategoryId) {
         return null
     }
 

@@ -1,6 +1,6 @@
 import { TemplateCategoryEntity } from "@/factory/entities/template-category.entity";
 import { InjectRepository } from "@/factory/typeorm";
-import type { DeepPartial, FindManyOptions, Repository } from "typeorm";
+import type { DeepPartial, FindManyOptions, FindOneOptions, Repository } from "typeorm";
 class TemplateCategoryService {
     constructor(
 
@@ -12,8 +12,8 @@ class TemplateCategoryService {
     getAllActiveTemplatesCategory() {
         return this.categoryRepo.find({ where: { is_active: true } });
     }
-    getAllTemplatesCategory() {
-        return this.categoryRepo.find();
+    getAllTemplatesCategory(opts?: FindManyOptions<TemplateCategoryEntity>) {
+        return this.categoryRepo.find(opts);
     }
     getAllTemplatesCategoryWithTemplatesCount() {
         return this.categoryRepo.query(`
@@ -35,10 +35,13 @@ class TemplateCategoryService {
                    c.id ASC;
             `);
     }
-    getAllTemplatesCategoryWithTemplate() {
-        return this.categoryRepo.find({ relations: ["templates"] });
-    }
 
+    getTemplateCategoryWithTemplatesById(opts: FindOneOptions<TemplateCategoryEntity>) {
+        return this.categoryRepo.findOne(opts);
+    }
+    getTemplateCategoryById(id: number) {
+        return this.categoryRepo.findOne({ where: { id } });
+    }
 }
 export const templateCategoryService = new TemplateCategoryService(
 

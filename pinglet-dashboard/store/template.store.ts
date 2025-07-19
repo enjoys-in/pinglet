@@ -2,11 +2,11 @@ import { TabType } from "@/lib/interfaces/templates.interface"
 import { create } from "zustand"
 
 type TemplateStore = {
-  selectedCategorySlug: string | null
+  selectedCategoryId: number | null
   activeTab: TabType
   selectedTemplateId: string | null
   sidebarOpen: boolean
-  setCategory: (slug: string) => void
+  setCategory: (id: number) => void
   setTab: (tab: TabType) => void
   setSelectedTemplate: (id: string | null) => void
   setSidebarOpen: (open: boolean) => void
@@ -14,13 +14,13 @@ type TemplateStore = {
 }
 
 export const useTemplateStore = create<TemplateStore>((set) => ({
-  selectedCategorySlug: null,
+  selectedCategoryId: null,
   activeTab: "default",
   selectedTemplateId: null,
   sidebarOpen: false,
-  setCategory: (slug) =>
+  setCategory: (id) =>
     set({
-      selectedCategorySlug: slug,
+      selectedCategoryId: id,
       activeTab: "default",
       selectedTemplateId: null,
     }),
@@ -29,7 +29,7 @@ export const useTemplateStore = create<TemplateStore>((set) => ({
   setSidebarOpen: (open) => set({ sidebarOpen: open }),
   resetSelection: () =>
     set({
-      selectedCategorySlug: null,
+      selectedCategoryId: null,
       activeTab: "default",
       selectedTemplateId: null,
     }),

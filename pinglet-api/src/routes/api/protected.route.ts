@@ -36,6 +36,7 @@ router.put("/website/:id", WebsiteController.default.updateWebsite);
 // router.use("/template", TemplateController.default);
 // // Template Category
 router.get("/template-categories", TemplateCategoryController.default.getTemplateCategories);
+router.get("/template-categories/:id/templates", TemplateCategoryController.default.getTemplatesByCategory);
 
 const sockets = new Map<string, Set<WebSocket>>();
 

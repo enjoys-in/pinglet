@@ -1,17 +1,17 @@
 "use client"
 
-import { useTemplateStore } from "@/store/template.store" 
+import { useTemplateStore } from "@/store/template.store"
 import { cn } from "@/lib/utils"
-import { Template } from "@/lib/interfaces/templates.interface"
+import { TemplateResponse } from "@/lib/interfaces/templates.interface"
 
 interface TemplateCardProps {
-  template: Template
+  template: TemplateResponse
   variant?: "default" | "compact"
 }
 
 export function TemplateCard({ template, variant = "default" }: TemplateCardProps) {
   const { selectedTemplateId, setSelectedTemplate } = useTemplateStore()
-  const isSelected = selectedTemplateId === template.id
+  const isSelected = selectedTemplateId === String(template.id)
 
   return (
     <div
@@ -20,7 +20,7 @@ export function TemplateCard({ template, variant = "default" }: TemplateCardProp
         isSelected ? "border-blue-300 bg-blue-50 shadow-sm" : "border-gray-200 hover:border-gray-300",
         variant === "compact" && "p-3",
       )}
-      onClick={() => setSelectedTemplate(isSelected ? null : template.id)}
+      onClick={() => setSelectedTemplate(isSelected ? null : String(template.id))}
     >
       <div className="space-y-3">
         <div>
@@ -32,16 +32,16 @@ export function TemplateCard({ template, variant = "default" }: TemplateCardProp
           </p>
         </div>
 
-        {template.media && variant === "default" && (
+        {template?.config?.media && variant === "default" && (
           <div className="w-full h-32 bg-gray-100 rounded-lg overflow-hidden">
-            {template.media.type === "image" ? (
+            {template?.config?.media?.image ? (
               <img
-                src={template.media.url || "/placeholder.svg"}
-                alt={template.media.alt || template.name}
+                src={template?.config?.media?.image.src || "/placeholder.svg"}
+                alt={template?.config?.media?.image.alt || template.name}
                 className="w-full h-full object-cover"
               />
-            ) : template.media.type === "icon" ? (
-              <div className="w-full h-full flex items-center justify-center text-4xl">{template.media.url}</div>
+            ) : template?.config?.media?.icon ? (
+              <div className="w-full h-full flex items-center justify-center text-4xl">{template?.config?.media?.icon.src || "/placeholder.svg"}</div>
             ) : (
               <div className="w-full h-full flex items-center justify-center text-gray-400">
                 <span className="text-sm">Video Preview</span>
@@ -50,11 +50,10 @@ export function TemplateCard({ template, variant = "default" }: TemplateCardProp
           </div>
         )}
 
-        {/* Template Stats */}
+
         <div className="flex items-center justify-between text-xs text-gray-500">
           <div className="flex space-x-4">
             {template.variants && <span>{template.variants.length} variants</span>}
-            {template.customCode && <span>Custom code</span>}
           </div>
           <span>ID: {template.id}</span>
         </div>

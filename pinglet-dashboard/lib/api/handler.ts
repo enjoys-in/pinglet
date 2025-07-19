@@ -6,6 +6,7 @@ import { ApiResponse } from "../types";
 import { AllWebsitesResponse } from "../interfaces/website.interface";
 import { signal } from "../requestController";
 import { TemplateCategoryResponse } from "../interfaces/template-category.interface";
+import { TemplateCategoryWithTemplate, TemplateResponse } from "../interfaces/templates.interface";
  
 const adminRoutes = (url: string) => `/api/v1/admin${url}`
 const apiRoutes = (url: string) => `/api/v1/${url}`
@@ -108,5 +109,10 @@ export class API {
     }
      static getAllProjects() {
         return instance.get<ApiResponse<{ id: number }>>('/api/v1/projects')
+    }
+    static getTemplatesByCategory(categoryId: string) {
+        return instance.get<ApiResponse<TemplateCategoryWithTemplate>>(`/api/v1/template-categories/${categoryId}/templates`, {
+            // signal: signal("/api/v1/template-categories", "DELETE")
+        })
     }
 }

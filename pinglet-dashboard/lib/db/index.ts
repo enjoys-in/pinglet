@@ -6,16 +6,16 @@ import { TemplateCategoryResponse } from '../interfaces/template-category.interf
 import { ProjectDetailsResponse } from '../interfaces/project.interface'
 
 type Tables = {
-    websites: EntityTable<AllWebsitesResponse, "domain">,
-    projects: EntityTable<ProjectDetailsResponse,"unique_id">
-    templates: EntityTable<TemplateResponse,"slug">
-    template_categories: EntityTable<TemplateCategoryResponse,"slug">
+    websites: EntityTable<AllWebsitesResponse, "id">,
+    projects: EntityTable<ProjectDetailsResponse, "id">
+    templates: EntityTable<TemplateResponse & { catgory_id: string}, "id">
+    template_categories: EntityTable<TemplateCategoryResponse, "id">
 
 }
 const tables: CreatePKTableSchema<Tables> = {
-    websites: "++domain,id",
-    templates: "++slug,id",
-    template_categories: "++slug,id",
-    projects: "++unique_id,id"
+    websites: "++id,domain",
+    templates: "++id,catgory_id",
+    template_categories: "++id,slug",
+    projects: "++id,unique_id"
 }
 export const db = new IDB<Tables>(tables, "pinglet")
