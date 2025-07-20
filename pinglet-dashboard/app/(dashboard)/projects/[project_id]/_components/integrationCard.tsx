@@ -7,6 +7,8 @@ import {
     BarChart3
 } from 'lucide-react';
 import { ProjectDetailsResponse } from '@/lib/interfaces/project.interface';
+import { __config } from '@/constants/config';
+
 export const TemplateCard = ({ project, getCategoryColor }: { project: ProjectDetailsResponse, getCategoryColor: (category: string) => void }) => {
     const [copiedItems, setCopiedItems] = useState<string[]>([]);
     const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -23,21 +25,39 @@ export const TemplateCard = ({ project, getCategoryColor }: { project: ProjectDe
     };
     const templates = [
         {
-            id: 'project-setup',
-            title: 'Project Setup',
-            description: 'Initialize your project with essential configurations.',
+            id: 'project-v.0.0.2',
+            title: 'Latest Version of Pinglet Default Notifications (Recommended)',
+            description: 'All Features and Customization are supported',
             icon: <BarChart3 className="w-5 h-5 text-blue-600" />,
             category: project.category.name,
-            code: `<!-- Pinglet Notifications -->
-<script async src="https://cdn.enjoys.in/pinglet/v0.0.1/pinglet.js"></script>
+            code: `<!-- Pinglet Default Notifications v0.0.2 -->
+    <script
+      type="module"
+      src="${__config.CDN_URL}"      
+      data-endpoint="${__config.NOTIFICATIONS_API_URL}"
+      data-configured-domain="${project.website.domain}"
+      data-project-id="${project.unique_id}"
+      data-pinglet-id="94b00f277a7a8c12a233e39d3e4f5a6b7"     
+      data-checksum="sha384-Y7YXYX2j5YloeGIEAei75Q6PcXH+o/A93sGoo8u3SxeGjMUbmR+JqizhPOPKfiy3" 
+      data-load-templates="true"
+    ></script>
+`,
+
+        }, {
+            id: 'project-v.0.0.1',
+            title: 'Old Version of Pinglet Default Notifications',
+            description: 'Only Basic Features are supported. (No Customization)',
+            icon: <BarChart3 className="w-5 h-5 text-blue-600" />,
+            category: project.category.name,
+            code: `<!-- Pinglet Default Notifications v0.0.1 -->
+<script async src=""${__config.CDN_URL}""></script>
 <script>
     PingletWidget.init({
-        endpoint: "http://pinglet.enjoys.in/api/v1/notifications",
+        endpoint: "${__config.NOTIFICATIONS_API_URL}",
         expectedDomains: ["${project.website.domain}],
         projectIds: ["${project.unique_id}"],
       });
-</script>`,
-
+</script>`
         }
     ]
 
@@ -116,7 +136,7 @@ export const TemplateCard = ({ project, getCategoryColor }: { project: ProjectDe
                                 <div className="p-4">
                                     <pre className="text-gray-100 text-xs leading-relaxed overflow-x-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent">
                                         <code className="font-mono">
-                                             {template.code}
+                                            {template.code}
                                         </code>
                                     </pre>
                                 </div>

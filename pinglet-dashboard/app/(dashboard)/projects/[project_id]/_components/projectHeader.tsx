@@ -26,7 +26,7 @@ const ProjectHeader = ({ project, copyToClipboard, StatusBadge }: { StatusBadge:
                                             <Database className="w-4 h-4 mr-2" />
                                             <span className="text-sm font-medium">Project ID: {project.unique_id}</span>
                                             <button
-                                                onClick={() => copyToClipboard(project.id.toString(), 'project')}
+                                                onClick={() => copyToClipboard(project.unique_id.toString(), 'project')}
                                                 className="ml-2 hover:text-white transition-colors"
                                             >
                                                 <Copy className="w-3 h-3" />

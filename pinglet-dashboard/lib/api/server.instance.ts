@@ -3,7 +3,7 @@ import axios from 'axios';
 
 import { Security } from '../security';
 import { cookies } from 'next/headers';
-
+ 
 const security = new Security();
 const serverAxios = axios.create({
     baseURL: __config.APP.BASE_URL,
