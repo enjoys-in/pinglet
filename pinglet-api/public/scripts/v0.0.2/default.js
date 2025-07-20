@@ -1,3 +1,7 @@
+/** @typedef {import('./types.js').ShowPopup} ShowPopup */
+
+
+/** @type {ShowPopup} */
 export function _showPopup(
   title,
   description,
@@ -151,6 +155,12 @@ export function _showPopup(
   }, 5000);
   return container;
 }
+/**
+ * Injects Manrope font via Google Fonts and applies it to all elements with
+ * classes starting with "pinglet-".
+ *
+ * @returns {void}
+ */
 export function injectFont() {
   // Inject Google Font
   const fontLink = document.createElement("link");
@@ -171,6 +181,7 @@ export function injectFont() {
   document.head.appendChild(fontStyle);
 }
 
+/** @type {TemplateStyleConfig} */
 export const defaultStyles = {
   duration: 3000, // 3 seconds
   btn1: {
@@ -265,6 +276,8 @@ export const defaultStyles = {
     },
   },
 };
+
+/** @type {ProjectConfig} */
 export const defaultConfig = {
   position: "bottom-left",
   transition: "fade", // or "slide", "zoom"

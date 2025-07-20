@@ -1,3 +1,6 @@
+/** @typedef {import('./types/index.js').NotificationData}  */
+/** @typedef import('./types/index.js').GlobalConfig */
+
 import {
   _showPopup,
   defaultConfig,
@@ -8,7 +11,6 @@ import {
 import { createVariant } from "./variants.js";
 import { initWidget, renderToast } from "./widget.js";
 import { loadAllTemplates } from "./load-templates.js";
-import { changeToObject } from "./cryptography.js";
 const scriptEl = Array.from(document.scripts).find(
   (s) => s.src.includes("pinglet-sse") && s.dataset.endpoint
 );
@@ -31,6 +33,17 @@ const checksum = currentScript?.dataset.checksum;
   const PingletWidget = {
     version: "0.0.2",
     checksum: checksum.replace("sha384-", ""),
+    /**
+     * Initialize the PingletWidget.
+     * @param {Object} options Initialization options for PingletWidget.
+     * @param {string} options.endpoint The endpoint URL for the Pinglet API.
+     * @param {string} options.configuredDomain The configured domain for this widget.
+     * @param {string} options.projectId The project ID for this widget.
+     * @param {string} options.pingletId The pinglet ID for this widget.
+     * @param {boolean} [options.loadTemplates] If true, loads all templates for this widget.
+     * @returns {void}
+     * @throws {Error} If the version of PingletWidget is not supported, or if the checksum is missing.
+     */
     async init({ endpoint, configuredDomain, projectId, pingletId }) {
       if (this.version !== "0.0.2") {
         _showPopup(
@@ -109,13 +122,15 @@ const checksum = currentScript?.dataset.checksum;
         }
         allTemplates = templates;
       }
+
+      /** @type {GlobalConfig} */
       const globalConfig = {
-        is_premium: data.result?.is_premium ?? false,
+        is_tff: data.result?.is_premium ?? false,
         templates: Object.assign(
           {},
           {
             ["default"]: {
-              compiled_text: _showPopup,
+              compiled_text: _showPopup.toString(),
               config: defaultConfig,
               is_active: true,
               is_default: true,
@@ -131,13 +146,21 @@ const checksum = currentScript?.dataset.checksum;
         style: Object.assign({}, defaultStyles, data.result.template?.config),
         config: Object.assign({}, defaultConfig, data.result.config),
       };
-      
+
       initWidget(globalConfig);
       const socket = new EventSource(
         `${endpoint}/subscribe?projectId=${projectId}&pingletId=${pingletId}`,
         { withCredentials: false }
       );
+      /**
+       * Handle new messages from the server.
+       * @param {MessageEvent} e - The message event.
+       * @returns {void}
+       * @throws {Error} If the JSON.parse fails.
+       * @private
+       */
       socket.onmessage = (e) => {
+        /** @type {NotificationData} */
         const data = JSON.parse(e.data);
 
         if (data?.template_id) {

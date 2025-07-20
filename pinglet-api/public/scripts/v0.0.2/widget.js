@@ -1,8 +1,18 @@
+/** @typedef import('./types/index.js').GlobalConfig */
+
 let soundPlayer;
 let toastContainer;
 export let toastStack = null;
 export let brandingElement = null;
 
+/**
+ * Initialize the widget by creating a sound player if the sound config is
+ * enabled and has a valid src.
+ *
+ * @param {GlobalConfig} globalConfig - Global config object passed to the widget.
+ * @returns {Audio|undefined} The created sound player or undefined if the
+ * sound config is disabled.
+ */
 export function initWidget(globalConfig) {
   if (soundPlayer) return soundPlayer;
   if (globalConfig.sound?.play && globalConfig.sound.src) {
@@ -10,6 +20,13 @@ export function initWidget(globalConfig) {
     soundPlayer.volume = globalConfig.sound.volume ?? 0.5;
   }
 }
+/**
+ * Creates a branding element for the widget.
+ *
+ * @param {ProjectConfig["branding"]} branding - Branding config object with an optional 'html'
+ * property.
+ * @returns {HTMLDivElement} The created branding element.
+ */
 function createBrandingElement(branding) {
   if (brandingElement) return brandingElement;
   brandingElement = document.createElement("div");
@@ -26,6 +43,29 @@ function createBrandingElement(branding) {
     `;
   return brandingElement;
 }
+/**
+ * Creates or retrieves a toast notification container and stack.
+ *
+ * This function either returns existing container and stack elements,
+ * or creates new ones for toast notifications, positioning them
+ * at the bottom-left of the viewport. Optionally includes branding
+ * if specified.
+ *
+ * @param {ProjectConfig["branding"]} branding - The branding configuration object.
+ * @returns {Object} An object containing the toast container and stack elements.
+ */
+
+/**
+ * Creates or retrieves a toast notification container and stack.
+ *
+ * This function either returns existing container and stack elements,
+ * or creates new ones for toast notifications, positioning them
+ * at the bottom-left of the viewport. Optionally includes branding
+ * if specified.
+ *
+ * @param {ProjectConfig["branding"]} branding - The branding configuration object.
+ * @returns {Object} An object containing the toast container and stack elements.
+ */
 function createPingletToastContainer(branding) {
   if (toastContainer && toastStack) return { toastContainer, toastStack };
 
@@ -80,11 +120,13 @@ function createPingletToastContainer(branding) {
 }
 
 /**
- * Render a toast notification into the container (bottom stacking).
+ * Renders a new toast notification with a given content element.
+ * @param {HTMLElement} contentEl the content element of the toast notification
+ * @param {GlobalConfig} globalConfig the global config object
  */
 export function renderToast(contentEl, globalConfig) {
   const config = globalConfig.config;
-  
+
   const { toastContainer, toastStack } = createPingletToastContainer(
     config.branding
   );

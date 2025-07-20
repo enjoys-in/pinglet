@@ -1,5 +1,14 @@
+/** @typedef import('./types/index.js') */
+
 import { defaultConfig, defaultStyles } from "./default.js";
 import { brandingElement, toastStack } from "./widget.js";
+/**
+ * Create a notification header that displays the domain name, time and a close button.
+ * @param {GlobalConfig} [globalConfig] - The global configuration object.
+ * @param {string} [domain] - The domain name to display. Defaults to `window.location.hostname`.
+ * @param {string} [time] - The time string to display. Defaults to `"just now"`.
+ * @returns {HTMLDivElement} The notification header element.
+ */
 function createNotificationHeader(
   globalConfig = defaultConfig,
   domain = window.location.hostname,
@@ -85,6 +94,12 @@ function createNotificationHeader(
   return row;
 }
 
+/**
+ * Create a notification variant.
+ * @param {NotificationData} data - Notification data
+ * @param {GlobalConfig} config - Global configuration
+ * @returns {HTMLElement} - A notification wrapper element
+ */
 export function createVariant(data, config) {
   const globalStyle = config.style;
   const globalConfig = config.config;
@@ -157,6 +172,13 @@ export function createVariant(data, config) {
 
   return wrapper;
 }
+/**
+ * Creates a media element from the given `media` object.
+ * @param {MediaData} media - Media object
+ * @param {MediaStyleMapStrict} style - Style object
+ * @param {MediaControls} controls - Controls object
+ * @returns {HTMLElement | null} - Media element
+ */
 function createMediaElement(media, style, controls) {
   switch (media.type) {
     case "logo": {
@@ -214,13 +236,10 @@ function createMediaElement(media, style, controls) {
       const iconSpan = document.createElement("span");
       iconSpan.className = "pinglet-icon";
       iconSpan.style = {
-      
         width: "40px",
         height: "40px",
         backgroundPosition: "center",
         borderRadius: "8px",
-         
-        
       };
       return iconSpan;
     }

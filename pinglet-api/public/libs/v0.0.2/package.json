@@ -1,0 +1,51 @@
+{
+  "name": "@enjoys/pinglet",
+  "version": "1.0.0",
+  "description": "Lightweight Push Notification SDK for modern web apps. Supports customizable layouts, secure delivery, and real-time updates via SSE.",
+  "main": "pinglet-sse.js",
+  "types": "pinglet-sse.d.ts",
+  "exports": {
+    ".": {
+      "import": "./pinglet-sse.js",
+      "require": "./pinglet-sse.js"
+    }
+  },
+  "files": [
+    "pinglet-sse.js",
+    "pinglet.css",
+    "pinglet-sse.d.ts"
+  ],
+  "scripts": {
+    "build": "rollup -c",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "dev": "vite",
+    "test": "jest"
+  },
+  "keywords": [
+    "push",
+    "notifications",
+    "sse",
+    "widget",
+    "browser-sdk",
+    "realtime",
+    "toast",
+    "customizable",
+    "pinglet",
+    "webpush",
+    "web notification",
+    "eventstream"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/enjoys/pinglet"
+  },
+  "bugs": {
+    "url": "https://github.com/enjoys/pinglet/issues"
+  },
+  "homepage": "https://github.com/enjoys/pinglet#readme",
+  "author": "Enjoys Technologies <dev@enjoys.in>",
+  "license": "MIT"
+  
+  
+}

@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "outDir": "./public/libs/v0.0.2"
+  },
+  "include": ["public/scripts/v0.0.2/**/*.js"]
+}
