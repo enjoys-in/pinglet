@@ -84,6 +84,7 @@ function createPingletToastContainer(branding) {
  */
 export function renderToast(contentEl, globalConfig) {
   const config = globalConfig.config;
+  
   const { toastContainer, toastStack } = createPingletToastContainer(
     config.branding
   );

@@ -2,9 +2,9 @@
 import { terser } from "rollup-plugin-terser";
 
 export default {
-	input: "./public/scripts/v0.0.2/main.js",
+	input: "./public/scripts/v0.0.2/pinglet-sse.js",
 	output: {
-		file: "./public/libs/pinglet-sse.0.0.2.js",
+		file: "./public/libs/v0.0.2/pinglet-sse.js",
 		format: "iife",
 		name: "PingletWidget",
 		sourcemap: false,
@@ -12,7 +12,7 @@ export default {
 	plugins: [
 		terser({
 			compress: {
-				drop_console: true,
+				drop_console: false,
 				drop_debugger: true,
 			},
 			format: {

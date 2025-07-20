@@ -105,6 +105,6 @@ export class ProjectEntity {
 
 	@BeforeInsert()
 	setProjectId() {
-		this.unique_id = helpers.RequestId();
+		this.unique_id = helpers.RandomToken(12);
 	}
 }

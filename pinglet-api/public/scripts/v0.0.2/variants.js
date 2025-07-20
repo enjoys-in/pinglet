@@ -211,13 +211,18 @@ function createMediaElement(media, style, controls) {
       return audio;
     }
     case "icon": {
-      const icon = document.createElement("img");
-      icon.src = media.src;
-      icon.style = style?.icon || defaultStyles.media.icon;
-      icon.alt = media.alt || "icon";
-      icon.className = "pinglet-icon";
-      icon.loading = "lazy";
-      return icon;
+      const iconSpan = document.createElement("span");
+      iconSpan.className = "pinglet-icon";
+      iconSpan.style = {
+      
+        width: "40px",
+        height: "40px",
+        backgroundPosition: "center",
+        borderRadius: "8px",
+         
+        
+      };
+      return iconSpan;
     }
     default:
       return null;

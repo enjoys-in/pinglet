@@ -1,28 +1,14 @@
-import crypto from "node:crypto";
 import { createReadStream, readFile } from "node:fs";
 import path from "node:path";
 import type { Request, Response } from "express";
 import { projectService } from "../services/project.service";
-
-import { In } from "typeorm";
+import { encryptToString } from "../services/cryptography.service";
 const clients = new Map<string, Set<Response>>();
 
-const key = crypto.randomBytes(32);
-const iv = crypto.randomBytes(16);
-
-const cipher = crypto.createCipheriv("aes-256-gcm", key, iv);
-let encrypted = cipher.update("Secret message", "utf8", "base64");
-encrypted += cipher.final("base64");
-const tag = cipher.getAuthTag().toString("base64");
-
-const payload = {
-	iv: iv.toString("base64"),
-	encrypted,
-	tag,
-};
 
 let base64Mp3: string | null = null;
 class PushNtfyController {
+
 	loadConfig = async (req: Request, res: Response) => {
 		try {
 			const query = req.query as { projectId: string, domain: string };
@@ -30,12 +16,16 @@ class PushNtfyController {
 			if (!query.projectId || !query.domain) {
 				throw new Error("Missing projectIds or domain");
 			}
-
+			const key = req.headers["x-pinglet-checksum"] as string
 			const configuredDomain = query.domain;
 			const project = await projectService.getProjectsByWebsite(configuredDomain);
 			if (!project) {
 				throw new Error("Project not found for the given domain");
 			}
+
+			// const keyBuffer = Buffer.from(key, 'base64').toString("base64").slice(0, 32)
+			// const iv = Buffer.from(query.projectId, 'hex')
+			// const { tag, encrypted } = encryptToString(JSON.stringify({ is_premium: false }), keyBuffer, iv)
 
 			const loadConfig = await projectService.getSelectedProjects({
 				where: { unique_id: query.projectId, is_active: true },
@@ -67,6 +57,8 @@ class PushNtfyController {
 			const obj = {
 				config: loadConfig.config,
 				template: result[0] || null,
+				// tag,
+				// pid: encrypted
 			}
 			res
 				.json({ message: "OK", result: obj, success: true })
@@ -159,6 +151,7 @@ class PushNtfyController {
 			"Cache-Control": "no-cache",
 			Connection: "keep-alive",
 		});
+
 
 		res.write("\n");
 		if (!clients.has(projectId)) clients.set(projectId, new Set());
