@@ -206,7 +206,7 @@ function removeToast(toast, type) {
       toast.remove();
 
       if (toastStack && toastStack.children.length === 0) {
-        brandingElement.remove();
+        brandingElement?.remove();
       }
     },
     { once: true }

@@ -1,4 +1,4 @@
-/** @typedef {import('./types/index.js').NotificationData}  */
+/** @typedef import('./types/index.js').NotificationData  */
 /** @typedef import('./types/index.js').GlobalConfig */
 
 import {
