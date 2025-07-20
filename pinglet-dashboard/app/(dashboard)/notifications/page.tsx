@@ -26,55 +26,20 @@ import Link from "next/link"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
 // Mock data
-const notifications = [
-  {
-    id: "NOT001",
-    title: "Welcome to Our Platform",
-    description: "Thank you for joining us! Get started with your first project.",
-    status: "sent",
-    project: "Onboarding",
-    website: "app.example.com",
-    sent: 1250,
-    clicked: 156,
-    createdAt: "2024-01-20 10:30:00",
-    scheduledAt: null,
-  },
-  {
-    id: "NOT002",
-    title: "Flash Sale - 50% Off",
-    description: "Limited time offer! Don't miss out on our biggest sale of the year.",
-    status: "scheduled",
-    project: "Marketing",
-    website: "shop.example.com",
-    sent: 0,
-    clicked: 0,
-    createdAt: "2024-01-21 14:20:00",
-    scheduledAt: "2024-01-22 09:00:00",
-  },
-  {
-    id: "NOT003",
-    title: "System Maintenance Notice",
-    description: "Scheduled maintenance will occur tonight from 2-4 AM EST.",
-    status: "failed",
-    project: "System",
-    website: "app.example.com",
-    sent: 0,
-    clicked: 0,
-    createdAt: "2024-01-19 16:45:00",
-    scheduledAt: null,
-  },
-  {
-    id: "NOT004",
-    title: "New Feature Available",
-    description: "Check out our latest feature that will boost your productivity.",
-    status: "draft",
-    project: "Product Updates",
-    website: "app.example.com",
-    sent: 0,
-    clicked: 0,
-    createdAt: "2024-01-21 11:15:00",
-    scheduledAt: null,
-  },
+const notifications:any[] = [
+  
+  // {
+  //   id: "NOT004",
+  //   title: "New Feature Available",
+  //   description: "Check out our latest feature that will boost your productivity.",
+  //   status: "draft",
+  //   project: "Product Updates",
+  //   website: "app.example.com",
+  //   sent: 0,
+  //   clicked: 0,
+  //   createdAt: "2024-01-21 11:15:00",
+  //   scheduledAt: null,
+  // },
 ]
 
 const getStatusBadge = (status: string) => {

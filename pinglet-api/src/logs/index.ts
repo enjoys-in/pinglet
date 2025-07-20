@@ -25,7 +25,7 @@ class Logger {
 		process.stdout.write("\u001b[2J\u001b[0;0H");
 		process.stdout.write(
 			greenBright(
-				`[ENJOYS] ${yellow(process.pid)} - ${white(moment().format("DD/MM/YYYY hh:mm:ss A"))}, INFO ${Logger.name} Service Iniatialized \n`,
+				`[PINGLET] ${yellow(process.pid)} - ${white(moment().format("DD/MM/YYYY hh:mm:ss A"))}, INFO ${Logger.name} Service Iniatialized \n`,
 			),
 		);
 	}

@@ -84,13 +84,7 @@ export function CustomCodeRenderer({ template }: CustomCodeRendererProps) {
       }}
     >
       <div className="space-y-6">
-        {/* Header */}
-        <div className="text-center py-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-2">{template.name} - Live Code Editor</h2>
-          <p className="text-gray-600">Edit HTML and CSS to see live preview</p>
-        </div>
-
-        {/* Editor Container */}
+        
         <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
           {/* Editor Content */}
           <div className="relative min-h-[500px]">

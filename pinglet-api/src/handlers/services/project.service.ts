@@ -1,6 +1,6 @@
 import { ProjectEntity } from "@/factory/entities/project.entity";
 import { InjectRepository } from "@/factory/typeorm";
-import type { DeepPartial, FindManyOptions, Repository } from "typeorm";
+import type { DeepPartial, FindManyOptions, FindOneOptions, Repository } from "typeorm";
 class ProjectService {
 	constructor(private readonly projectRepository: Repository<ProjectEntity>) { }
 	createNewProject(project: DeepPartial<ProjectEntity>) {
@@ -9,6 +9,9 @@ class ProjectService {
 	}
 	getAllProjects(opts?: FindManyOptions<ProjectEntity>) {
 		return this.projectRepository.find(opts);
+	}
+	getSelectedProjects(opts: FindOneOptions<ProjectEntity>) {
+		return this.projectRepository.findOne(opts);
 	}
 	getProjectById(id: number) {
 		return this.projectRepository.findOne({
@@ -37,7 +40,7 @@ class ProjectService {
 	getProjectsByWebsite(domain: string) {
 		return this.projectRepository.findOne({
 			where: {
-				website: { domain },
+				website: { domain, is_active: true },
 			},
 		});
 	}

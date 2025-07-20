@@ -36,6 +36,7 @@ class AppServer {
 	 * Initializes the constructor.
 	 */
 	constructor() {
+
 		AppLifecycleManager.initializeModules();
 		this.ApplyConfiguration();
 		this.InitMiddlewares();

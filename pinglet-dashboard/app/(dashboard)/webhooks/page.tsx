@@ -66,64 +66,7 @@ const webhookSchema = z.object({
 type WebhookForm = z.infer<typeof webhookSchema>
 
 // Mock data
-const webhooks = [
-  {
-    id: "WH001",
-    name: "Slack Notifications",
-    description: "Send notifications to Slack channel",
-    eventTrigger: "notification.sent",
-    triggerType: "rest",
-    url: "https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX",
-    status: "active",
-    lastTriggered: "2024-01-23 10:30:00",
-    totalTriggers: 1250,
-    successRate: 98.5,
-    createdAt: "2024-01-15",
-    updatedAt: "2024-01-20",
-  },
-  {
-    id: "WH002",
-    name: "Discord Alerts",
-    description: "Send alerts to Discord server",
-    eventTrigger: "notification.failed",
-    triggerType: "discord",
-    url: "https://discord.com/api/webhooks/123456789/abcdefghijklmnopqrstuvwxyz",
-    status: "active",
-    lastTriggered: "2024-01-22 14:20:00",
-    totalTriggers: 45,
-    successRate: 95.6,
-    createdAt: "2024-01-16",
-    updatedAt: "2024-01-21",
-  },
-  {
-    id: "WH003",
-    name: "Telegram Bot",
-    description: "Send updates via Telegram bot",
-    eventTrigger: "user.subscribed",
-    triggerType: "telegram",
-    telegramBotId: "123456789:AAHdqTcvCH1vGWJxfSeofSAs0K5PALDsaw",
-    status: "paused",
-    lastTriggered: "2024-01-20 09:15:00",
-    totalTriggers: 890,
-    successRate: 92.3,
-    createdAt: "2024-01-17",
-    updatedAt: "2024-01-22",
-  },
-  {
-    id: "WH004",
-    name: "Analytics Webhook",
-    description: "Send analytics data to external service",
-    eventTrigger: "notification.clicked",
-    triggerType: "rest",
-    url: "https://api.analytics.example.com/webhook",
-    status: "failed",
-    lastTriggered: "2024-01-19 16:45:00",
-    totalTriggers: 0,
-    successRate: 0,
-    createdAt: "2024-01-18",
-    updatedAt: "2024-01-23",
-  },
-]
+const webhooks:any[] = []
 
 const eventTriggers = [
   { value: "notification.sent", label: "Notification Sent" },

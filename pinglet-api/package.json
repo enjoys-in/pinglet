@@ -3,6 +3,7 @@
 	"version": "1.0.0",
 	"main": "build/main.js",
 	"scripts": {
+		"pkg":"npx rollup -c, --config rollup.config.js",
 		"build": "nest build",
 		"ready": "npm install",
 		"start": "node ./build/main.js",

@@ -32,7 +32,10 @@
       ],
       "@enjoys/react-api/idb": [
         "./node_modules/@enjoys/react-api/dist/idb"
-      ]
+      ],
+      "@enjoys/react-api/events": [
+        "./node_modules/@enjoys/react-api/dist/events"
+      ],
     }
   },
   "include": [

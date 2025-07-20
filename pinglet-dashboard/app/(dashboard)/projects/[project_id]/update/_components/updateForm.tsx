@@ -30,6 +30,9 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { API } from "@/lib/api/handler";
 
+import { showToast } from "@/components/brand-toaster/toastContainer";
+import { useRouter } from "next/navigation";
+
 export function UpdateProjectForm({
     project,
 }: {
@@ -42,7 +45,7 @@ export function UpdateProjectForm({
     const [templateCategories, setTemplateCategories] = useState<
         TemplateCategoryResponse[]
     >([]);
-
+    const router = useRouter()
     const [websites, setWebsites] = useState<AllWebsitesResponse[]>([]);
 
     const {
@@ -92,6 +95,7 @@ export function UpdateProjectForm({
             });
         }
         fetchLocalData();
+
     }, [project, reset]);
 
     const onSubmit = async (data: ProjectDetailsResponse & any) => {
@@ -112,16 +116,23 @@ export function UpdateProjectForm({
                     id: data?.category?.id,
                 },
             };
-           const { data: response }= await API.updateProject(project.id, payload);
+            const { data: response } = await API.updateProject(project.id, payload);
 
             if (!response.success) {
                 throw new Error(response.message || "Failed to update project");
             }
             setSubmitStatus("success");
+            router.push(`/projects`)
 
-             
-            setTimeout(() => setSubmitStatus("idle"), 3000);
+            showToast({
+                title: "Project Updated",
+                message: `Project ${project.name} has been successfully updated.`,
+                type: "success",
+            })
+
+
         } catch (err) {
+            
             setSubmitStatus("error");
         } finally {
             setSubmitting(false);

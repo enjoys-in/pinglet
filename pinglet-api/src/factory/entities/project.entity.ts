@@ -20,6 +20,8 @@ import { WebsiteEntity } from "./website.entity";
 import { TemplateCategoryEntity } from "./template-category.entity";
 import { UserEntity } from "./users.entity";
 import helpers from "@/utils/helpers";
+import { ProjectConfig } from "@/utils/interfaces/project.interface";
+import { PROJECT_DEFAULT_CONFIG } from "@/handlers/services/default/constant";
 
 
 @Entity("projects")
@@ -28,7 +30,7 @@ export class ProjectEntity {
 	@PrimaryGeneratedColumn()
 	id!: string;
 
-	@Column({ type: "varchar", length: 255, unique: true})
+	@Column({ type: "varchar", length: 255, unique: true })
 	@Index()
 	unique_id!: string;
 
@@ -53,6 +55,9 @@ export class ProjectEntity {
 		onUpdate: "CURRENT_TIMESTAMP",
 	})
 	updated_at!: Date;
+
+	@Column({ type: "jsonb", default: PROJECT_DEFAULT_CONFIG })
+	config!: ProjectConfig;
 
 	@DeleteDateColumn()
 	deleted_at?: Date;

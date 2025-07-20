@@ -6,13 +6,16 @@
   </head>
   <body>
     <h1>Welcome to My App</h1>
-    <script src="http://localhost:7145/public/pinglet-sse.min.js"></script>
-    <script>
-      PingletWidget.init({
-        endpoint: "http://localhost:7145/api/v1/notifications/sse",
-        expectedDomains: ["localhost"],
-        projectIds: ["project123"],
-      });
-    </script>
+    <!-- Load Pinglet Default Widget -->
+    <!-- <script src="http://localhost:7145/public/libs/pinglet-sse.min.js"></script> -->
+    <!-- Load Pinglet Test New -->
+    <script
+      type="module"
+      src="http://localhost:7145/public/scripts/v0.0.2/main.js"
+      data-endpoint="http://localhost:7145/api/v1/notifications"
+      data-configured-domain="localhost"
+      data-project-ids="077a72233e39"
+      data-pinglet-id="94b00f277a7a8c12a233e39d3e4f5a6b7"
+    ></script>
   </body>
 </html>

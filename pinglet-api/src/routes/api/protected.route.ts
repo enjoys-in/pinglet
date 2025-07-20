@@ -41,11 +41,7 @@ router.get("/template-categories/:id/templates", TemplateCategoryController.defa
 
 const sockets = new Map<string, Set<WebSocket>>();
 
-// SSE endpoint
-router.get("/notifications/sse", pushNtfyController.pushNotificatons);
-// API to trigger a notification
-router.post("/notifications/send", pushNtfyController.triggerNotification);
-router.get("/notification-sound", pushNtfyController.sound);
+
 
 // const server = http.createServer( );
 // const wss = new WebSocketServer({ port: 7146, path: '/notifications/ws' });

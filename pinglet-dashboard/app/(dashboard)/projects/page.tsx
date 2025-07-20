@@ -26,6 +26,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { db } from "@/lib/db"
 import { API } from "@/lib/api/handler"
 import { AllProjectsResponse } from "@/lib/interfaces/project.interface"
+import { useReactEvent } from "@enjoys/react-api/events"
 
 const getStatusBadge = (status: string) => {
   switch (status) {
@@ -80,6 +81,7 @@ export default function ProjectsPage() {
   }
 
   useEffect(() => {
+
     fetchAllProjects()
     fetchTemplateCategories()
   }, [])

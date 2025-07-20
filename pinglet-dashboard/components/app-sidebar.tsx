@@ -14,6 +14,7 @@ import {
   ChevronUp,
   User2,
   Globe2,
+  WalletCards,
 } from "lucide-react"
 
 import {
@@ -63,6 +64,11 @@ const data = {
           title: "Projects",
           url: "/projects",
           icon: FolderOpen,
+        },
+         {
+          title: "Templates",
+          url: "/templates",
+          icon: WalletCards,
         },
         {
           title: "Notifications",
