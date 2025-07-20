@@ -1,155 +1,171 @@
-let container;
-let branding;
 let soundPlayer;
 let toastContainer;
+export let toastStack = null;
+export let brandingElement = null;
 
-/**
- * Initialize the Pinglet widget with global configuration.
- */
 export function initWidget(globalConfig) {
-  // Avoid creating multiple containers
-  if (!container) {
-    container = document.createElement("div");
-    container.id = "pinglet-wrapper";
-    container.style.position = "fixed";
-    container.style.zIndex = "999999";
-    container.style.fontFamily = "sans-serif";
-
-    // Dynamic position (top/bottom)
-    if (globalConfig.config?.position?.includes("bottom")) {
-      container.style.bottom = "0";
-    } else {
-      container.style.top = "0";
-    }
-
-    container.style.left = "0";
-    container.style.right = "0";
-
-    // Inner container
-    const widgetArea = document.createElement("div");
-    widgetArea.className = "pinglet-container";
-    container.appendChild(widgetArea);
-
-    // Branding
-    branding = document.createElement("div");
-    branding.className = "pinglet-branding";
-    branding.innerHTML = globalConfig.branding?.html || "";
-    branding.style = "text-align:center;padding:5px;font-size:12px;color:#999";
-    container.appendChild(branding);
-
-    document.body.appendChild(container);
-  }
-
-  // Sound
+  if (soundPlayer) return soundPlayer;
   if (globalConfig.sound?.play && globalConfig.sound.src) {
     soundPlayer = new Audio(globalConfig.sound.src);
     soundPlayer.volume = globalConfig.sound.volume ?? 0.5;
   }
 }
-
-/**
- * Create or return the toast container at bottom-left.
- */
+function createBrandingElement(branding) {
+  if (brandingElement) return brandingElement;
+  brandingElement = document.createElement("div");
+  brandingElement.className = "pinglet-branding";
+  brandingElement.innerHTML =
+    branding?.html ||
+    `Notifications by <a href="https://pinglet.enjoys.in" class="pinglet-link" target="_blank" style="color:#4da6ff;text-decoration:none;">Pinglet</a>`;
+  brandingElement.style = `
+      font-size: 11px;
+      color: #999;
+      text-align: center;
+      width: 100%;
+      pointer-events: auto;
+    `;
+  return brandingElement;
+}
 function createPingletToastContainer(branding) {
-  if (toastContainer) return toastContainer;
+  if (toastContainer && toastStack) return { toastContainer, toastStack };
 
-  const existing = document.getElementById("pinglet-toast-container");
+  const existing = document.getElementById("pinglet-widget-container");
   if (existing) {
     toastContainer = existing;
-    return toastContainer;
+    toastStack = toastContainer.querySelector(".pinglet-widget-stack");
+    return { toastContainer, toastStack };
   }
 
-  // Wrapper container (fixed positioned)
+  // Outer fixed-position wrapper
   toastContainer = document.createElement("div");
-  toastContainer.id = "pinglet-toast-container";
+  toastContainer.id = "pinglet-widget-container";
   toastContainer.style.position = "fixed";
   toastContainer.style.bottom = "20px";
   toastContainer.style.left = "20px";
   toastContainer.style.zIndex = "9999";
   toastContainer.style.display = "flex";
   toastContainer.style.flexDirection = "column";
+  toastContainer.style.alignItems = "flex-start";
   toastContainer.style.gap = "8px";
-  toastContainer.style.maxWidth = "320px";
-  toastContainer.style.pointerEvents = "auto";
-  toastContainer.style.transition = "opacity 0.3s ease-in-out";
+  toastContainer.style.maxWidth = "360px";
+  toastContainer.style.width = "calc(100vw - 40px)";
+  toastContainer.style.boxSizing = "border-box";
+  toastContainer.style.pointerEvents = "none";
+  toastContainer.style.padding = "4px";
 
-  // Toast stack container (for notifications)
-  const toastStack = document.createElement("div");
-  toastStack.className = "pinglet-toast-stack";
+  // Add some subtle background and shadow for the container itself (optional)
+
+  toastContainer.style.borderRadius = "8px";
+
+  // Toast stack (notifications only)
+  toastStack = document.createElement("div");
+  toastStack.className = "pinglet-widget-stack";
   toastStack.style.display = "flex";
   toastStack.style.flexDirection = "column";
+
   toastStack.style.gap = "12px";
   toastStack.style.pointerEvents = "none";
+  toastStack.style.overflow = "visible";
+  toastStack.style.flexShrink = "0";
+
   toastContainer.appendChild(toastStack);
 
+  // Branding (always at bottom)
   if (branding?.show) {
-    const brandingElement = document.createElement("div");
-    brandingElement.className = "pinglet-branding";
-    brandingElement.innerHTML =
-      branding?.html ||
-      `Notifications by <a href="https://pinglet.enjoys.in" target="_blank" style="color:#4da6ff;text-decoration:none;">Pinglet</a>`;
-    brandingElement.style = `
-      font-size: 11px;
-      color: #999;
-      text-align: center;
-      pointer-events: auto;
-    `;
-    toastContainer.appendChild(brandingElement);
+    toastContainer.appendChild(createBrandingElement(branding));
   }
 
   document.body.appendChild(toastContainer);
-  return toastContainer;
+  return { toastContainer, toastStack };
 }
 
 /**
- * Render a toast notification into the container.
+ * Render a toast notification into the container (bottom stacking).
  */
-export function renderToast(contentEl, globalConfig, el) {
+export function renderToast(contentEl, globalConfig) {
   const config = globalConfig.config;
-  const container = createPingletToastContainer(config.branding);
+  const { toastContainer, toastStack } = createPingletToastContainer(
+    config.branding
+  );
 
+  toastContainer.appendChild(brandingElement);
   applyTransition(contentEl, config.transition);
-  container.appendChild(contentEl);
+  contentEl.style.pointerEvents = "auto";
+
+  // Add new toast to bottom
+  toastStack.appendChild(contentEl);
   if (config.sound?.play && soundPlayer) {
     soundPlayer.play();
   }
 
-  if (config.auto_dismiss) {
+  if (config?.auto_dismiss) {
     setTimeout(() => {
-      removeToast(contentEl);
-      contentEl.remove();
+      removeToast(contentEl, config?.transition || "fade");
     }, config.duration || 3000);
   }
 }
 
 /**
- * Apply transition effects.
+ * Apply entrance animation.
  */
 function applyTransition(el, type) {
+  el.style.opacity = "0";
+  el.style.transition = "all 0.4s ease";
+
   if (type === "fade") {
-    el.style.opacity = "0";
-    el.style.transition = "opacity 0.5s ease";
+    el.style.transform = "translateX(20px)";
     requestAnimationFrame(() => {
       el.style.opacity = "1";
+      el.style.transform = "translateX(0)";
     });
   } else if (type === "slide") {
-    el.style.transform = "translateY(20px)";
-    el.style.transition = "transform 0.5s ease";
+    el.style.transform = "translateX(100%)";
     requestAnimationFrame(() => {
-      el.style.transform = "translateY(0)";
+      el.style.opacity = "1";
+      el.style.transform = "translateX(0)";
     });
   } else if (type === "zoom") {
-    el.style.transform = "scale(0.9)";
-    el.style.transition = "transform 0.5s ease";
+    el.style.transform = "scale(0.8)";
     requestAnimationFrame(() => {
+      el.style.opacity = "1";
       el.style.transform = "scale(1)";
     });
   } else {
-    el.style.transition = "none"; // Reset if no transition
+    el.style.opacity = "1";
   }
 }
-function removeToast(toast) {
+
+/**
+ * Apply exit animation and remove.
+ */
+function removeToast(toast, type) {
   if (!toast) return;
-  toast.style.opacity = "0";
-  toast.style.transform = "translateX(100%)";
+
+  toast.style.transition = "all 0.4s ease";
+  brandingElement.style.transition = "all 0.4s ease";
+  brandingElement.style.transform = "translateX(-40px)";
+  if (type === "fade") {
+    toast.style.opacity = "0";
+    toast.style.transform = "translateX(-40px)";
+  } else if (type === "slide") {
+    toast.style.transform = "translateX(-100%)";
+    toast.style.opacity = "0";
+  } else if (type === "zoom") {
+    toast.style.transform = "scale(0.8)";
+    toast.style.opacity = "0";
+  } else {
+    toast.style.opacity = "0";
+  }
+
+  toast.addEventListener(
+    "transitionend",
+    () => {
+      toast.remove();
+
+      if (toastStack && toastStack.children.length === 0) {
+        brandingElement.remove();
+      }
+    },
+    { once: true }
+  );
 }

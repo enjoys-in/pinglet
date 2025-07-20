@@ -4,7 +4,7 @@ import { terser } from "rollup-plugin-terser";
 export default {
 	input: "./public/scripts/v0.0.2/main.js",
 	output: {
-		file: "./public/libs/pinglet-sse.js",
+		file: "./public/libs/pinglet-sse.0.0.2.js",
 		format: "iife",
 		name: "PingletWidget",
 		sourcemap: false,

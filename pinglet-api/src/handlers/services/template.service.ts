@@ -15,7 +15,10 @@ class TemplateService {
     getAllTemplatesByCategory(id: number) {
         return this.templateRepo.find({ where: { category: { id } } });
     }
-
+    getTemplateById(id: number) {
+        return this.templateRepo.findOne({ where: { id } });
+    }
+     
 }
 export const templateService = new TemplateService(
     InjectRepository(TemplatesEntity),

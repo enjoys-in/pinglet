@@ -15,6 +15,7 @@ export function _showPopup(
   if (!container) {
     container = document.createElement("div");
     container.id = containerId;
+
     Object.assign(container.style, {
       position: "fixed",
       bottom: "24px",
@@ -24,6 +25,7 @@ export function _showPopup(
       flexDirection: "column",
       gap: "4px",
       alignItems: "flex-end",
+      fontFamily: "Manrope, sans-serif",
     });
     document.body.appendChild(container);
   }
@@ -45,6 +47,7 @@ export function _showPopup(
     display: "flex",
     flexDirection: "column",
     gap: "10px",
+    fontFamily: "Manrope, sans-serif",
   });
 
   // Icon + Title
@@ -55,6 +58,7 @@ export function _showPopup(
     gap: "10px",
     fontSize: "16px",
     fontWeight: "600",
+    fontFamily: "Manrope, sans-serif",
   });
 
   const iconEl = document.createElement("div");
@@ -102,6 +106,7 @@ export function _showPopup(
         fontSize: "13px",
         cursor: "pointer",
         transition: "background 0.3s",
+        fontFamily: "Manrope, sans-serif",
       });
 
       btnEl.onmouseover = () => (btnEl.style.background = "#444");
@@ -125,7 +130,7 @@ export function _showPopup(
     color: "#999",
     marginTop: "4px",
     textAlign: "right",
-    fontFamily: "'Inter', sans-serif",
+    fontFamily: "Manrope, sans-serif",
   });
   container.appendChild(footer);
 
@@ -144,14 +149,34 @@ export function _showPopup(
       footer.remove(); // Also remove footer when toast is gone
     }, 500);
   }, 5000);
+  return container;
 }
-export const defaultStyles = {
-  duration: 3000, // 5 seconds
+export function injectFont() {
+  // Inject Google Font
+  const fontLink = document.createElement("link");
+  fontLink.rel = "stylesheet";
+  fontLink.href =
+    "https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap";
+  document.head.appendChild(fontLink);
 
+  // Inject font override for all .pinglet-* classes
+  const fontStyle = document.createElement("style");
+  fontStyle.innerHTML = `
+    [class^="pinglet-"],
+    [class*=" pinglet-"] {
+      font-family: 'Manrope', sans-serif !important;
+      font-weight: 400 !important;
+    }
+  `;
+  document.head.appendChild(fontStyle);
+}
+
+export const defaultStyles = {
+  duration: 3000, // 3 seconds
   btn1: {
     color: "#ffffff",
     backgroundColor: "#007bff", // primary blue
-    padding: "10px 16px",
+    padding: "6px 10px",
     borderRadius: "6px",
     fontSize: "14px",
     fontWeight: "600",
@@ -162,7 +187,7 @@ export const defaultStyles = {
   btn2: {
     color: "#333333",
     backgroundColor: "#f0f0f0", // neutral
-    padding: "10px 16px",
+    padding: "6px 10px",
     borderRadius: "6px",
     fontSize: "14px",
     fontWeight: "600",
@@ -171,10 +196,10 @@ export const defaultStyles = {
 
   title: {
     color: "#111111",
-    fontSize: "15px",
+    fontSize: "14px",
     fontWeight: "500",
     lineHeight: "1.4",
-    margin: "0 0 6px 0",
+    margin: "0 0 0 0",
     textAlign: "left",
   },
 
@@ -257,6 +282,9 @@ export const defaultConfig = {
   stacking: true, // 🆕 Whether to stack new toasts vertically
   auto_dismiss: true, // 🆕 Automatically dismiss after duration
   dismissible: true, // 🆕 Show close "X" button
+  website: "https://pinglet.enjoys.in",
+  time: true, // 🆕 Show time of notification
+  favicon: true, // 🆕 Show favicon of the website
   pauseOnHover: true,
   theme: {
     mode: "light", // 🆕 "light" | "dark" | "auto"
@@ -265,13 +293,11 @@ export const defaultConfig = {
     shadow: true, // 🆕 Enable/disable shadow
     border: false, // 🆕 Border around toast
   },
-
   iconDefaults: {
     show: true, // 🆕 Show icon by default
     size: 20,
     position: "left", // "left" | "right" | "top"
   },
-
   progressBar: {
     show: true, // 🆕 Show progress bar timer
     color: "#4da6ff", // Optional customization

@@ -114,6 +114,9 @@ export const PROJECT_DEFAULT_CONFIG: ProjectConfig = {
     auto_dismiss: true,          // 🆕 Automatically dismiss after duration
     dismissible: true,           // 🆕 Show close "X" button
     pauseOnHover: true,
+    website: "https://pinglet.enjoys.in",
+    time: true, // 🆕 Show time of notification
+    favicon: true,// 🆕 Show favicon of the website
     theme: {
         mode: "light",            // 🆕 "light" | "dark" | "auto"
         customClass: "",          // 🆕 Custom class for advanced styling

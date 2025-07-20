@@ -25,22 +25,20 @@ let base64Mp3: string | null = null;
 class PushNtfyController {
 	loadConfig = async (req: Request, res: Response) => {
 		try {
-			const query = req.query as { projectIds: string, domain: string };
+			const query = req.query as { projectId: string, domain: string };
 
-			if (!query.projectIds || !query.domain) {
+			if (!query.projectId || !query.domain) {
 				throw new Error("Missing projectIds or domain");
 			}
-			const projectIds = query.projectIds.split(",");
+
 			const configuredDomain = query.domain;
 			const project = await projectService.getProjectsByWebsite(configuredDomain);
 			if (!project) {
 				throw new Error("Project not found for the given domain");
 			}
-			if (!(projectIds.some(p => project?.unique_id === p))) {
-				throw new Error("Project ID does not match the configured domain");
-			}
+
 			const loadConfig = await projectService.getSelectedProjects({
-				where: { unique_id: In(projectIds), is_active: true },
+				where: { unique_id: query.projectId, is_active: true },
 				select: {
 					id: true,
 					config: true,
@@ -90,9 +88,67 @@ class PushNtfyController {
 				.end();
 		}
 	};
+	loadTemplates = async (req: Request, res: Response) => {
+		try {
+			const query = req.query as { projectId: string };
+
+			if (!query.projectId) {
+				throw new Error("Missing projectIds or domain");
+			}
+
+			const loadConfig = await projectService.getSelectedProjects({
+				where: { unique_id: query.projectId, is_active: true },
+				select: {
+					id: true,
+					config: true,
+					category: {
+						id: true,
+						templates: {
+							id: true,
+							compiled_text: true,
+							config: true,
+							is_active: true,
+							is_default: true,
+						},
+					}
+				},
+				relations: {
+					category: {
+						templates: true,
+					},
+				},
+			});
+			if (!loadConfig) {
+				throw new Error("No projects found for the given IDs");
+			}
+			const templates = Object.fromEntries(
+				loadConfig.category.templates.map(t => [String(t.id), t])
+			);
+
+
+			res
+				.json({ message: "OK", result: templates, success: true })
+				.end();
+			return;
+		} catch (error) {
+			if (error instanceof Error) {
+				res
+					.json({ message: error.message, result: null, success: false })
+					.end();
+				return;
+			}
+			res
+				.json({
+					message: "Something went wrong",
+					result: null,
+					success: false,
+				})
+				.end();
+		}
+	};
 	subscribeNotificatons = async (req: Request, res: Response) => {
 		const projectId = req.query?.projectId as string;
-		 
+
 		if (!projectId) {
 			res.status(400).send("Missing projectId");
 			return;

@@ -11,6 +11,7 @@ router.get("/auth/callback", UserAuthController.default.Callback);
 router.post("/auth/logout", UserAuthController.default.Logout);
 router.post("/auth/profile", JwtAuth.Me);
 // SSE endpoint
+router.get("/notifications/load/templates", pushNtfyController.loadTemplates);
 router.get("/notifications/load/projects", pushNtfyController.loadConfig);
 router.get("/notifications/subscribe", pushNtfyController.subscribeNotificatons);
 router.get("/notifications/sse", pushNtfyController.pushNotificatons);
