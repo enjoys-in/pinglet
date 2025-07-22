@@ -1,19 +1,16 @@
 {
   "name": "@enjoys/pinglet",
-  "version": "1.0.2",
+  "version": "1.0.1",
   "description": "Lightweight Customizable Web & CustomPush Notification SDK for modern web apps. Supports customizable layouts, secure delivery, and real-time updates via SSE.",
-  "main": "./pinglet-sse.js",
-  "types": "pinglet-sse.d.ts",
+  "main": "./v0.0.2/pinglet-sse.js",
+  "types": "./v0.0.2/pinglet-sse.d.ts",
   "exports": {
     ".": {
       "import": "./pinglet-sse.js",
       "require": "./pinglet-sse.js"
     }
   },
-  "files": [
-    "pinglet-sse.js",
-    "pinglet-sse.d.ts"
-  ],
+  "files": ["*" ],
   "keywords": [
     "push",
     "notifications",

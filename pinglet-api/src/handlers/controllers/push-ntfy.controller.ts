@@ -3,6 +3,8 @@ import path from "node:path";
 import type { Request, Response } from "express";
 import { projectService } from "../services/project.service";
 import { encryptToString } from "../services/cryptography.service";
+import { Cache } from "@/utils/services/redis/cacheService";
+import { notificationSchema } from "@/utils/validators/notfication-send";
 const clients = new Map<string, Set<Response>>();
 
 
@@ -15,6 +17,14 @@ class PushNtfyController {
 
 			if (!query.projectId || !query.domain) {
 				throw new Error("Missing projectIds or domain");
+			}
+			const cache = await Cache.cache.get(String(query.projectId))
+
+			if (cache) {
+				res
+					.json({ message: "OK", result: JSON.parse(cache), success: true })
+					.end();
+				return;
 			}
 			const key = req.headers["x-pinglet-checksum"] as string
 			const configuredDomain = query.domain;
@@ -60,6 +70,9 @@ class PushNtfyController {
 				// tag,
 				// pid: encrypted
 			}
+			Cache.cache.set(String(query.projectId), JSON.stringify(obj), {
+				EX: 60 * 60 * 24
+			})
 			res
 				.json({ message: "OK", result: obj, success: true })
 				.end();
@@ -183,20 +196,32 @@ class PushNtfyController {
 		});
 	};
 	triggerNotification = async (req: Request, res: Response) => {
+		const parsed = notificationSchema.safeParse(req.body);
+
+		if (!parsed.success) {
+			res.status(400).json({
+				message: "Bad Request. Invalid Payload",
+				result: parsed.error.flatten(),
+				success: false
+			}).end();
+
+			return
+		}
 		const { projectId, ...rest } = req.body;
 		const payload = JSON.stringify(rest);
 
-		// SSE clients
+	 
 		clients.get(projectId)?.forEach((client) => {
 			client.write(`data: ${payload}\n\n`);
 		});
 
-		// // WS clients
-		// sockets.get(projectId)?.forEach(socket => {
-		//     if (socket.readyState === 1) socket.send(payload);
-		// });
+		 
 
-		res.send({ status: "sent" });
+		res.json({
+			message: "OK",
+			result: "Notification Sent",
+			success: true
+		}).end();
 	};
 	sound = async (req: Request, res: Response) => {
 		const ext = req.query?.ext as string;

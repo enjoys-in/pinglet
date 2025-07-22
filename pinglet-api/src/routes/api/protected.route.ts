@@ -1,4 +1,3 @@
-
 import pushNtfyController from "@/handlers/controllers/push-ntfy.controller";
 
 import {

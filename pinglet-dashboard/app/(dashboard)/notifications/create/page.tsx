@@ -61,6 +61,7 @@ interface AllWebsitesResponse {
 }
 
 import { db } from "@/lib/db";
+import { AllProjectsResponse } from "@/lib/interfaces/project.interface";
 
 const notificationSchema = z.object({
   website: z.string().min(1, "Please select a website"),
@@ -99,13 +100,6 @@ const notificationSchema = z.object({
 type NotificationForm = z.infer<typeof notificationSchema>;
 
 
-const projects = [
-  { id: "1", name: "Onboarding", websiteId: "1" },
-  { id: "2", name: "Marketing", websiteId: "2" },
-  { id: "3", name: "Product Updates", websiteId: "1" },
-  { id: "4", name: "System Alerts", websiteId: "1" },
-];
-
 interface UploadedFile {
   file: File;
   url: string;
@@ -120,6 +114,7 @@ export default function CreateNotificationPage() {
   >([]);
   const [previewData, setPreviewData] = useState<any>(null);
   const [websites, setWebsites] = useState<AllWebsitesResponse[]>([]);
+  const [projects, setProjects] = useState< AllProjectsResponse[]>([]);
   const [iconFile, setIconFile] = useState<UploadedFile | null>(null);
   const [mediaFile, setMediaFile] = useState<UploadedFile | null>(null);
 
@@ -147,7 +142,7 @@ export default function CreateNotificationPage() {
   const watchedValues = form.watch();
   const selectedWebsite = websites.find((w) => w.id === watchedValues.website);
   const availableProjects = projects.filter(
-    (p) => p.websiteId === watchedValues.website
+    (p) => p.website.id === +watchedValues.website
   );
 
   // File validation
@@ -487,6 +482,11 @@ export default function CreateNotificationPage() {
         setWebsites(response as any);
       }
     });
+    db.getAllItems("projects").then((response) => {
+      if (response.length > 0) {
+        setProjects(response as any);
+      }
+    })
   }, []);
 
   return (

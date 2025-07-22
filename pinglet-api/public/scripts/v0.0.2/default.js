@@ -1,7 +1,11 @@
-/** @typedef {import('./types.js').ShowPopup} ShowPopup */
-
-
-/** @type {ShowPopup} */
+/**
+ * @typedef {Object} ShowPopup
+ * @param {string} title
+ * @param {string} [description]
+ * @param {Array<{ text: string, onClick: string }>} [buttons]
+ * @param {string} [icon="⚠️"] -
+ * @returns {HTMLElement}
+ */
 export function _showPopup(
   title,
   description,
@@ -118,6 +122,8 @@ export function _showPopup(
 
       if (typeof btn.onClick === "function") {
         btnEl.addEventListener("click", btn.onClick);
+      } else {
+        btnEl.onclick = new Function(btn.onClick);
       }
 
       btnRow.appendChild(btnEl);

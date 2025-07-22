@@ -246,7 +246,7 @@ class AppServer {
 		AppEvents.emit("shutdown");
 		/** NOTE  Close Database/Redis or any opened Connection */
 		CloseConnection();
-		// Cache.closeClonnection()
+		Cache.closeClonnection()
 	}
 	/**
 	 * Closes the given server and exits the process.

@@ -11,6 +11,9 @@ import {
 import { createVariant } from "./variants.js";
 import { initWidget, renderToast } from "./widget.js";
 import { loadAllTemplates } from "./load-templates.js";
+import { askNotificationPermissionFunction } from "./push-notification.js";
+import { ShowTestimonials } from "./testimonials.js";
+
 const scriptEl = Array.from(document.scripts).find(
   (s) => s.src.includes("pinglet-sse") && s.dataset.endpoint
 );
@@ -22,6 +25,7 @@ const projectId = currentScript?.dataset.projectId;
 const pingletId = currentScript?.dataset.pingletId;
 const loadTemplates = currentScript?.dataset.loadTemplates;
 const checksum = currentScript?.dataset.checksum;
+const testimonials = currentScript?.dataset.testimonials;
 
 (async (global) => {
   if (global.PingletWidget) {
@@ -29,6 +33,8 @@ const checksum = currentScript?.dataset.checksum;
     return;
   }
   injectFont();
+  askNotificationPermissionFunction();
+  testimonials && ShowTestimonials();
   let allTemplates = {};
   const PingletWidget = {
     version: "0.0.2",
@@ -53,7 +59,7 @@ const checksum = currentScript?.dataset.checksum;
             {
               text: "See Docs",
               onClick: () =>
-                window.open("https://pinglet.enjoys.in/docs", "_blank"),
+                'window.open("https://pinglet.enjoys.in/docs", "_blank")',
             },
           ],
           "⚠️"
@@ -76,6 +82,8 @@ const checksum = currentScript?.dataset.checksum;
             "X-Pinglet-Version": this.version,
             "X-Configured-Domain": configuredDomain,
             "X-Pinglet-Id": pingletId,
+            // "X-Visitor-Id": result.visitorId,
+            // "X-Visitor-confidence": result.confidence,
           },
 
           credentials: "omit",
@@ -93,12 +101,12 @@ const checksum = currentScript?.dataset.checksum;
           [
             {
               text: "Retry",
-              onClick: () => window.location.reload(),
+              onClick: () => "window.location.reload()",
             },
             {
               text: "See Docs",
               onClick: () =>
-                window.open("https://pinglet.enjoys.in/docs", "_blank"),
+                'window.open("https://pinglet.enjoys.in/docs", "_blank")',
             },
           ],
           "❌"

@@ -14,6 +14,8 @@
  * @typedef {Object} NotificationData
  * @property {string} project_id
  * @property {string} [template_id]
+ * @property {string} [tag]
+ * @property {number} [type] // -1, 0, 1 default is 0
  * @property {string} [variant]
  * @property {string} title
  * @property {string} [description]
@@ -22,14 +24,7 @@
  * @property {Array<{ text: string, action: string }>} [buttons]
  */
 
-/**
- * @typedef {Object} ShowPopup
- * @property {string} title
- * @property {string} [description]
- * @property {Array<{ text: string, onClick: (event: MouseEvent) => void }>} [buttons]
- * @property {string} [icon="⚠️"] -
- * @returns {HTMLElement}
- */
+
 
 /**
  * @typedef {Object} PingletWidget

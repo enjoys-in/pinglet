@@ -8,7 +8,6 @@
  * @param {string} version - The version of the Pinglet API being used.
  * @returns {Promise<Object|null>} - A promise that resolves to the templates result if successful, or null if unsuccessful.
  */
-
 export async function loadAllTemplates(
   endpoint,
   projectId,

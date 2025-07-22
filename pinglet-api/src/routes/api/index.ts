@@ -1,7 +1,10 @@
+import { Limiter } from "@/app/common/Limiter";
 import pushNtfyController from "@/handlers/controllers/push-ntfy.controller";
 import { UserAuthController } from "@/handlers/controllers/user";
 import { JwtAuth } from "@/middlewares/auth.Middleware";
 import { Router } from "express";
+
+
 
 const router = Router();
 
@@ -16,6 +19,11 @@ router.get("/notifications/load/projects", pushNtfyController.loadConfig);
 router.get("/notifications/subscribe", pushNtfyController.subscribeNotificatons);
 router.get("/notifications/sse", pushNtfyController.pushNotificatons);
 // API to trigger a notification
-router.post("/notifications/send", pushNtfyController.triggerNotification);
+router.post("/notifications/send", Limiter.forRoute("/notifications/subscribe", {
+    windowMs: 1 * 60 * 1000, // 1 minutes
+    max: 30,
+    standardHeaders: "draft-7",
+    legacyHeaders: false,
+}),  pushNtfyController.triggerNotification);
 router.get("/notification-sound", pushNtfyController.sound);
 export default router;
