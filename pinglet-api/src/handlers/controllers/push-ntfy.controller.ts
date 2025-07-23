@@ -2,11 +2,23 @@ import { createReadStream, readFile } from "node:fs";
 import path from "node:path";
 import type { Request, Response } from "express";
 import { projectService } from "../services/project.service";
-import { encryptToString } from "../services/cryptography.service";
+
 import { Cache } from "@/utils/services/redis/cacheService";
-import { notificationSchema } from "@/utils/validators/notfication-send";
+import { NotificationBody, notificationSchema } from "@/utils/validators/notfication-send";
+import webpush from "web-push";
+import { pushSubscriptionService } from "@/handlers/services/subscription.service";
 const clients = new Map<string, Set<Response>>();
 
+const vapidKeys = {
+	publicKey: "BJ9GvEJAs47DOgqw-rN80ZGIVvIvcp-xE4ZNweCT4eJ0B-rIzMtfhLWh8ySUCeKgiW_Fym69h0Fx3vhAcAy6C2k",
+	privateKey: "STXRbh1ldyhUQYth0MBMBTeJXGFndcuRapVsfuAF-ro",
+};
+
+webpush.setVapidDetails(
+	"mailto:mullayam06@outlook.com",
+	vapidKeys.publicKey,
+	vapidKeys.privateKey
+);
 
 let base64Mp3: string | null = null;
 class PushNtfyController {
@@ -18,8 +30,8 @@ class PushNtfyController {
 			if (!query.projectId || !query.domain) {
 				throw new Error("Missing projectIds or domain");
 			}
-			const cache = await Cache.cache.get(String(query.projectId))
-
+			const cacheKey = `${query.projectId}-${query.domain}`
+			const cache = await Cache.cache.get(cacheKey)
 			if (cache) {
 				res
 					.json({ message: "OK", result: JSON.parse(cache), success: true })
@@ -70,7 +82,7 @@ class PushNtfyController {
 				// tag,
 				// pid: encrypted
 			}
-			Cache.cache.set(String(query.projectId), JSON.stringify(obj), {
+			Cache.cache.set(String(cacheKey), JSON.stringify(obj), {
 				EX: 60 * 60 * 24
 			})
 			res
@@ -152,8 +164,74 @@ class PushNtfyController {
 		}
 	};
 	subscribeNotificatons = async (req: Request, res: Response) => {
-		const projectId = req.query?.projectId as string;
+		try {
+			const projectId = req.query?.projectId as string;
 
+			if (!projectId) {
+				res.status(400).send("Missing projectId");
+				return;
+			}
+
+			await pushSubscriptionService.addNewSubscription({
+				project_id: projectId,
+				...req.body
+			})
+
+			res
+				.json({
+					message: "OK",
+					result: null,
+					success: true,
+				})
+				.end();
+
+
+		} catch (error) {
+			if (error instanceof Error) {
+				res
+					.json({ message: error.message, result: null, success: false })
+					.end();
+				return;
+			}
+			res
+				.json({
+					message: "Something went wrong",
+					result: null,
+					success: false,
+				})
+				.end();
+		}
+
+	};
+	unsubscribeNotificatons = async (req: Request, res: Response) => {
+		try {
+			const body = req.body
+			await pushSubscriptionService.deleteSubscription(body.endpoint, body.projectId);
+			res
+				.json({
+					message: "OK",
+					result: null,
+					success: true,
+				})
+				.end();
+		} catch (error) {
+			if (error instanceof Error) {
+				res
+					.json({ message: error.message, result: null, success: false })
+					.end();
+				return;
+			}
+			res
+				.json({
+					message: "Something went wrong",
+					result: null,
+					success: false,
+				})
+				.end();
+		}
+	}
+	customNotificatons = async (req: Request, res: Response) => {
+		const projectId = req.query?.projectId as string;
 		if (!projectId) {
 			res.status(400).send("Missing projectId");
 			return;
@@ -165,7 +243,6 @@ class PushNtfyController {
 			Connection: "keep-alive",
 		});
 
-
 		res.write("\n");
 		if (!clients.has(projectId)) clients.set(projectId, new Set());
 		clients.get(projectId)?.add(res);
@@ -174,55 +251,71 @@ class PushNtfyController {
 			clients.get(projectId)?.delete(res);
 		});
 	};
-	pushNotificatons = async (req: Request, res: Response) => {
-		const projectId = req.query?.projectId as string;
-		if (!projectId) {
-			res.status(400).send("Missing projectId");
-			return;
-		}
-		req.socket.setTimeout(0);
-		res.writeHead(200, {
-			"Content-Type": "text/event-stream",
-			"Cache-Control": "no-cache",
-			Connection: "keep-alive",
-		});
+	triggerNotification = async (req: Request<{}, {}, NotificationBody, {}>, res: Response) => {
+		try {
 
-		res.write("\n");
-		if (!clients.has(projectId)) clients.set(projectId, new Set());
-		clients.get(projectId)?.add(res);
+			const parsed = notificationSchema.safeParse(req.body);
 
-		req.on("close", () => {
-			clients.get(projectId)?.delete(res);
-		});
-	};
-	triggerNotification = async (req: Request, res: Response) => {
-		const parsed = notificationSchema.safeParse(req.body);
+			if (!parsed.success) {
+				res.status(400).json({
+					message: "Bad Request. Invalid Payload",
+					result: parsed.error.flatten(),
+					success: false
+				}).end();
 
-		if (!parsed.success) {
-			res.status(400).json({
-				message: "Bad Request. Invalid Payload",
-				result: parsed.error.flatten(),
-				success: false
+				return
+			}
+			const { projectId, ...rest } = req.body;
+			if (projectId && rest.type === "-1" && rest.body) {
+				// Sends to queue
+				// const payloadd = JSON.stringify({
+				// 	title: "🔥 Pinglet WebPush",
+				// 	body: "This is a push sent from the server!",
+				// 	icon: "https://cdn-icons-png.flaticon.com/512/727/727399.png",
+				// });
+				// const sub = subscriptions.get(req.body.projectId)
+				// res.setHeader("Content-Security-Policy", "img-src * data: 'self';");
+				// if (sub) {
+				// 	webpush.sendNotification(sub, payloadd)
+				// }
+				res.json({
+					message: "OK",
+					result: "Notification Sent",
+					success: true
+				}).end();
+				return
+			}
+
+			const payload = JSON.stringify(rest);
+
+			clients.get(projectId)?.forEach((client) => {
+				client.write(`data: ${payload}\n\n`);
+			});
+
+
+
+			res.json({
+				message: "OK",
+				result: "Notification Sent",
+				success: true
 			}).end();
-
-			return
+		} catch (error) {
+			if (error instanceof Error) {
+				res
+					.json({ message: error.message, result: null, success: false })
+					.end();
+				return;
+			}
+			res
+				.json({
+					message: "Something went wrong",
+					result: null,
+					success: false,
+				})
+				.end();
 		}
-		const { projectId, ...rest } = req.body;
-		const payload = JSON.stringify(rest);
+	}
 
-	 
-		clients.get(projectId)?.forEach((client) => {
-			client.write(`data: ${payload}\n\n`);
-		});
-
-		 
-
-		res.json({
-			message: "OK",
-			result: "Notification Sent",
-			success: true
-		}).end();
-	};
 	sound = async (req: Request, res: Response) => {
 		const ext = req.query?.ext as string;
 		const filePath = path.join(process.cwd(), "public", "pinglet-sound.mp3");
@@ -246,6 +339,24 @@ class PushNtfyController {
 			});
 		}
 	};
+	swJSFile = async (req: Request, res: Response) => {
+		const dynamicCode = `self.addEventListener("push", event => {
+      const data = event.data.json();
+      event.waitUntil(
+        self.registration.showNotification(data.title, {
+          body: data.body,
+          icon: data.icon
+        })
+      );
+    });
+  `;
+		res.set("Content-Type", "application/javascript");
+		res.send(dynamicCode);
+	};
+
+
+
+
 }
 
 export default new PushNtfyController();

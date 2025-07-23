@@ -1,4 +1,4 @@
-/** @typedef import('./types/index.js').NotificationData  */
+/** @typedef import('./types/index.js').NotificationData */
 /** @typedef import('./types/index.js').GlobalConfig */
 
 import {
@@ -11,7 +11,10 @@ import {
 import { createVariant } from "./variants.js";
 import { initWidget, renderToast } from "./widget.js";
 import { loadAllTemplates } from "./load-templates.js";
-import { askNotificationPermissionFunction } from "./push-notification.js";
+import {
+  askNotificationPermissionFunction,
+  TriggerBrowserNotificationApi,
+} from "./push-notification.js";
 import { ShowTestimonials } from "./testimonials.js";
 
 const scriptEl = Array.from(document.scripts).find(
@@ -33,7 +36,7 @@ const testimonials = currentScript?.dataset.testimonials;
     return;
   }
   injectFont();
-  askNotificationPermissionFunction();
+  askNotificationPermissionFunction(endpoint, projectId);
   testimonials && ShowTestimonials();
   let allTemplates = {};
   const PingletWidget = {
@@ -58,8 +61,7 @@ const testimonials = currentScript?.dataset.testimonials;
           [
             {
               text: "See Docs",
-              onClick: () =>
-                'window.open("https://pinglet.enjoys.in/docs", "_blank")',
+              onClick: 'window.open("https://pinglet.enjoys.in/docs", "_blank")',
             },
           ],
           "⚠️"
@@ -101,12 +103,11 @@ const testimonials = currentScript?.dataset.testimonials;
           [
             {
               text: "Retry",
-              onClick: () => "window.location.reload()",
+              onClick: "window.location.reload()",
             },
             {
               text: "See Docs",
-              onClick: () =>
-                'window.open("https://pinglet.enjoys.in/docs", "_blank")',
+              onClick: 'window.open("https://pinglet.enjoys.in/docs", "_blank")',
             },
           ],
           "❌"
@@ -157,7 +158,7 @@ const testimonials = currentScript?.dataset.testimonials;
 
       initWidget(globalConfig);
       const socket = new EventSource(
-        `${endpoint}/subscribe?projectId=${projectId}&pingletId=${pingletId}`,
+        `${endpoint}/sse?projectId=${projectId}&pingletId=${pingletId}`,
         { withCredentials: false }
       );
       /**
@@ -169,26 +170,9 @@ const testimonials = currentScript?.dataset.testimonials;
        */
       socket.onmessage = (e) => {
         /** @type {NotificationData} */
-        const data = JSON.parse(e.data);
+        const parsed = JSON.parse(e.data);
 
-        if (data?.template_id) {
-          const el = new Function(
-            `return ${
-              globalConfig.templates[String(data.template_id)].compiled_text
-            }`
-          );
-
-          const fn = el();
-          const element = fn(
-            data.title,
-            data.description,
-            data.media,
-            data.buttons
-          );
-          return renderToast(element, globalConfig);
-        }
-        // is paid
-        const variantEl = createVariant(data, globalConfig);
+        const data = parsed.data;
         globalConfig?.is_tdd &&
           Object.assign(
             globalConfig.config,
@@ -196,7 +180,26 @@ const testimonials = currentScript?.dataset.testimonials;
             data?.overrides ?? {}
           );
 
-        renderToast(variantEl, globalConfig);
+        // User created Templates will load here and we parse the data
+        if (parsed?.type === "1" && parsed?.template_id && parsed?.data) {
+          const template = ``;
+          const element = interPolateTemplateWithData(template, parsed?.data);
+          return renderToast(element, globalConfig);
+        }
+
+        // Customized Templates in form of  Push Notification
+        if (parsed?.type === "0" && parsed?.body) {
+          const variantEl = createVariant(parsed.body, globalConfig);
+          renderToast(variantEl, globalConfig);
+          return;
+        }
+        // only browser notifications
+        TriggerBrowserNotificationApi(
+          body.title,
+          body.description,
+          body.type?.icon?.src || ""
+        );
+        // trigger browser notification
       };
     },
   };

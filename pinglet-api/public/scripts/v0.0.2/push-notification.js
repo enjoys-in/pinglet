@@ -1,4 +1,5 @@
 import { _showPopup } from "./default.js";
+import { subscribeUser } from "./subcription-registeration.js";
 
 /**
  * Create a notification permission dialog to ask users to allow notifications.
@@ -199,7 +200,7 @@ export function createNotificationPermissionDialog(options = {}) {
   document.body.appendChild(dialog);
 }
 
-export function askNotificationPermissionFunction() {
+export function askNotificationPermissionFunction(endpoint, projectId) {
   if (!("Notification" in window)) {
     _showPopup("Unsupported Browser", "Notifications not supported.", [], "🚫");
     return;
@@ -209,25 +210,16 @@ export function askNotificationPermissionFunction() {
       site: window.location.hostname,
       onAllow: () => {
         Notification.requestPermission()
-          .then((permission) => {
+          .then(async (permission) => {
             if (permission === "granted") {
+              await subscribeUser(endpoint, projectId);
               _showPopup(
                 "Notifications Enabled",
                 "You can now receive notifications from this site.",
                 [
                   {
                     text: "See Demo",
-                    onClick: () =>
-                      new Notification("This is a Demo notification", {
-                        badge: "🎉",
-                        body: "This is a demo notification",
-                        dir: "rtl",
-                        lang: "en",
-                        silent: false,
-                        tag: "pinglet",
-                        vibrate: [100, 50, 100],
-                        requireInteraction: true,
-                      }),
+                    onClick: '() => DemoNotification()',
                   },
                 ],
                 "🎉"
@@ -255,4 +247,32 @@ export function askNotificationPermissionFunction() {
     });
     return;
   }
+}
+function DemoNotification() {
+  return new Notification("This is a Demo notification", {
+    badge: "🎉",
+    body: "This is a demo notification",
+    dir: "rtl",
+    lang: "en",
+    silent: false,
+    tag: "pinglet",
+    vibrate: [100, 50, 100],
+    requireInteraction: true,
+  });
+}
+export function TriggerBrowserNotificationApi(title, body, icon) {
+  return (new Notification(title, {
+    badge: "🎉",
+    body,
+    actions: [{ action: "pinglet", title: "Pinglet" }],
+    icon,
+    dir: "rtl",
+    lang: "en",
+    silent: false,
+    tag: "pinglet",
+    vibrate: [100, 50, 100],
+    requireInteraction: true,
+  }).onclick = () => {
+    // window.open("https://pinglet.enjoys.in", "_blank");
+  });
 }

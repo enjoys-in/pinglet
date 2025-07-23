@@ -1,10 +1,11 @@
-/** @typedef import('./types/index.js') */
+/** @typedef import('./types/project.config.js).ProjectConfig */
+/** @typedef import('./types/index.js).GlobalConfig */
 
 import { defaultConfig, defaultStyles } from "./default.js";
 import { brandingElement, toastStack } from "./widget.js";
 /**
  * Create a notification header that displays the domain name, time and a close button.
- * @param {GlobalConfig} [globalConfig] - The global configuration object.
+ * @param {ProjectConfig} [globalConfig] - The global configuration object.
  * @param {string} [domain] - The domain name to display. Defaults to `window.location.hostname`.
  * @param {string} [time] - The time string to display. Defaults to `"just now"`.
  * @returns {HTMLDivElement} The notification header element.

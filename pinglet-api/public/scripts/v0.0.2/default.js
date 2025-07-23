@@ -1,3 +1,5 @@
+/** @typedef import('./types/project.config.js).ProjectConfig */
+
 /**
  * @typedef {Object} ShowPopup
  * @param {string} title
@@ -104,7 +106,7 @@ export function _showPopup(
 
     for (const btn of buttons) {
       const btnEl = document.createElement("button");
-      btnEl.textContent = btn.text || "Click";
+      btnEl.textContent = btn.text || "Click Here";
       Object.assign(btnEl.style, {
         padding: "8px 14px",
         background: "#333",
@@ -122,10 +124,20 @@ export function _showPopup(
 
       if (typeof btn.onClick === "function") {
         btnEl.addEventListener("click", btn.onClick);
-      } else {
-        btnEl.onclick = new Function(btn.onClick);
-      }
+      } else if (typeof btn.onClick === "string" && btn.onClick.trim()) {
+        try {
+          if (btn.onClick.trim().startsWith("() =>")) {
+            const fn = eval(btn.onClick);
 
+            if (typeof fn === "function") {
+              btnEl.addEventListener("click", fn);
+            }
+          } else {
+            const fn = new Function(btn.onClick);
+            btnEl.addEventListener("click", fn);
+          }
+        } catch (e) {}
+      }
       btnRow.appendChild(btnEl);
     }
 

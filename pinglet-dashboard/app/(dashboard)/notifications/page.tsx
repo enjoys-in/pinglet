@@ -131,8 +131,8 @@ export default function NotificationsPage() {
             <Bell className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">1,250</div>
-            <p className="text-xs text-muted-foreground">+12% from last week</p>
+            <div className="text-2xl font-bold">0</div>
+            <p className="text-xs text-muted-foreground">0 from last week</p>
           </CardContent>
         </Card>
 
@@ -142,7 +142,7 @@ export default function NotificationsPage() {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">3</div>
+            <div className="text-2xl font-bold">0</div>
             <p className="text-xs text-muted-foreground">Next in 2 hours</p>
           </CardContent>
         </Card>
@@ -153,8 +153,8 @@ export default function NotificationsPage() {
             <CheckCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">12.5%</div>
-            <p className="text-xs text-muted-foreground">+2.1% from last week</p>
+            <div className="text-2xl font-bold">0%</div>
+            <p className="text-xs text-muted-foreground">0% from last week</p>
           </CardContent>
         </Card>
 
@@ -164,8 +164,8 @@ export default function NotificationsPage() {
             <XCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">8</div>
-            <p className="text-xs text-muted-foreground">-50% from last week</p>
+            <div className="text-2xl font-bold">00</div>
+            <p className="text-xs text-muted-foreground"> 0 from last week</p>
           </CardContent>
         </Card>
       </div>

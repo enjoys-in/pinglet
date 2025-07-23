@@ -10,21 +10,27 @@
  * @property {MediaType} type
  * @property {string} src
  */
+
 /**
- * @typedef {Object} NotificationData
- * @property {string} project_id
- * @property {string} [template_id]
- * @property {string} [tag]
- * @property {number} [type] // -1, 0, 1 default is 0
+ * @typedef {Object} NotificationDataBody
  * @property {string} [variant]
  * @property {string} title
  * @property {string} [description]
  * @property {MediaData} [media]
-
  * @property {Array<{ text: string, action: string }>} [buttons]
+ * @property {Array<{ action: string, title: string }>} [actions]
  */
+/**
+ * @typedef {Object} NotificationData
+ * @property {string} project_id
+ * @property {string} [template_id]
+ * @property {string} tag
+ * @property {1|0|-1} type // -1, 0, 1 default is 0
+ * @property {NotificationDataBody} [body]
+ * @property {Object} [overrides]
+ * @property {Object} [data]
 
-
+ */
 
 /**
  * @typedef {Object} PingletWidget
@@ -47,6 +53,5 @@
  *    @property {string} [is_tff]
  *    @property {Templates} templates
  *    @property {TemplateStyleConfig} style
- *    @property {ProjectConfig}config
- *
+ *    @property {ProjectConfig} config
  */

@@ -104,8 +104,8 @@ export function TemplateTabs({ templateGroups }: TemplateTabsProps) {
           <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
             <span className="text-2xl">📁</span>
           </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Select a Category</h3>
-          <p className="text-gray-500">Choose a template category from the sidebar to get started.</p>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-200 mb-2">Select a Category</h3>
+          <p className="text-gray-500 dark:text-gray-200">Choose a template category from the sidebar to get started.</p>
         </div>
       </div>
     )
@@ -118,7 +118,7 @@ export function TemplateTabs({ templateGroups }: TemplateTabsProps) {
           <div className="space-y-6">
             <div className="text-center py-8">
               <h1 className="text-2xl font-bold text-gray-900 mb-2">{selectedCategory.name}</h1>
-              <p className="text-gray-600 max-w-2xl mx-auto">{selectedCategory.description}</p>
+              <p className="text-gray-600 max-w-2xl mx-auto dark:text-gray-200">{selectedCategory.description}</p>
             </div>
 
             {templates[selectedCategoryId]?.length > 0 ? templates[selectedCategoryId]?.map(template => (
@@ -128,7 +128,7 @@ export function TemplateTabs({ templateGroups }: TemplateTabsProps) {
 
             ))
               :
-              <div className="flex-1 flex items-center justify-center">
+              <div className="flex-1 flex items-center justify-center dark:text-gray-200">
                 <EmptyState icon="🥲" title={`${selectedCategory.name} has no templates`} />
               </div>
             }
@@ -139,8 +139,8 @@ export function TemplateTabs({ templateGroups }: TemplateTabsProps) {
         return selectedTemplate ? (
           <div className="space-y-6">
             <div className="text-center py-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-2">{selectedTemplate.name} Variants</h2>
-              <p className="text-gray-600">Explore different variations of this template</p>
+              <h2 className="text-xl font-bold text-gray-900 mb-2 dark:text-gray-200">{selectedTemplate.name} Variants</h2>
+              <p className="text-gray-600 dark:text-gray-200">Explore different variations of this template</p>
             </div>
             {selectedTemplate.variants.length > 0 ? selectedTemplate.variants.map(variant => (
               <div key={variant.id} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -179,11 +179,11 @@ function EmptyState({ icon, title, message }: { icon: string; title: string; mes
   return (
     <div className="flex-1 flex items-center justify-center">
       <div className="text-center">
-        <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+        <div className="w-16 h-16 mx-auto mb-4   rounded-full flex items-center justify-center">
           <span className="text-2xl">{icon}</span>
         </div>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">{title}</h3>
-        {message && <p className="text-gray-500">{message}</p>}
+        <h3 className="text-lg font-medium text-gray-900 mb-2 dark:text-gray-200">{title}</h3>
+        {message && <p className="text-gray-500 dark:text-gray-200">{message}</p>}
       </div>
     </div>
   )

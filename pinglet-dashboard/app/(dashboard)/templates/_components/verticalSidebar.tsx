@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils"
 import { useDebounce } from "@/hooks/useDebounce"
 import { useTemplateStore } from "@/store/template.store"
 import { TemplateCategoryResponse } from "@/lib/interfaces/template-category.interface"
+import { Button } from "@/components/ui/button"
 
 interface SidebarProps {
   templateGroups: TemplateCategoryResponse[]
@@ -27,11 +28,11 @@ export function VerticalSidebar({ templateGroups }: SidebarProps) {
   }, [debouncedQuery, templateGroups])
 
   const SidebarContent = () => (
-    <div className="flex flex-col h-full bg-white border-r border-gray-200">
+    <div className="flex flex-col h-full  ">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200">
+      <div className="p-4 border-b">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">Templates</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-300">Templates</h2>
           <button
             onClick={() => setSidebarOpen(false)}
             className="lg:hidden p-1 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -76,7 +77,7 @@ export function VerticalSidebar({ templateGroups }: SidebarProps) {
                   <h3
                     className={cn(
                       "font-medium truncate transition-colors",
-                      selectedCategoryId === group.id ? "text-blue-900" : "text-gray-900",
+                      selectedCategoryId === group.id ? "text-blue-900" : "text-gray-900 dark:text-gray-300",
                     )}
                   >
                     {group.name}
@@ -132,12 +133,12 @@ export function SidebarTrigger() {
   const { setSidebarOpen } = useTemplateStore()
 
   return (
-    <button
+    <Button
       onClick={() => setSidebarOpen(true)}
       className="lg:hidden p-2 rounded-md hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
       aria-label="Open sidebar"
     >
       <Menu className="w-5 h-5" />
-    </button>
+    </Button>
   )
 }

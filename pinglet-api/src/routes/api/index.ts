@@ -16,8 +16,10 @@ router.post("/auth/profile", JwtAuth.Me);
 // SSE endpoint
 router.get("/notifications/load/templates", pushNtfyController.loadTemplates);
 router.get("/notifications/load/projects", pushNtfyController.loadConfig);
-router.get("/notifications/subscribe", pushNtfyController.subscribeNotificatons);
-router.get("/notifications/sse", pushNtfyController.pushNotificatons);
+router.post("/notifications/subscribe", pushNtfyController.subscribeNotificatons);
+router.post("/notifications/unsubscribe", pushNtfyController.subscribeNotificatons);
+router.get("/notifications/sse", pushNtfyController.customNotificatons);
+router.get("/notifications/sw.js", pushNtfyController.swJSFile);
 // API to trigger a notification
 router.post("/notifications/send", Limiter.forRoute("/notifications/subscribe", {
     windowMs: 1 * 60 * 1000, // 1 minutes

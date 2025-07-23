@@ -1,0 +1,26 @@
+{
+	"projectId": "0e5c2a5f527acdbe1379",
+	"variant": "default",
+	"type": "0",
+	"body": {
+		"title": "I'm 12",
+		"description": "This is Demo Version of Pinglet, New Design are upcoming!",
+		"media": {
+			"type": "icon",
+			"src": "🤣"
+		},
+		"buttons": [
+			{
+				"text": "Fix Now",
+				"onClick": "() => (location.href = '/settings')"
+			},
+			{
+				"text": "Dismiss",
+				"onClick": "() => console.log('dismissed')"
+			}
+		]
+	},
+	"overrides": {
+		"auto_dismiss": false
+	}
+}

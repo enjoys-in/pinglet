@@ -102,11 +102,13 @@ export default function WebsitesPage() {
         }
         const { data: response } = await API.addNewWebsite(newWebsite)
         setWebsites((prev) => [...prev, response])
+
         toast({
           title: "Website added",
           description: "Website has been added successfully.",
         })
-        window.location.href = "/websites/" + response.result
+        refreshWebsites()
+        // window.location.href = "/websites/" + response.result
       }
 
 
@@ -201,7 +203,7 @@ export default function WebsitesPage() {
           <h1 className="text-3xl font-bold tracking-tight">Websites</h1>
           <p className="text-muted-foreground">Manage your websites and their notification settings</p>
         </div>
-        
+
         <Dialog
           open={isAddDialogOpen}
           onOpenChange={(open) => {
@@ -296,14 +298,14 @@ export default function WebsitesPage() {
 
       <Card>
         <CardHeader className="flex  flex-row items-center justify-between">
-        <div>
+          <div>
             <CardTitle>Your Websites</CardTitle>
-          <CardDescription>Manage all your registered websites and their notification statistics</CardDescription>
-        </div>
-           <Button variant="outline" className="cursor-pointer" onClick={refreshWebsites}>
-              <RefreshCcw className="mr-2 h-4 w-4" />
-              Refresh Data
-            </Button>
+            <CardDescription>Manage all your registered websites and their notification statistics</CardDescription>
+          </div>
+          <Button variant="outline" className="cursor-pointer" onClick={refreshWebsites}>
+            <RefreshCcw className="mr-2 h-4 w-4" />
+            Refresh Data
+          </Button>
         </CardHeader>
         <CardContent>
           <Table>

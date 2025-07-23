@@ -16,9 +16,9 @@ import { autocompletion, closeBrackets } from "@codemirror/autocomplete";
 import { indentWithTab, defaultKeymap } from "@codemirror/commands";
 import {
   keymap, highlightActiveLine, highlightSpecialChars,
-  highlightActiveLineGutter, 
+  highlightActiveLineGutter,
   highlightTrailingWhitespace,
-gutters,
+  gutters,
   lineNumbers,
   EditorView,
   tooltips,
@@ -64,17 +64,25 @@ export function CustomCodeRenderer({ template }: CustomCodeRendererProps) {
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
-    <div class="container">
-      <h1>Hello World!</h1>
-      <p>Start editing to see live preview</p>
-      <button class="btn">Click me</button>
+     <div class="pinglet">
+
+   <!-- Add your custom HTML here, DO NOT REMOVE THE '.pinglet' DIV -->
+
+ 
     </div>
   </body>
 </html>
 `,
         },
         "/style.css": {
-          code: template.raw_text?.css || `/* Add your custom CSS here */`,
+          code: template.raw_text?.css || `.pinglet {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f7fa;
+            padding: 2rem;
+            line-height: 1.5;
+        }
+          /* Add your custom CSS here, DO NOT REMOVE THE '.pinglet' CLASS */
+`,
         },
 
         "/index.js": { code: "", hidden: true },
@@ -84,13 +92,13 @@ export function CustomCodeRenderer({ template }: CustomCodeRendererProps) {
       }}
     >
       <div className="space-y-6">
-        
-        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 rounded-lg overflow-hidden shadow-sm">
           {/* Editor Content */}
           <div className="relative min-h-[500px]">
             <div className="h-full">
-              <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
-                <span className="text-sm font-medium text-gray-700">HTML Editor</span>
+              <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50 dark:bg-gray-800">
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">HTML Editor</span>
 
                 <div className="flex items-center gap-2">
                   <button
@@ -116,7 +124,7 @@ export function CustomCodeRenderer({ template }: CustomCodeRendererProps) {
                     html(),
                     css(),
                     customAutocompleteTheme,
-                    highlightActiveLineGutter(),                   
+                    highlightActiveLineGutter(),
                     highlightTrailingWhitespace(),
                     lineNumbers(),
                     gutters(),

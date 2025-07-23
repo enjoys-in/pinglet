@@ -6,7 +6,6 @@ import { useTemplateStore } from '@/store/template.store';
 
 const SyncCode = () => {
     const { sandpack } = useSandpack();
-    const { selectedCategoryId, activeTab, selectedTemplateId } = useTemplateStore()
 
     const htmlCode = sandpack.files["/index.html"]?.code || "";
     const cssCode = sandpack.files["/style.css"]?.code || "";

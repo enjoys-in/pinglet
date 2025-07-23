@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { ProjectDetailsResponse } from '@/lib/interfaces/project.interface';
 import { __config } from '@/constants/config';
+import EditorTabs from './editorTabs';
 
 export const TemplateCard = ({ project, getCategoryColor }: { project: ProjectDetailsResponse, getCategoryColor: (category: string) => void }) => {
     const [copiedItems, setCopiedItems] = useState<string[]>([]);
@@ -41,24 +42,8 @@ export const TemplateCard = ({ project, getCategoryColor }: { project: ProjectDe
       data-checksum="sha384-Y7YXYX2j5YloeGIEAei75Q6PcXH+o/A93sGoo8u3SxeGjMUbmR+JqizhPOPKfiy3" 
       data-load-templates="true"
     ></script>
-`,
+`}
 
-        }, {
-            id: 'project-v.0.0.1',
-            title: 'Old Version of Pinglet Default Notifications',
-            description: 'Only Basic Features are supported. (No Customization)',
-            icon: <BarChart3 className="w-5 h-5 text-blue-600" />,
-            category: project.category.name,
-            code: `<!-- Pinglet Default Notifications v0.0.1 -->
-<script async src=""${__config.CDN_URL}""></script>
-<script>
-    PingletWidget.init({
-        endpoint: "${__config.NOTIFICATIONS_API_URL}",
-        expectedDomains: ["${project.website.domain}],
-        projectIds: ["${project.unique_id}"],
-      });
-</script>`
-        }
     ]
 
 
@@ -70,7 +55,7 @@ export const TemplateCard = ({ project, getCategoryColor }: { project: ProjectDe
 
             {
                 templates.map((template) => (
-                    <div className="relative p-8">
+                    <div className="relative p-8" key={template.id}>
                         {/* Header */}
                         <div className="flex items-start justify-between mb-6">
                             <div className="flex items-center gap-4">
@@ -93,55 +78,12 @@ export const TemplateCard = ({ project, getCategoryColor }: { project: ProjectDe
                                 {template.category}
                             </div>
                         </div>
+                        <EditorTabs
+                        project={project}
+                            id={template.id}
+                            copyToClipboard={copyToClipboard} code={template.code} copiedItems={copiedItems}  />
 
 
-                        {/* Code Preview */}
-                        <div className="relative group/code">
-                            <div className="absolute inset-0 bg-gradient-to-r from-gray-900 via-slate-900 to-gray-900 rounded-2xl blur-xl opacity-20 group-hover/code:opacity-30 transition-opacity duration-500" />
-                            <div className="relative bg-gradient-to-br from-gray-900 via-slate-900 to-gray-900 rounded-2xl border border-gray-700/50 overflow-hidden">
-                                {/* Code Header */}
-                                <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-gray-800/50 to-slate-800/50 border-b border-gray-700/50">
-                                    <div className="flex items-center gap-2">
-                                        <div className="flex gap-1.5">
-                                            <div className="w-3 h-3 rounded-full bg-red-500/80" />
-                                            <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
-                                            <div className="w-3 h-3 rounded-full bg-green-500/80" />
-                                        </div>
-                                        <span className="text-xs text-gray-400 ml-2 font-mono">index.html</span>
-                                    </div>
-                                    <button
-                                        onClick={() => copyToClipboard(template.code, `template-${template.id}`)}
-                                        className={`group/btn relative overflow-hidden px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-300 ${copiedItems.includes(`template-${template.id}`)
-                                            ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/25'
-                                            : 'bg-gradient-to-r from-gray-700 to-slate-700 hover:from-blue-600 hover:to-indigo-600 text-gray-300 hover:text-white'
-                                            }`}
-                                    >
-                                        <div className="flex items-center gap-2">
-                                            {copiedItems.includes(`template-${template.id}`) ? (
-                                                <>
-                                                    <CheckCircle className="w-3 h-3" />
-                                                    <span>Copied!</span>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <Copy className="w-3 h-3" />
-                                                    <span>Copy</span>
-                                                </>
-                                            )}
-                                        </div>
-                                    </button>
-                                </div>
-
-                                {/* Code Content */}
-                                <div className="p-4">
-                                    <pre className="text-gray-100 text-xs leading-relaxed overflow-x-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent">
-                                        <code className="font-mono">
-                                            {template.code}
-                                        </code>
-                                    </pre>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 ))
 

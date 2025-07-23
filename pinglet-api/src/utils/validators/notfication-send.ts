@@ -66,6 +66,7 @@ export const notificationSchema = z.object({
     description: z.string().optional(),
     media: mediaSchema.optional(),
     buttons: z.array(buttonSchema).optional(),
+    actions: z.array(z.object({ action: z.union([z.literal("redirect"), z.literal("alert")]), title: z.string() })).optional(),
   }).optional(),
 
   data: z.record(z.any(), z.any()).optional()
@@ -74,6 +75,14 @@ export const notificationSchema = z.object({
     const isTemplate = data.template_id !== undefined;
     const isVariant = data.variant !== undefined;
 
+    if (data.type === "1") {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["custom_template"],
+        message: "Custom template is not supported yet,feature coming soon",
+      });
+
+    }
     // 1. If type is "1", template_id is required
     if (data.type === "1" && !isTemplate) {
       ctx.addIssue({
@@ -90,6 +99,20 @@ export const notificationSchema = z.object({
         path: ["template_id"],
         message: "`template_id` must not be provided unless type is '1'",
       });
+      if (data.type == "0" && (data.body?.actions || !data.body?.buttons)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["buttons", "actions"],
+          message: "`buttons` is required when type is '0' and `actions` is not allowed",
+        });
+      }
+      if (data.type == "-1" && (!data.body?.actions || data.body?.buttons)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["buttons", "actions"],
+          message: "`actions` is required when type is '-1' and `buttons` is not allowed",
+        });
+      }
     }
 
     // 3. variant and template_id cannot both exist
@@ -126,11 +149,11 @@ export const notificationSchema = z.object({
 
     // 5. If template_id is NOT present: body is required, data is not allowed
     if (!isTemplate) {
-      if (!data.body) {
+      if (!data.body && data.type !== "1") {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ["body"],
-          message: "`body` is required when not using `template_id`",
+          message: "`body` is required when not using `template_id` and `type` is not '1'",
         });
       }
       if (data.data) {
