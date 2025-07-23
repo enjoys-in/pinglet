@@ -212,20 +212,9 @@ export function askNotificationPermissionFunction(endpoint, projectId) {
         Notification.requestPermission()
           .then(async (permission) => {
             if (permission === "granted") {
-              await subscribeUser(endpoint, projectId);
-              _showPopup(
-                "Notifications Enabled",
-                "You can now receive notifications from this site.",
-                [
-                  {
-                    text: "See Demo",
-                    onClick: '() => DemoNotification()',
-                  },
-                ],
-                "🎉"
-              );
+              return subscribeUser(endpoint, projectId);
             } else {
-              _showPopup(
+              return _showPopup(
                 "Permission Denied",
                 "You blocked notifications!",
                 [],

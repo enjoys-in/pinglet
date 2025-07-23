@@ -11,13 +11,13 @@ export async function revokePushSubscription(url, projectId) {
     if (subscription) {
       const unsubscribed = await subscription.unsubscribe();
       if (unsubscribed) {
-        // Optionally notify your backend to remove the subscription
         const response = await fetch(url + "/unsubscribe", {
           method: "POST",
           body: JSON.stringify({ endpoint: subscription.endpoint, projectId }),
           headers: {
             "Content-Type": "application/json",
           },
+          credentials: "omit",
         });
         const parsed = await response.json();
         if (parsed.success) {
@@ -64,6 +64,7 @@ export async function subscribeUser(endpoint, projectId) {
         method: "POST",
         body: JSON.stringify(subscription),
         headers: { "Content-Type": "application/json" },
+        credentials: "omit",
       }
     );
     const json = await response.json();
@@ -76,7 +77,7 @@ export async function subscribeUser(endpoint, projectId) {
           [
             {
               text: "See Demo",
-              onClick: '() => DemoNotification()',
+              onClick: "() => DemoNotification()",
             },
           ],
           "🎉"

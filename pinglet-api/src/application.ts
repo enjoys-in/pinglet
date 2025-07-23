@@ -96,7 +96,7 @@ class AppServer {
 			},
 		};
 		AppServer.App.use(
-			"/public",
+			"/api/v1/public",
 			express.static(join(process.cwd(), "public"), options),
 		);
 	}
