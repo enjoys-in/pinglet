@@ -13,6 +13,14 @@ class PushSubscriptionService {
         const newSubscription = this.subsRepo.create(data);
         return this.subsRepo.save(newSubscription);
     }
+    handleSubscription(data: DeepPartial<PushSubscriptionEntity>) {
+        const newSubscription = this.subsRepo.create(data);
+        return this.subsRepo.upsert(newSubscription, {
+            conflictPaths: ["endpoint", "project_id"],
+            skipUpdateIfNoValuesChanged: true,
+        });
+    }
+
     getSubscriptionById(id: number) {
         return this.subsRepo.findOneBy({ id });
     }

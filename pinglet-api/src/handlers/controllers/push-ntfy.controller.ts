@@ -171,8 +171,8 @@ class PushNtfyController {
 				res.status(400).send("Missing projectId");
 				return;
 			}
-
-			await pushSubscriptionService.addNewSubscription({
+ 
+			await pushSubscriptionService.handleSubscription({
 				project_id: projectId,
 				...req.body
 			})
@@ -259,7 +259,7 @@ class PushNtfyController {
 			if (!parsed.success) {
 				res.status(400).json({
 					message: "Bad Request. Invalid Payload",
-					result: parsed.error.flatten(),
+					result: parsed.error.format(),
 					success: false
 				}).end();
 

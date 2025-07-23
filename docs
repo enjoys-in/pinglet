@@ -1,9 +1,9 @@
 {
-	"projectId": "0e5c2a5f527acdbe1379",
+	"projectId": "0e5c2a5f527acdbe13791234",
 	"variant": "default",
 	"type": "0",
 	"body": {
-		"title": "I'm 12",
+		"title": "Hello From Pinglet",
 		"description": "This is Demo Version of Pinglet, New Design are upcoming!",
 		"media": {
 			"type": "icon",
@@ -12,11 +12,12 @@
 		"buttons": [
 			{
 				"text": "Fix Now",
-				"onClick": "() => (location.href = '/settings')"
+				"src": "http://localhost:8888/api/v1/notifications/send",
+				"action": "link"
 			},
 			{
 				"text": "Dismiss",
-				"onClick": "() => console.log('dismissed')"
+				"action": "close"
 			}
 		]
 	},

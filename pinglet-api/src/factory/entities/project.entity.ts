@@ -28,7 +28,7 @@ import { PROJECT_DEFAULT_CONFIG } from "@/handlers/services/default/constant";
 @Unique(["unique_id"])
 export class ProjectEntity {
 	@PrimaryGeneratedColumn()
-	id!: string;
+	id!: number;
 
 	@Column({ type: "varchar", length: 255, unique: true })
 	@Index()

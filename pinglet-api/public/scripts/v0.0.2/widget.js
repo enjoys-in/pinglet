@@ -1,10 +1,13 @@
-/** @typedef import('./types/index.js').GlobalConfig */
+/** @typedef {import('./types/index.js').GlobalConfig} GlobalConfig */
+/** @typedef {import('./types/project.config.js').ProjectConfig} ProjectConfig */
 
+/** @type HTMLAudioElement */
 let soundPlayer;
+
 let toastContainer;
 export let toastStack = null;
 export let brandingElement = null;
-
+let soundSrc = null;
 /**
  * Initialize the widget by creating a sound player if the sound config is
  * enabled and has a valid src.
@@ -15,10 +18,12 @@ export let brandingElement = null;
  */
 export function initWidget(globalConfig) {
   if (soundPlayer) return soundPlayer;
-  if (globalConfig.sound?.play && globalConfig.sound.src) {
-    soundPlayer = new Audio(globalConfig.sound.src);
-    soundPlayer.volume = globalConfig.sound.volume ?? 0.5;
+  if (globalConfig.config.sound?.play && globalConfig.config.sound.src) {
+    soundSrc = globalConfig.config.sound.src;
+    soundPlayer = new Audio(soundSrc || globalConfig.config.sound.src);
+    soundPlayer.volume = globalConfig.config.sound.volume ?? 0.5;
   }
+ 
 }
 /**
  * Creates a branding element for the widget.
@@ -27,7 +32,7 @@ export function initWidget(globalConfig) {
  * property.
  * @returns {HTMLDivElement} The created branding element.
  */
-function createBrandingElement(branding) {
+export function createBrandingElement(branding) {
   if (brandingElement) return brandingElement;
   brandingElement = document.createElement("div");
   brandingElement.className = "pinglet-branding";
@@ -36,25 +41,13 @@ function createBrandingElement(branding) {
     `Notifications by <a href="https://pinglet.enjoys.in" class="pinglet-link" target="_blank" style="color:#4da6ff;text-decoration:none;">Pinglet</a>`;
   brandingElement.style = `
       font-size: 11px;
-      color: #999;
-      text-align: center;
+      color: #808080;
+      text-align: right;
       width: 100%;
       pointer-events: auto;
     `;
   return brandingElement;
 }
-/**
- * Creates or retrieves a toast notification container and stack.
- *
- * This function either returns existing container and stack elements,
- * or creates new ones for toast notifications, positioning them
- * at the bottom-left of the viewport. Optionally includes branding
- * if specified.
- *
- * @param {ProjectConfig["branding"]} branding - The branding configuration object.
- * @returns {Object} An object containing the toast container and stack elements.
- */
-
 /**
  * Creates or retrieves a toast notification container and stack.
  *
@@ -111,7 +104,7 @@ function createPingletToastContainer(branding) {
   toastContainer.appendChild(toastStack);
 
   // Branding (always at bottom)
-  if (branding?.show) {
+  if (branding?.show && branding?.once) {
     toastContainer.appendChild(createBrandingElement(branding));
   }
 
@@ -131,7 +124,7 @@ export function renderToast(contentEl, globalConfig) {
     config.branding
   );
 
-  toastContainer.appendChild(brandingElement);
+  // toastContainer.appendChild(brandingElement);
   applyTransition(contentEl, config.transition);
   contentEl.style.pointerEvents = "auto";
 
@@ -144,7 +137,7 @@ export function renderToast(contentEl, globalConfig) {
   if (config?.auto_dismiss) {
     setTimeout(() => {
       removeToast(contentEl, config?.transition || "fade");
-    }, config.duration || 3000);
+    }, config.duration || 5000);
   }
 }
 
@@ -185,8 +178,7 @@ function removeToast(toast, type) {
   if (!toast) return;
 
   toast.style.transition = "all 0.4s ease";
-  brandingElement.style.transition = "all 0.4s ease";
-  brandingElement.style.transform = "translateX(-40px)";
+
   if (type === "fade") {
     toast.style.opacity = "0";
     toast.style.transform = "translateX(-40px)";
@@ -204,7 +196,6 @@ function removeToast(toast, type) {
     "transitionend",
     () => {
       toast.remove();
-
       if (toastStack && toastStack.children.length === 0) {
         brandingElement?.remove();
       }
@@ -212,3 +203,7 @@ function removeToast(toast, type) {
     { once: true }
   );
 }
+window.addEventListener("pinglet:notificationClosed", (event) => {
+  removeToast(event.detail.contentEl, "fade");
+  // send notification close event
+});

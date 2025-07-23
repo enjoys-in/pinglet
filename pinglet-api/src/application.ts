@@ -97,7 +97,13 @@ class AppServer {
 		};
 		AppServer.App.use(
 			"/api/v1/public",
-			express.static(join(process.cwd(), "public"), options),
+			cors({
+				origin: ["http://localhost:3000", "https://pinglet.enjoys.in"],
+				credentials: false,
+				optionsSuccessStatus: 200,
+				preflightContinue: true,
+
+			}), express.static(join(process.cwd(), "public"), options),
 		);
 	}
 	/**

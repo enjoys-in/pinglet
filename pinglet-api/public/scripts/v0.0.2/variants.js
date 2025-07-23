@@ -1,8 +1,13 @@
-/** @typedef import('./types/project.config.js).ProjectConfig */
-/** @typedef import('./types/index.js).GlobalConfig */
+/** @typedef {import('./types/project.config.js').ProjectConfig} ProjectConfig */
+/** @typedef {import('./types/index.js').GlobalConfig} GlobalConfig */
+/** @typedef {import('./types/index.js').NotificationDataBody} NotificationDataBody */
 
-import { defaultConfig, defaultStyles } from "./default.js";
-import { brandingElement, toastStack } from "./widget.js";
+import { _btnActions, defaultConfig, defaultStyles } from "./default.js";
+import {
+  brandingElement,
+  createBrandingElement,
+  toastStack,
+} from "./widget.js";
 /**
  * Create a notification header that displays the domain name, time and a close button.
  * @param {ProjectConfig} [globalConfig] - The global configuration object.
@@ -21,9 +26,12 @@ function createNotificationHeader(
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    background: "#fff",
+    background: "transparent", // solid black background
     fontFamily: "system-ui, sans-serif",
     fontSize: "10px",
+    padding: "6px 10px", // added padding for spacing
+    borderBottom: "1px solid rgba(255, 255, 255, 0.1)", // visible separator line
+    color: "#fff", // default white text
   });
 
   const left = document.createElement("div");
@@ -41,19 +49,19 @@ function createNotificationHeader(
     width: "6px",
     height: "6px",
     borderRadius: "50%",
-    backgroundColor: "#007bff",
+    backgroundColor: "#0af", // brighter blue for dark bg
     flexShrink: "0",
   });
 
   const domainText = document.createElement("span");
   domainText.className = "pinglet-domain";
   domainText.textContent = domain;
-  domainText.style.color = "#333";
+  domainText.style.color = "#808080"; // light gray
 
   const timeText = document.createElement("span");
   timeText.className = "pinglet-time";
   timeText.textContent = `- ${time}`;
-  timeText.style.color = "#666";
+  timeText.style.color = "#aaa"; // muted light gray
 
   const closeBtn = document.createElement("button");
   closeBtn.className = "pinglet-close";
@@ -63,14 +71,15 @@ function createNotificationHeader(
     border: "none",
     fontSize: "12px",
     cursor: "pointer",
-    color: "#888",
+    color: "#aaa",
+    padding: "0 4px",
   });
 
   closeBtn.addEventListener("mouseenter", () => {
-    closeBtn.style.color = "#e00";
+    closeBtn.style.color = "#f44"; // red hover
   });
   closeBtn.addEventListener("mouseleave", () => {
-    closeBtn.style.color = "#888";
+    closeBtn.style.color = "#aaa";
   });
 
   if (globalConfig?.website) {
@@ -82,22 +91,26 @@ function createNotificationHeader(
   if (globalConfig?.favicon) {
     left.appendChild(icon);
   }
+
   row.appendChild(left);
+
   if (globalConfig?.dismissible) {
     row.appendChild(closeBtn);
   }
+
   closeBtn.onclick = () => {
-    closeBtn.parentElement.parentElement.remove();
+    closeBtn.parentElement?.parentElement?.remove();
     if (toastStack && toastStack.children.length === 0) {
       brandingElement?.remove();
     }
   };
+
   return row;
 }
 
 /**
  * Create a notification variant.
- * @param {NotificationData} data - Notification data
+ * @param {NotificationDataBody} data - Notification data
  * @param {GlobalConfig} config - Global configuration
  * @returns {HTMLElement} - A notification wrapper element
  */
@@ -124,32 +137,99 @@ export function createVariant(data, config) {
   wrapper.style.flexShrink = "0";
   wrapper.appendChild(createNotificationHeader(globalConfig));
 
+  let mediaEl = null;
+  const isInlineMedia = ["icon", "logo"].includes(data.media?.type);
+
+  // Create media element
   if (data.media?.type) {
-    const mediaEl = createMediaElement(
+    mediaEl = createMediaElement(
       data.media,
       globalStyle.media,
       globalStyle.controls
     );
 
-    if (mediaEl) wrapper.appendChild(mediaEl);
-  }
-  if (data.title) {
-    const title = document.createElement("div");
-    title.className = "pinglet-title";
-    title.innerText = data.title;
-    Object.assign(title.style, globalStyle.title || defaultStyles.title);
-    wrapper.appendChild(title);
+    if (isInlineMedia) {
+      Object.assign(mediaEl.style, {
+        width: "48px",
+        height: "48px",
+        objectFit: "contain",
+        flexShrink: "0",
+        marginRight: "6px",
+      });
+    } else {
+      mediaEl.style.marginBottom = "12px";
+    }
   }
 
-  if (data.description) {
-    const desc = document.createElement("p");
-    desc.className = "pinglet-desc";
-    desc.innerText = data.description;
-    Object.assign(
-      desc.style,
-      globalStyle.description || defaultStyles.description
-    );
-    wrapper.appendChild(desc);
+  // Case: icon/logo (flex row with text)
+  if (isInlineMedia) {
+    const flexWrapper = document.createElement("div");
+    Object.assign(flexWrapper.style, {
+      display: "flex",
+      flexDirection: "row",
+      alignItems: "flex-start",
+      gap: "6px",
+    });
+
+    const iconDiv = document.createElement("div");
+    Object.assign(iconDiv.style, {
+      flex: "0 0 auto",
+    });
+    iconDiv.appendChild(mediaEl);
+    flexWrapper.appendChild(iconDiv);
+
+    const textDiv = document.createElement("div");
+    Object.assign(textDiv.style, {
+      display: "flex",
+      flexDirection: "column",
+      flex: "1",
+    });
+
+    if (data.title) {
+      const title = document.createElement("div");
+      title.className = "pinglet-title";
+      title.innerText = data.title;
+      Object.assign(title.style, globalStyle.title || defaultStyles.title);
+      textDiv.appendChild(title);
+    }
+
+    if (data.description) {
+      const desc = document.createElement("p");
+      desc.className = "pinglet-desc";
+      desc.innerText = data.description;
+      Object.assign(
+        desc.style,
+        globalStyle.description || defaultStyles.description
+      );
+      textDiv.appendChild(desc);
+    }
+
+    flexWrapper.appendChild(textDiv);
+    wrapper.appendChild(flexWrapper);
+  }
+
+  // Case: image/video/audio (media on top)
+  else {
+    if (mediaEl) wrapper.appendChild(mediaEl);
+
+    if (data.title) {
+      const title = document.createElement("div");
+      title.className = "pinglet-title";
+      title.innerText = data.title;
+      Object.assign(title.style, globalStyle.title || defaultStyles.title);
+      wrapper.appendChild(title);
+    }
+
+    if (data.description) {
+      const desc = document.createElement("p");
+      desc.className = "pinglet-desc";
+      desc.innerText = data.description;
+      Object.assign(
+        desc.style,
+        globalStyle.description || defaultStyles.description
+      );
+      wrapper.appendChild(desc);
+    }
   }
 
   if (data.buttons) {
@@ -157,20 +237,28 @@ export function createVariant(data, config) {
     btnWrap.className = "pinglet-buttons";
     btnWrap.style.fontFamily = "Manrope";
     data.buttons.forEach((btn, i) => {
-      const b = document.createElement("button");
-      b.innerText = btn.text;
-      b.className = "pinglet-btn";
-      b.style.cursor = "pointer";
-      b.style.padding = "6px 10px";
-      b.style.fontFamily = "Manrope, sans-serif";
-      b.style.margin = "1px 4px";
-      Object.assign(b.style, i === 0 ? globalStyle.btn1 : globalStyle.btn2);
-      b.onclick = new Function(btn.onClick); // Be cautious with `new Function`
-      btnWrap.appendChild(b);
+      const btnEl = document.createElement("button");
+      btnEl.innerText = btn.text;
+      btnEl.className = "pinglet-btn";
+      btnEl.style.cursor = "pointer";
+      btnEl.style.padding = "6px 10px";
+      btnEl.style.fontFamily = "Manrope, sans-serif";
+      btnEl.style.margin = "1px 4px";
+      Object.assign(btnEl.style, i === 0 ? globalStyle.btn1 : globalStyle.btn2);
+      if (btn?.onClick) {
+        const func = new Function(`return ${btn.onClick}`)(); // returns the actual arrow function
+        if (typeof func === "function") {
+          btnEl.addEventListener("click", func);
+        }
+      } else {
+        btnEl.addEventListener("click", _btnActions(btn, wrapper));
+      }
+
+      btnWrap.appendChild(btnEl);
     });
     wrapper.appendChild(btnWrap);
   }
-
+  brandingElement && !branding?.once && wrapper.appendChild(brandingElement);
   return wrapper;
 }
 /**
@@ -235,13 +323,36 @@ function createMediaElement(media, style, controls) {
     }
     case "icon": {
       const iconSpan = document.createElement("span");
+
+      if (typeof media.src === "string") {
+        const isBase64Image = /^data:image\/(png|jpeg|gif|webp);base64,/.test(
+          media.src
+        );
+        const isSvg = /^<svg[\s\S]*<\/svg>$/.test(media.src.trim());
+
+        if (isBase64Image) {
+          iconSpan.style.backgroundImage = `url('${media.src}')`;
+          iconSpan.style.backgroundSize = "cover";
+          iconSpan.textContent = "";
+        } else if (isSvg) {
+          iconSpan.innerHTML = media.src;
+        } else {
+          iconSpan.textContent = media.src; // emoji or text
+        }
+      }
+
       iconSpan.className = "pinglet-icon";
-      iconSpan.style = {
+      Object.assign(iconSpan.style, {
         width: "40px",
         height: "40px",
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
         backgroundPosition: "center",
         borderRadius: "8px",
-      };
+        fontSize: "24px",
+        overflow: "hidden",
+      });
       return iconSpan;
     }
     default:

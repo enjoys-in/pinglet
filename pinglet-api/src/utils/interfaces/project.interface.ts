@@ -11,6 +11,7 @@ export interface ProjectConfig {
     transition?: "fade" | "slide" | "zoom";
     branding?: {
         show: boolean;
+        once: boolean;
         html: string;
     };
     sound?: {

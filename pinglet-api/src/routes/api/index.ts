@@ -27,5 +27,5 @@ router.post("/notifications/send", Limiter.forRoute("/notifications/subscribe", 
     standardHeaders: "draft-7",
     legacyHeaders: false,
 }),  pushNtfyController.triggerNotification);
-router.get("/notification-sound", pushNtfyController.sound);
+router.get("/pinglet-sound.mp3", pushNtfyController.sound);
 export default router;

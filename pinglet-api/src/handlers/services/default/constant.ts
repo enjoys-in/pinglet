@@ -101,6 +101,7 @@ export const PROJECT_DEFAULT_CONFIG: ProjectConfig = {
     transition: "fade", // or "slide", "zoom"
     branding: {
         show: true,
+        once: true,
         html: `Notifications by <a href="https://pinglet.enjoys.in" style="color:#4da6ff;text-decoration:none;" target="_blank">Pinglet</a> - Enjoys`,
     },
     sound: {

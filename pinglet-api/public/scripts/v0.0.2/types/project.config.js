@@ -13,7 +13,7 @@
  * @typedef {Object} ProjectConfig
  * @property {"top-right" | "top-left" | "bottom-right" | "bottom-left"} [position]
  * @property {"fade" | "slide" | "zoom"} [transition]
- * @property {{ show: boolean, html: string }} [branding]
+ * @property {{ show: boolean, html: string,once: boolean }} [branding]
  * @property {{ play: boolean, src: string, volume: number }} [sound]
  * @property {number} [duration]
  * @property {boolean} [auto_dismiss]
@@ -42,3 +42,5 @@
  *   height?: number
  * }} [progressBar]
  */
+
+export { ProjectConfig };

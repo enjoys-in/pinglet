@@ -2,12 +2,12 @@
  * @module types
  */
 
-/** @typedef {import('./project.config.js').ProjectConfig}  */
-/** @typedef {import('./template.config.js').TemplateStyleConfig}  */
+/** @typedef {import('./project.config.js').ProjectConfig} ProjectConfig */
+/** @typedef {import('./template.config.js').TemplateStyleConfig} TemplateStyleConfig  */
 
 /**
  * @typedef {Object} MediaData
- * @property {MediaType} type
+ * @property {import('./template.config.js').MediaType} type
  * @property {string} src
  */
 
@@ -55,3 +55,12 @@
  *    @property {TemplateStyleConfig} style
  *    @property {ProjectConfig} config
  */
+
+export {
+  GlobalConfig,
+  NotificationData,
+  PingletWidget,
+  TemplateData,
+  Templates,
+  MediaData,
+};

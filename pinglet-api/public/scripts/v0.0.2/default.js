@@ -1,11 +1,46 @@
-/** @typedef import('./types/project.config.js).ProjectConfig */
+/** @typedef {import('./types/project.config.js').ProjectConfig} ProjectConfig */
+/** @typedef {import('./types/buttons.js').ButtonsData} ButtonsData  */
+
+/**
+ * @function
+ * @param {ButtonsData} btn
+ * @param {HTMLElement} toast - The toast element to be manipulated
+ * @returns {Function} - The function that is triggered when a notification button is clicked
+ */
+export function _btnActions(btn, ele) {
+  switch (btn.action) {
+    case "redirect":
+      return () => window.open(btn.src, "_blank");
+    case "link":
+      return () => window.open(btn.src);
+    case "alert":
+      return () => alert(btn.src);
+    case "reload":
+      return () => window.location.reload();
+    case "event":
+      return () => self.addEventListener(btn.src, () => {});
+    case "close":
+      return () => {
+        window.dispatchEvent(
+          new CustomEvent("pinglet:notificationClosed", {
+            detail: {
+              contentEl: ele,
+              reason: "user-dismiss",
+            },
+          })
+        );
+      };
+  }
+  return () => window.open("https://pinglet.enjoys.in/docs", "_blank");
+}
 
 /**
  * @typedef {Object} ShowPopup
  * @param {string} title
  * @param {string} [description]
- * @param {Array<{ text: string, onClick: string }>} [buttons]
- * @param {string} [icon="⚠️"] -
+ * @param {Array<ButtonsData>} [buttons]
+ * @param {string} [icon="⚠️"]
+ * @param {{duration: number, auto_dismiss: boolean}} [options]
  * @returns {HTMLElement}
  */
 export function _showPopup(
@@ -17,7 +52,11 @@ export function _showPopup(
       onClick: () => window.open("https://pinglet.enjoys.in/docs", "_blank"),
     },
   ],
-  icon = "⚠️"
+  icon = "⚠️",
+  options = {
+    duration: 5000,
+    auto_dismiss: true,
+  }
 ) {
   const containerId = "toastContainer";
   let container = document.getElementById(containerId);
@@ -121,30 +160,21 @@ export function _showPopup(
 
       btnEl.onmouseover = () => (btnEl.style.background = "#444");
       btnEl.onmouseout = () => (btnEl.style.background = "#333");
-
-      if (typeof btn.onClick === "function") {
-        btnEl.addEventListener("click", btn.onClick);
-      } else if (typeof btn.onClick === "string" && btn.onClick.trim()) {
-        try {
-          if (btn.onClick.trim().startsWith("() =>")) {
-            const fn = eval(btn.onClick);
-
-            if (typeof fn === "function") {
-              btnEl.addEventListener("click", fn);
-            }
-          } else {
-            const fn = new Function(btn.onClick);
-            btnEl.addEventListener("click", fn);
-          }
-        } catch (e) {}
+      if (btn?.onClick) {
+        const func = new Function(`return ${btn.onClick}`)(); // returns the actual arrow function
+        if (typeof func === "function") {
+          btnEl.addEventListener("click", func);
+        }
+      } else {
+        btnEl.addEventListener("click", _btnActions(btn, btnEl));
       }
+
       btnRow.appendChild(btnEl);
     }
 
     toast.appendChild(btnRow);
   }
 
-  container.appendChild(toast);
   const footer = document.createElement("div");
   footer.innerHTML = `Notifications by <a href="https://pinglet.enjoys.in" target="_blank" style="color:#4da6ff;text-decoration:none;">Pinglet</a> - Enjoys`;
   Object.assign(footer.style, {
@@ -154,6 +184,8 @@ export function _showPopup(
     textAlign: "right",
     fontFamily: "Manrope, sans-serif",
   });
+
+  container.appendChild(toast);
   container.appendChild(footer);
 
   // Animate in
@@ -163,14 +195,16 @@ export function _showPopup(
   });
 
   // Auto-remove after 5s
-  setTimeout(() => {
-    toast.style.opacity = "0";
-    toast.style.transform = "translateX(100%)";
+  if (!options.auto_dismiss) {
     setTimeout(() => {
-      toast.remove();
-      footer.remove(); // Also remove footer when toast is gone
-    }, 500);
-  }, 5000);
+      toast.style.opacity = "0";
+      toast.style.transform = "translateX(100%)";
+      setTimeout(() => {
+        toast.remove();
+        footer.remove(); // Also remove footer when toast is gone
+      }, 500);
+    }, options.duration || 5000);
+  }
   return container;
 }
 /**
@@ -301,6 +335,7 @@ export const defaultConfig = {
   transition: "fade", // or "slide", "zoom"
   branding: {
     show: true,
+    once: true,
     html: `Notifications by <a href="https://pinglet.enjoys.in" style="color:#4da6ff;text-decoration:none;" target="_blank">Pinglet</a> - Enjoys`,
   },
   sound: {

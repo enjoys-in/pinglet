@@ -1,5 +1,5 @@
-/** @typedef import('./types/index.js').NotificationData */
-/** @typedef import('./types/index.js').GlobalConfig */
+/** @typedef {import('./types/index.js').NotificationData} NotificationData */
+/** @typedef {import('./types/index.js').GlobalConfig} GlobalConfig */
 
 import {
   _showPopup,
@@ -40,7 +40,7 @@ const testimonials = currentScript?.dataset.testimonials;
   testimonials && ShowTestimonials();
   let allTemplates = {};
   const PingletWidget = {
-    version: "0.0.2",
+    version: "1.0.3",
     checksum: checksum.replace("sha384-", ""),
     /**
      * Initialize the PingletWidget.
@@ -54,14 +54,19 @@ const testimonials = currentScript?.dataset.testimonials;
      * @throws {Error} If the version of PingletWidget is not supported, or if the checksum is missing.
      */
     async init({ endpoint, configuredDomain, projectId, pingletId }) {
-      if (this.version !== "0.0.2") {
+      console.log(
+        "%cPingletWidget initialized successfully.",
+        "color: #1e90ff; font-weight: bold;"
+      );
+      if (this.version !== "1.0.3") {
         _showPopup(
-          "Unsupported Version",
+          "Pinglet Unsupported Version",
           `PingletWidget version ${this.version} is not supported. Please update to the latest version.`,
           [
             {
               text: "See Docs",
-              onClick: 'window.open("https://pinglet.enjoys.in/docs", "_blank")',
+              actions: "redirect",
+              src: "https://pinglet.enjoys.in/docs",
             },
           ],
           "⚠️"
@@ -103,11 +108,12 @@ const testimonials = currentScript?.dataset.testimonials;
           [
             {
               text: "Retry",
-              onClick: "window.location.reload()",
+              action: "reload",
             },
             {
               text: "See Docs",
-              onClick: 'window.open("https://pinglet.enjoys.in/docs", "_blank")',
+              action: "redirect",
+              src: "https://pinglet.enjoys.in/docs",
             },
           ],
           "❌"
@@ -205,16 +211,10 @@ const testimonials = currentScript?.dataset.testimonials;
   };
 
   global.PingletWidget = PingletWidget;
-  document.addEventListener("DOMContentLoaded", () => {
-    PingletWidget.init({
-      endpoint,
-      configuredDomain,
-      projectId,
-      pingletId,
-    });
+  PingletWidget.init({
+    endpoint,
+    configuredDomain,
+    projectId,
+    pingletId,
   });
-  console.log(
-    "%cPingletWidget initialized successfully.",
-    "color: #1e90ff; font-weight: bold;"
-  );
 })(window);

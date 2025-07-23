@@ -1,16 +1,65 @@
 import { z } from "zod";
 
 // Icon/media schema
-const mediaSchema = z.object({
-  type: z.union([z.literal("icon"), z.literal("image"), z.literal("video"), z.literal("audio"), z.literal("iframe")]),
-  src: z.any().optional(),
-}).strict();
-// Buttons schema
-const buttonSchema = z.object({
-  text: z.string(),
-  onClick: z.string(), // we accept stringified function for frontend usage
-}).strict();
+const mediaSchema = z
+  .object({
+    type: z.enum(["icon", "image", "video", "audio", "iframe", "logo"]),
+    src: z.any().optional(),
+  })
+  .strict()
+  .superRefine((data, ctx) => {
+    const isIcon = data.type === "icon";
 
+    if (isIcon) {
+      if (typeof data.src === "string" && data.src.startsWith("http")) {
+        ctx.addIssue({
+          path: ["src"],
+          code: z.ZodIssueCode.custom,
+          message: "Icons must not use a URL. Provide a local,svg,base64 or inline value instead.",
+        });
+      }
+    } else {
+      if (!data.src || typeof data.src !== "string" || !/^https?:\/\//.test(data.src)) {
+        ctx.addIssue({
+          path: ["src"],
+          code: z.ZodIssueCode.custom,
+          message: "Media types other than 'icon' must provide a valid URL.",
+        });
+      }
+    }
+  });
+// Buttons schema
+const baseButtonSchema = z.object({
+  text: z.string(),
+  action: z.enum(["redirect", "link", "alert", "event", "reload", "close", "onClick"]),
+});
+
+
+const buttonReloadOrClose = baseButtonSchema.extend({
+  action: z.enum(["reload", "close"]),
+});
+const buttonWithOnClick = baseButtonSchema.extend({
+  action: z.literal("onClick"),
+  onClick: z.string().url(),
+});
+const buttonWithSrc = baseButtonSchema.extend({
+  action: z.enum(["redirect", "link", "alert"]),
+  src: z.string().url(),
+});
+
+const buttonWithEvent = baseButtonSchema.extend({
+  action: z.literal("event"),
+  event: z.string(),
+  data: z.any().optional(),
+});
+
+export const buttonSchema = z.discriminatedUnion("action", [
+  buttonReloadOrClose,
+  buttonWithSrc,
+  buttonWithEvent,
+  buttonWithOnClick
+]);
+export const buttonsArraySchema = z.array(buttonSchema);
 // Theme and branding schema
 const overridesSchema = z.object({
   position: z.string().optional(),
@@ -60,7 +109,6 @@ export const notificationSchema = z.object({
   template_id: z.string().optional(),
   tag: z.string().optional(),
   overrides: overridesSchema.optional(),
-
   body: z.object({
     title: z.string().min(3),
     description: z.string().optional(),
@@ -91,7 +139,13 @@ export const notificationSchema = z.object({
         message: "`template_id` is required when type is '1'",
       });
     }
-
+    if (data.body?.buttons && data.body?.buttons.length > 2) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["buttons"],
+        message: "`buttons` cannot have more than 2 buttons",
+      });
+    }
     // 2. If type is not "1", template_id must not be present
     if (data.type !== "1" && isTemplate) {
       ctx.addIssue({
@@ -156,6 +210,8 @@ export const notificationSchema = z.object({
           message: "`body` is required when not using `template_id` and `type` is not '1'",
         });
       }
+
+
       if (data.data) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -164,6 +220,8 @@ export const notificationSchema = z.object({
         });
       }
     }
+
+
   }).strict(); // ❗ Disallow unknown top-level keys
 
 

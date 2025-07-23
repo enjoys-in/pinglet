@@ -77,7 +77,14 @@ export async function subscribeUser(endpoint, projectId) {
           [
             {
               text: "See Demo",
-              onClick: "() => DemoNotification()",
+              onClick: `()=>{
+                 new Notification("Pinglet", {
+                   body: "This is a demo notification",
+                   icon: "https://pinglet.enjoys.in/favicon.ico"
+                 }).onclick = () => {
+                   window.open("https://pinglet.enjoys.in", "_blank");
+                 })  
+                }`,
             },
           ],
           "🎉"
