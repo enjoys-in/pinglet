@@ -6,6 +6,7 @@ import { _btnActions, defaultConfig, defaultStyles } from "./default.js";
 import {
   brandingElement,
   createBrandingElement,
+  playSound,
   toastStack,
 } from "./widget.js";
 /**
@@ -43,14 +44,18 @@ function createNotificationHeader(
     flexGrow: "1",
   });
 
-  const icon = document.createElement("div");
+  const icon = document.createElement("span");
   icon.className = "pinglet-icon";
+  icon.textContent = "- Pinglet";
+  icon.onclick = () => {
+    window.open("https://pinglet.enjoys.in", "_blank");
+  };
   Object.assign(icon.style, {
-    width: "6px",
-    height: "6px",
-    borderRadius: "50%",
-    backgroundColor: "#0af", // brighter blue for dark bg
+    alignItems: "center",
+    color: "dodgerblue",
     flexShrink: "0",
+    fontWeight: "bold",
+    cursor: "pointer",
   });
 
   const domainText = document.createElement("span");
@@ -119,6 +124,11 @@ export function createVariant(data, config) {
   const globalConfig = config.config;
 
   const wrapper = document.createElement("div");
+  wrapper.id = "pinglet-variant";
+  wrapper.setAttribute(
+    "data-key",
+    `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+  );
   wrapper.className = `pinglet-variant pinglet-${data.variant || "default"}`;
   wrapper.style.display = "flex";
   wrapper.style.flexDirection = "column";
@@ -258,7 +268,17 @@ export function createVariant(data, config) {
     });
     wrapper.appendChild(btnWrap);
   }
-  brandingElement && !branding?.once && wrapper.appendChild(brandingElement);
+  if (globalConfig.sound?.play) {
+    playSound();
+  }
+  if (
+    brandingElement &&
+    !wrapper.contains(brandingElement) &&
+    !globalConfig.branding?.once
+  ) {
+    wrapper.appendChild(brandingElement);
+  }
+
   return wrapper;
 }
 /**

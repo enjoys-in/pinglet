@@ -34,6 +34,7 @@ export const TemplateCard = ({ project, getCategoryColor }: { project: ProjectDe
             code: `<!-- Pinglet Default Notifications v0.0.2 -->
     <script
       type="module"
+      crossorigin="anonymous"
       src="${__config.CDN_URL}"      
       data-endpoint="${__config.NOTIFICATIONS_API_URL}"
       data-configured-domain="${project.website.domain}"

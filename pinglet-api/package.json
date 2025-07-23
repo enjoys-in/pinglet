@@ -4,7 +4,7 @@
 	"main": "build/main.js",
 	"scripts": {
 		"types": "npx tsc -p ./tsconfig.types.json",
-		"pkg": "npx rollup -c && node generate-sri.js",
+		"pkg": "npx rollup -c && node generate-sri.js && npm publish --access=public ./public/libs",
 		"build": "nest build",
 		"ready": "npm install",
 		"start": "node ./build/main.js",

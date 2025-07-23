@@ -18,6 +18,7 @@ import React from 'react'
 const PingletWidget = () => {
     return <Script
             type="module"
+            crossOrigin="anonymous"
             src="${__config.CDN_URL}"
             data-endpoint="${__config.NOTIFICATIONS_API_URL}"
             data-configured-domain="${project.website.domain}"
@@ -31,7 +32,8 @@ const PingletWidget = () => {
 export default PingletWidget`
     const OLD_VERSION = `<!-- Pinglet Default Notifications v0.0.2 -->
     <script
-        type="module"        
+        type="module"
+        crossorigin="anonymous"
         src="${__config.CDN_URL}"
         data-endpoint="${__config.NOTIFICATIONS_API_URL}"
         data-configured-domain="${project.website.domain}"
@@ -42,7 +44,7 @@ export default PingletWidget`
     ></script>`
     return (
         <Tabs>
-            <TabsList>
+            <TabsList defaultValue={"editor"}>
                 <TabsTrigger value="editor">React/Vite/Html/PHP/Wordpress</TabsTrigger>
                 <TabsTrigger value="preview">Next.Js</TabsTrigger>
                 <TabsTrigger value="pinglet">Old Version</TabsTrigger>

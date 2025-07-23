@@ -9,7 +9,7 @@ import {
 } from "./default.js";
 
 import { createVariant } from "./variants.js";
-import { initWidget, renderToast } from "./widget.js";
+import { createBrandingElement, initWidget, renderToast } from "./widget.js";
 import { loadAllTemplates } from "./load-templates.js";
 import {
   askNotificationPermissionFunction,
@@ -40,7 +40,7 @@ const testimonials = currentScript?.dataset.testimonials;
   testimonials && ShowTestimonials();
   let allTemplates = {};
   const PingletWidget = {
-    version: "1.0.3",
+    version: "1.0.5",
     checksum: checksum.replace("sha384-", ""),
     /**
      * Initialize the PingletWidget.
@@ -58,7 +58,7 @@ const testimonials = currentScript?.dataset.testimonials;
         "%cPingletWidget initialized successfully.",
         "color: #1e90ff; font-weight: bold;"
       );
-      if (this.version !== "1.0.3") {
+      if (this.version !== "1.0.5") {
         _showPopup(
           "Pinglet Unsupported Version",
           `PingletWidget version ${this.version} is not supported. Please update to the latest version.`,
@@ -96,7 +96,7 @@ const testimonials = currentScript?.dataset.testimonials;
           credentials: "omit",
         }
       );
-
+      /** @type {{ result: GlobalConfig; message: string; success: boolean; }} */
       const data = await response.json();
 
       if (!data || !data.success) {
@@ -120,7 +120,7 @@ const testimonials = currentScript?.dataset.testimonials;
         );
         return console.error("Failed to load configuration for PingletWidget.");
       }
-
+      createBrandingElement(data.result.config.branding);
       if (loadTemplates === "true") {
         const templates = await loadAllTemplates(
           endpoint,

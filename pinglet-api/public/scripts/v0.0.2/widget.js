@@ -1,11 +1,12 @@
 /** @typedef {import('./types/index.js').GlobalConfig} GlobalConfig */
 /** @typedef {import('./types/project.config.js').ProjectConfig} ProjectConfig */
 
-/** @type HTMLAudioElement */
+/** @type {HTMLAudioElement|null} */
 let soundPlayer;
 
 let toastContainer;
 export let toastStack = null;
+/** @type {HTMLDivElement|null} */
 export let brandingElement = null;
 let soundSrc = null;
 /**
@@ -23,7 +24,12 @@ export function initWidget(globalConfig) {
     soundPlayer = new Audio(soundSrc || globalConfig.config.sound.src);
     soundPlayer.volume = globalConfig.config.sound.volume ?? 0.5;
   }
- 
+}
+export function playSound() {
+  if (soundPlayer) {
+    soundPlayer.currentTime = 0;
+    soundPlayer.play();
+  }
 }
 /**
  * Creates a branding element for the widget.
@@ -124,15 +130,13 @@ export function renderToast(contentEl, globalConfig) {
     config.branding
   );
 
-  // toastContainer.appendChild(brandingElement);
+  if (config?.branding?.show && config?.branding?.once) {
+    toastContainer.appendChild(brandingElement);
+  }
   applyTransition(contentEl, config.transition);
   contentEl.style.pointerEvents = "auto";
 
-  // Add new toast to bottom
   toastStack.appendChild(contentEl);
-  if (config.sound?.play && soundPlayer) {
-    soundPlayer.play();
-  }
 
   if (config?.auto_dismiss) {
     setTimeout(() => {
