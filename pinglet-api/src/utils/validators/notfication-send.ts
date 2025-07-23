@@ -54,7 +54,7 @@ const overridesSchema = z.object({
 }).strict();
 // Main Schema
 export const notificationSchema = z.object({
-  projectId: z.string().length(20),
+  projectId: z.string().length(24),
   type: z.union([z.literal("-1"), z.literal("0"), z.literal("1")]),
   variant: z.string().optional(),
   template_id: z.string().optional(),
