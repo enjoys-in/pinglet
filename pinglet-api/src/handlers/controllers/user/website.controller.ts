@@ -3,7 +3,11 @@ import { websiteService } from "@/handlers/services/website.service";
 class WebsiteController {
 	async getWebsites(req: Request, res: Response) {
 		try {
-			const websites = await websiteService.getAllWebsites();
+			const userId = req.user!.id
+
+			const websites = await websiteService.getAllWebsites({
+				where: { user: { id: userId } },
+			});
 			res
 				.json({
 					message: "All Websites",

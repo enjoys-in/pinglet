@@ -3,6 +3,7 @@ interface BrandingStyle extends CommonStyle { }
 export interface Branding {
     show: boolean;
     html?: string;
+    once: boolean;
     style?: BrandingStyle;
 }
 
@@ -25,8 +26,8 @@ export interface ProjectConfig {
     stacking?: boolean;
     dismissible?: boolean;
     pauseOnHover?: boolean;
-    website?: string;  
-    time?: boolean; 
+    website?: string;
+    time?: boolean;
     favicon?: boolean;
     theme?: {
         mode?: "light" | "dark" | "auto";

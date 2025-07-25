@@ -126,6 +126,7 @@ const ProjectDetails = ({ project }: { project: ProjectDetailsResponse }) => {
                 </div>
 
                 <ProjectWebsiteInfoCard
+                    project={project}
                     website={project.website}
                     copyToClipboard={copyToClipboard}
                     StatusBadge={StatusBadge}

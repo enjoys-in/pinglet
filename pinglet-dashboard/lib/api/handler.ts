@@ -2,7 +2,7 @@ import axios from "axios";
 import { instance } from "./client.instance";
 import { __config } from "@/constants/config";
 import { LoginResponse } from "../interfaces/auth.interface";
-import { ApiResponse } from "../types";
+import { ApiResponse, UserProfileResponse } from "../types";
 import { AllWebsitesResponse } from "../interfaces/website.interface";
 import { signal } from "../requestController";
 import { TemplateCategoryResponse } from "../interfaces/template-category.interface";
@@ -118,5 +118,8 @@ export class API {
         return instance.get<ApiResponse<TemplateCategoryWithTemplate>>(`/api/v1/template-categories/${categoryId}/templates`, {
             // signal: signal("/api/v1/template-categories", "DELETE")
         })
+    }
+    static getUserProfile() {
+        return instance.get<ApiResponse<UserProfileResponse>>('/api/v1/auth/profile')
     }
 }

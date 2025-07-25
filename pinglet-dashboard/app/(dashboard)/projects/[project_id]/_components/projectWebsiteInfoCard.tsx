@@ -17,13 +17,16 @@ import {
 } from "lucide-react";
 import { ProjectDetailsResponse } from "@/lib/interfaces/project.interface";
 import { formatDate } from "@/lib/utils";
+import Link from "next/link";
 
 const ProjectWebsiteInfoCard = ({
+    project,
     website,
     copyToClipboard,
     StatusBadge,
     category
 }: {
+    project: ProjectDetailsResponse;
     website: ProjectDetailsResponse["website"];
     category: ProjectDetailsResponse["category"];
     copyToClipboard: (text: string, type: string) => void;
@@ -241,7 +244,7 @@ const ProjectWebsiteInfoCard = ({
                             </div>
 
                             <div className="space-y-3">
-                                <button className="w-full flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-gray-100 hover:from-indigo-50 hover:to-blue-50 rounded-xl border border-gray-200 hover:border-indigo-200 transition-all duration-300 group/btn">
+                                {/* <button className="w-full flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-gray-100 hover:from-indigo-50 hover:to-blue-50 rounded-xl border border-gray-200 hover:border-indigo-200 transition-all duration-300 group/btn">
                                     <div className="flex items-center">
                                         <Eye className="w-4 h-4 text-gray-600 group-hover/btn:text-indigo-600 mr-3 transition-colors" />
                                         <span className="text-sm font-medium text-gray-900">
@@ -259,9 +262,9 @@ const ProjectWebsiteInfoCard = ({
                                         </span>
                                     </div>
                                     <ChevronRight className="w-4 h-4 text-gray-400 group-hover/btn:text-emerald-600 transition-colors" />
-                                </button>
+                                </button> */}
 
-                                <button className="w-full flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-gray-100 hover:from-purple-50 hover:to-pink-50 rounded-xl border border-gray-200 hover:border-purple-200 transition-all duration-300 group/btn">
+                                <Link href={`/projects/${project.id}/docs`} className="w-full flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-gray-100 hover:from-purple-50 hover:to-pink-50 rounded-xl border border-gray-200 hover:border-purple-200 transition-all duration-300 group/btn">
                                     <div className="flex items-center">
                                         <Code className="w-4 h-4 text-gray-600 group-hover/btn:text-purple-600 mr-3 transition-colors" />
                                         <span className="text-sm font-medium text-gray-900">
@@ -269,7 +272,7 @@ const ProjectWebsiteInfoCard = ({
                                         </span>
                                     </div>
                                     <ChevronRight className="w-4 h-4 text-gray-400 group-hover/btn:text-purple-600 transition-colors" />
-                                </button>
+                                </Link>
                             </div>
                         </div>
                     </div>

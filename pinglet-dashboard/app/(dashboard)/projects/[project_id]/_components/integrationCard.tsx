@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
 import {
-
-    Copy,
-
-    CheckCircle,
+ 
     BarChart3
 } from 'lucide-react';
 import { ProjectDetailsResponse } from '@/lib/interfaces/project.interface';
 import { __config } from '@/constants/config';
 import EditorTabs from './editorTabs';
+ 
 
 export const TemplateCard = ({ project, getCategoryColor }: { project: ProjectDetailsResponse, getCategoryColor: (category: string) => void }) => {
     const [copiedItems, setCopiedItems] = useState<string[]>([]);
@@ -43,7 +41,8 @@ export const TemplateCard = ({ project, getCategoryColor }: { project: ProjectDe
       data-checksum="sha384-Y7YXYX2j5YloeGIEAei75Q6PcXH+o/A93sGoo8u3SxeGjMUbmR+JqizhPOPKfiy3" 
       data-load-templates="true"
     ></script>
-`}
+`},
+
 
     ]
 
@@ -80,15 +79,16 @@ export const TemplateCard = ({ project, getCategoryColor }: { project: ProjectDe
                             </div>
                         </div>
                         <EditorTabs
-                        project={project}
+                            project={project}
                             id={template.id}
-                            copyToClipboard={copyToClipboard} code={template.code} copiedItems={copiedItems}  />
+                            copyToClipboard={copyToClipboard} code={template.code} copiedItems={copiedItems} />
 
 
                     </div>
                 ))
 
             }
+
         </div>
     )
 }

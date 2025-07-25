@@ -226,5 +226,5 @@ export const notificationSchema = z.object({
 
 
 
-
+export type ButtonsSchema = z.infer<typeof buttonSchema>;
 export type NotificationBody = z.infer<typeof notificationSchema>;

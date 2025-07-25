@@ -3,11 +3,13 @@
 
 /** @type {HTMLAudioElement|null} */
 let soundPlayer;
-
+/** @type {HTMLDivElement|null} */
 let toastContainer;
+/** @type {HTMLDivElement|null} */
 export let toastStack = null;
 /** @type {HTMLDivElement|null} */
 export let brandingElement = null;
+/** @type {string|null} */
 let soundSrc = null;
 /**
  * Initialize the widget by creating a sound player if the sound config is
@@ -91,6 +93,7 @@ function createPingletToastContainer(branding) {
   toastContainer.style.boxSizing = "border-box";
   toastContainer.style.pointerEvents = "none";
   toastContainer.style.padding = "4px";
+ 
 
   // Add some subtle background and shadow for the container itself (optional)
 
@@ -209,5 +212,5 @@ function removeToast(toast, type) {
 }
 window.addEventListener("pinglet:notificationClosed", (event) => {
   removeToast(event.detail.contentEl, "fade");
-  // send notification close event
+  // send notification close event i.e drop rate
 });

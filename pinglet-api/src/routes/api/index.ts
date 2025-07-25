@@ -12,7 +12,7 @@ router.post("/auth/login", UserAuthController.default.Login);
 router.post("/auth/register", UserAuthController.default.Register);
 router.get("/auth/callback", UserAuthController.default.Callback);
 router.post("/auth/logout", UserAuthController.default.Logout);
-router.post("/auth/profile", JwtAuth.Me);
+router.get("/auth/profile", JwtAuth.Me);
 // SSE endpoint
 router.get("/notifications/load/templates", pushNtfyController.loadTemplates);
 router.get("/notifications/load/projects", pushNtfyController.loadConfig);

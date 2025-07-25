@@ -3,12 +3,7 @@
 /** @typedef {import('./types/index.js').NotificationDataBody} NotificationDataBody */
 
 import { _btnActions, defaultConfig, defaultStyles } from "./default.js";
-import {
-  brandingElement,
-  createBrandingElement,
-  playSound,
-  toastStack,
-} from "./widget.js";
+import { brandingElement, playSound, toastStack } from "./widget.js";
 /**
  * Create a notification header that displays the domain name, time and a close button.
  * @param {ProjectConfig} [globalConfig] - The global configuration object.
@@ -19,7 +14,8 @@ import {
 function createNotificationHeader(
   globalConfig = defaultConfig,
   domain = window.location.hostname,
-  time = "just now"
+  time = "just now",
+  isDark = false
 ) {
   const row = document.createElement("div");
   row.className = "pinglet-row";
@@ -27,12 +23,14 @@ function createNotificationHeader(
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    background: "transparent", // solid black background
+    background: isDark ? "#1a1a1a" : "transparent",
     fontFamily: "system-ui, sans-serif",
     fontSize: "10px",
-    padding: "6px 10px", // added padding for spacing
-    borderBottom: "1px solid rgba(255, 255, 255, 0.1)", // visible separator line
-    color: "#fff", // default white text
+    padding: "6px 10px",
+    borderBottom: isDark
+      ? "1px solid rgba(255, 255, 255, 0.1)"
+      : "1px solid rgba(0, 0, 0, 0.05)",
+    color: isDark ? "#f0f0f0" : "#000",
   });
 
   const left = document.createElement("div");
@@ -61,12 +59,12 @@ function createNotificationHeader(
   const domainText = document.createElement("span");
   domainText.className = "pinglet-domain";
   domainText.textContent = domain;
-  domainText.style.color = "#808080"; // light gray
+  domainText.style.color = isDark ? "#bbb" : "#808080";
 
   const timeText = document.createElement("span");
   timeText.className = "pinglet-time";
   timeText.textContent = `- ${time}`;
-  timeText.style.color = "#aaa"; // muted light gray
+  timeText.style.color = isDark ? "#ccc" : "#aaa";
 
   const closeBtn = document.createElement("button");
   closeBtn.className = "pinglet-close";
@@ -76,15 +74,15 @@ function createNotificationHeader(
     border: "none",
     fontSize: "12px",
     cursor: "pointer",
-    color: "#aaa",
+    color: isDark ? "#aaa" : "#888",
     padding: "0 4px",
   });
 
   closeBtn.addEventListener("mouseenter", () => {
-    closeBtn.style.color = "#f44"; // red hover
+    closeBtn.style.color = "#f44";
   });
   closeBtn.addEventListener("mouseleave", () => {
-    closeBtn.style.color = "#aaa";
+    closeBtn.style.color = isDark ? "#aaa" : "#888";
   });
 
   if (globalConfig?.website) {
@@ -122,6 +120,9 @@ function createNotificationHeader(
 export function createVariant(data, config) {
   const globalStyle = config.style;
   const globalConfig = config.config;
+  const themeMode = globalConfig.theme.mode || {};
+  const isDark =
+    themeMode && window.matchMedia("(prefers-color-scheme: dark)").matches;
 
   const wrapper = document.createElement("div");
   wrapper.id = "pinglet-variant";
@@ -130,27 +131,38 @@ export function createVariant(data, config) {
     `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
   );
   wrapper.className = `pinglet-variant pinglet-${data.variant || "default"}`;
-  wrapper.style.display = "flex";
-  wrapper.style.flexDirection = "column";
-  wrapper.style.alignItems = "stretch";
-  wrapper.style.width = "100%";
-  wrapper.style.maxHeight = "calc(100vh - 40px)";
-  wrapper.style.borderRadius = "8px";
-  wrapper.style.overflowY = "auto";
-  wrapper.style.boxShadow = "0 2px 8px rgba(0, 0, 0, 0.1)";
-  wrapper.style.padding = "4px";
+  Object.assign(wrapper.style, {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "stretch",
+    width: "100%",
+    maxHeight: "calc(100vh - 40px)",
+    borderRadius: "8px",
+    overflowY: "auto",
+    padding: "4px",
+    gap: "4px",
+    pointerEvents: "none",
+    overflow: "visible",
+    flexShrink: "0",
+    boxShadow: isDark
+      ? "0 2px 8px rgba(0,0,0,0.6)"
+      : "0 2px 8px rgba(0,0,0,0.1)",
+    backgroundColor: isDark ? "#1e1e1e" : "whitesmoke",
+    color: isDark ? "#f0f0f0" : "#000",
+  });
 
-  wrapper.style.backgroundColor = "rgba(255, 255, 255, 0.9)";
-  wrapper.style.gap = "4px";
-  wrapper.style.pointerEvents = "none";
-  wrapper.style.overflow = "visible";
-  wrapper.style.flexShrink = "0";
-  wrapper.appendChild(createNotificationHeader(globalConfig));
+  wrapper.appendChild(
+    createNotificationHeader(
+      globalConfig,
+      window.location.hostname,
+      "just now",
+      isDark
+    )
+  );
 
   let mediaEl = null;
   const isInlineMedia = ["icon", "logo"].includes(data.media?.type);
 
-  // Create media element
   if (data.media?.type) {
     mediaEl = createMediaElement(
       data.media,
@@ -171,7 +183,6 @@ export function createVariant(data, config) {
     }
   }
 
-  // Case: icon/logo (flex row with text)
   if (isInlineMedia) {
     const flexWrapper = document.createElement("div");
     Object.assign(flexWrapper.style, {
@@ -199,7 +210,10 @@ export function createVariant(data, config) {
       const title = document.createElement("div");
       title.className = "pinglet-title";
       title.innerText = data.title;
-      Object.assign(title.style, globalStyle.title || defaultStyles.title);
+      Object.assign(title.style, {
+        ...(globalStyle.title || defaultStyles.title),
+        color: isDark ? "#ffffff" : "#000000",
+      });
       textDiv.appendChild(title);
     }
 
@@ -207,26 +221,26 @@ export function createVariant(data, config) {
       const desc = document.createElement("p");
       desc.className = "pinglet-desc";
       desc.innerText = data.description;
-      Object.assign(
-        desc.style,
-        globalStyle.description || defaultStyles.description
-      );
+      Object.assign(desc.style, {
+        ...(globalStyle.description || defaultStyles.description),
+        color: isDark ? "#dddddd" : "#333333",
+      });
       textDiv.appendChild(desc);
     }
 
     flexWrapper.appendChild(textDiv);
     wrapper.appendChild(flexWrapper);
-  }
-
-  // Case: image/video/audio (media on top)
-  else {
+  } else {
     if (mediaEl) wrapper.appendChild(mediaEl);
 
     if (data.title) {
       const title = document.createElement("div");
       title.className = "pinglet-title";
       title.innerText = data.title;
-      Object.assign(title.style, globalStyle.title || defaultStyles.title);
+      Object.assign(title.style, {
+        ...(globalStyle.title || defaultStyles.title),
+        color: isDark ? "#ffffff" : "#000000",
+      });
       wrapper.appendChild(title);
     }
 
@@ -234,10 +248,10 @@ export function createVariant(data, config) {
       const desc = document.createElement("p");
       desc.className = "pinglet-desc";
       desc.innerText = data.description;
-      Object.assign(
-        desc.style,
-        globalStyle.description || defaultStyles.description
-      );
+      Object.assign(desc.style, {
+        ...(globalStyle.description || defaultStyles.description),
+        color: isDark ? "#dddddd" : "#333333",
+      });
       wrapper.appendChild(desc);
     }
   }
@@ -250,13 +264,21 @@ export function createVariant(data, config) {
       const btnEl = document.createElement("button");
       btnEl.innerText = btn.text;
       btnEl.className = "pinglet-btn";
-      btnEl.style.cursor = "pointer";
-      btnEl.style.padding = "6px 10px";
-      btnEl.style.fontFamily = "Manrope, sans-serif";
-      btnEl.style.margin = "1px 4px";
+      Object.assign(btnEl.style, {
+        cursor: "pointer",
+        padding: "6px 10px",
+        fontFamily: "Manrope, sans-serif",
+        margin: "1px 4px",
+        color: isDark ? "#f0f0f0" : "#000",
+        backgroundColor: isDark ? "#333" : "#f0f0f0",
+        border: "none",
+        borderRadius: "4px",
+      });
+
       Object.assign(btnEl.style, i === 0 ? globalStyle.btn1 : globalStyle.btn2);
+
       if (btn?.onClick) {
-        const func = new Function(`return ${btn.onClick}`)(); // returns the actual arrow function
+        const func = new Function(`return ${btn.onClick}`)();
         if (typeof func === "function") {
           btnEl.addEventListener("click", func);
         }
@@ -268,9 +290,11 @@ export function createVariant(data, config) {
     });
     wrapper.appendChild(btnWrap);
   }
+
   if (globalConfig.sound?.play) {
     playSound();
   }
+
   if (
     brandingElement &&
     !wrapper.contains(brandingElement) &&
@@ -281,6 +305,7 @@ export function createVariant(data, config) {
 
   return wrapper;
 }
+
 /**
  * Creates a media element from the given `media` object.
  * @param {MediaData} media - Media object
