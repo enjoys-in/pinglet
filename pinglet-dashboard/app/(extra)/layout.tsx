@@ -2,7 +2,7 @@ import React from 'react'
 import Header from '../_components/header'
 import Footer from '../_components/footer'
 
-const layout = ({children}: {children: React.ReactNode}) => {
+const MainLayout = ({children}: {children: React.ReactNode}) => {
     return (
         <div className="flex min-h-[100dvh] flex-col">
             <Header />
@@ -12,4 +12,4 @@ const layout = ({children}: {children: React.ReactNode}) => {
     )
 }
 
-export default layout
+export default MainLayout

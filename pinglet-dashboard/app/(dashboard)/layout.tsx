@@ -12,7 +12,6 @@ export default function Layout({
     <DashboardLayout>
       <ToastContainer position="top-right" />
       <main className="flex-1 overflow-auto">{children}</main>
-
     </DashboardLayout>
   )
 }

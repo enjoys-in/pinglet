@@ -5,34 +5,38 @@ import FAQs from "./_components/faqs"
 
 import HowItWorks from "./_components/howItWorks"
 import CTASection from "./_components/ctaSection"
+import MainLayout from "./(extra)/layout"
 
 export default function Page() {
 
   return (
-    <main className="flex-1">
-      {/* Hero Section */}
-      <HeroSection />
+    <MainLayout>
+      <main className="flex-1">
+        {/* Hero Section */}
+        <HeroSection />
 
-      {/* Logos Section */}
+        {/* Logos Section */}
 
-      {/* Features Section */}
-      <Features />
-
-
-      {/* How It Works Section */}
-      <HowItWorks />
-
-      {/* Testimonials Section */}
+        {/* Features Section */}
+        <Features />
 
 
-      {/* Pricing Section */}
-      <Pricing />
+        {/* How It Works Section */}
+        <HowItWorks />
 
-      {/* FAQ Section */}
-      {/* <FAQs /> */}
+        {/* Testimonials Section */}
 
-      {/* CTA Section */}
-      <CTASection />
-    </main>
+
+        {/* Pricing Section */}
+        <Pricing />
+
+        {/* FAQ Section */}
+        {/* <FAQs /> */}
+
+        {/* CTA Section */}
+        <CTASection />
+      </main>
+    </MainLayout>
+
   )
 }
