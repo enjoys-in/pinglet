@@ -1,4 +1,5 @@
 self.addEventListener("push", (event) => {
+  console.log("first")
   if (!event.data) return;
 
   const data = event.data.json();
@@ -34,6 +35,7 @@ self.addEventListener("push", (event) => {
 // Handle notification clicks
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
+ 
   const notificationData = event.notification.data || {};
   const actionId = event.action; // The action button that was clicked
 
@@ -43,8 +45,6 @@ self.addEventListener("notificationclick", (event) => {
   } else if (event.action === "dismiss") {
     return;
   } else {
-  
-   
   }
 });
 

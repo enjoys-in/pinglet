@@ -95,7 +95,7 @@ const NotificationPayloadSchema = z.object({
             {
                 action: 'view',
                 title: 'View',
-                icon: '/action-icon.png'
+
             },
             {
                 action: 'dismiss',
@@ -105,44 +105,44 @@ const NotificationPayloadSchema = z.object({
 });
 // Schema for typed notifications with categories
 const TypedNotificationPayloadSchema = NotificationPayloadSchema.extend({
-  type: z.enum([
-    'message',
-    'alert', 
-    'reminder',
-    'update',
-    'social',
-    'marketing',
-    'system',
-    'emergency'
-  ]),
-  
-  priority: z.enum(['low', 'normal', 'high', 'urgent'])
-    .default('normal'),
-    
-  category: z.string().optional(),
-  
-  groupId: z.string().optional()
+    type: z.enum([
+        'message',
+        'alert',
+        'reminder',
+        'update',
+        'social',
+        'marketing',
+        'system',
+        'emergency'
+    ]),
+
+    priority: z.enum(['low', 'normal', 'high', 'urgent'])
+        .default('normal'),
+
+    category: z.string().optional(),
+
+    groupId: z.string().optional()
 });
 
 // Schema for notification settings
 const NotificationSettingsSchema = z.object({
-  enabled: z.boolean().default(true),
-  
-//   types: z.object(z.boolean()).default({}),
-  
-  quietHours: z.object({
-    enabled: z.boolean().default(false),
-    start: z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format (HH:MM)'),
-    end: z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format (HH:MM)')
-  }).optional(),
-  
-  sound: z.boolean().default(true),
-  vibration: z.boolean().default(true),
-  duration: z.number().int().min(1000).max(30000).default(5000)
+    enabled: z.boolean().default(true),
+
+    //   types: z.object(z.boolean()).default({}),
+
+    quietHours: z.object({
+        enabled: z.boolean().default(false),
+        start: z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format (HH:MM)'),
+        end: z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format (HH:MM)')
+    }).optional(),
+
+    sound: z.boolean().default(true),
+    vibration: z.boolean().default(true),
+    duration: z.number().int().min(1000).max(30000).default(5000)
 });
 
 export {
-  NotificationPayloadSchema,
-  TypedNotificationPayloadSchema,
-  NotificationSettingsSchema
+    NotificationPayloadSchema,
+    TypedNotificationPayloadSchema,
+    NotificationSettingsSchema
 };

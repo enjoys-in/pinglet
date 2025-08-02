@@ -16,7 +16,8 @@ import {
   TriggerBrowserNotificationApi,
 } from "./push-notification.js";
 import { ShowTestimonials } from "./testimonials.js";
-import './sw.js';
+// import './sw.js';
+import "./main.js";
 const scriptEl = Array.from(document.scripts).find(
   (s) => s.src.includes("pinglet-sse") && s.dataset.endpoint
 );
@@ -36,7 +37,7 @@ const testimonials = currentScript?.dataset.testimonials;
     return;
   }
   injectFont();
-  askNotificationPermissionFunction(endpoint, projectId,pingletId);
+  askNotificationPermissionFunction(endpoint, projectId, pingletId);
   testimonials && ShowTestimonials();
   let allTemplates = {};
   const PingletWidget = {

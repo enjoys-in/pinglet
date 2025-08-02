@@ -19,6 +19,7 @@ export class ListenWorkers extends QueueService {
         const worker = new Worker(
             QUEUE_NAME.SEND_BROWSER_NOTIFICATION,
             async (job) => {
+
                 const { projectId, ...payload } = JSON.parse(job.data) as NotificationBody
 
                 try {
@@ -62,8 +63,8 @@ export class ListenWorkers extends QueueService {
                                 const notificationPayload = JSON.stringify({
                                     title: payload?.data?.title || 'Default Title',
                                     body: payload?.data?.body || 'Default message body',
-                                    icon: payload?.data?.icon || '/default-icon.png',
-                                    badge: payload?.data?.badge || '/default-badge.png',
+                                    // icon: payload?.data?.icon || '/default-icon.png',
+                                    // badge: payload?.data?.badge || '/default-badge.png',
                                     tag: payload?.data?.tag || 'pinglet', // Prevents duplicate notifications
                                     requireInteraction: payload?.data?.requireInteraction || false, // Auto-dismiss after duration
                                     silent: payload?.data?.silent || false,

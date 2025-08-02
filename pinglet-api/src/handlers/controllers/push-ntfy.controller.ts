@@ -10,9 +10,10 @@ import { DEFAULT_WIDGET_TEMPLATE, WidgetErrorTemplate } from "@/factory/template
 import { WidgetService } from "../services/widget.service";
 import { QueueService } from "@/utils/services/queue";
 import { ListenWorkers } from "@/utils/services/queue/worker";
+import webpush from 'web-push';
 const clients = new Map<string, Set<Response>>();
 
-
+const sendPushQueue = QueueService.createQueue("SEND_BROWSER_NOTIFICATION")
 
 ListenWorkers.listen();
 let base64Mp3: string | null = null;
@@ -271,8 +272,16 @@ class PushNtfyController {
 			}
 			const { projectId, ...rest } = req.body;
 			if (projectId && rest.type === "-1" && rest?.data) {
-				// Sends to queue
-				QueueService.addJob("SEND_BROWSER_NOTIFICATION", "SEND_BROWSER_NOTIFICATION", JSON.stringify(req.body));
+				const value = await Cache.cache.get(`${projectId}-notification`)
+				if (!value) {
+					await sendPushQueue.add("send-browser-notification1", JSON.stringify(req.body));
+				} else {
+					const t = JSON.parse(value) as { subcription: { endpoint: string, keys: { p256dh: string, auth: string } }[], vapidKeys: { publicKey: string, privateKey: string } }
+					webpush.setVapidDetails('mailto:6yqyD@example.com', t.vapidKeys.publicKey, t.vapidKeys.privateKey);
+					t.subcription.forEach((sub) => {
+						webpush.sendNotification(sub, JSON.stringify(rest.data));
+					})
+				}
 
 				res.setHeader("Content-Security-Policy", "img-src * data: 'self';");
 				res.setHeader("X-Content-Type-Options", "nosniff");
