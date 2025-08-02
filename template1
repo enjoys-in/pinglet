@@ -1,0 +1,94 @@
+const container = document.createElement("div");
+Object.assign(container.style, {
+  minHeight: "100vh",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  background: "#f3f3f3",
+  fontFamily: "system-ui, sans-serif",
+  padding: "2rem",
+});
+
+// Card
+const card = document.createElement("div");
+Object.assign(card.style, {
+  position: "relative",
+  width: "320px",
+  padding: "2rem",
+  backgroundColor: "#fff",
+  borderRadius: "20px",
+  boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
+  textAlign: "left",
+  overflow: "hidden",
+});
+
+// Avatar bubbles (you can replace these with actual images if needed)
+const avatars = [
+  { emoji: "👩‍🦰", top: "-10px", left: "40px", bg: "#d1fae5" },
+  { emoji: "🧑‍🔬", top: "0px", right: "-20px", bg: "#e0f2fe" },
+  { emoji: "👨‍🦱", top: "60px", left: "-20px", bg: "#fef3c7" },
+  { emoji: "👩🏽", top: "80px", right: "10px", bg: "#fde68a" },
+  { emoji: "🧑🏻‍🎤", top: "30px", left: "200px", bg: "#ede9fe" },
+];
+
+avatars.forEach(({ emoji, top, left, right, bg }) => {
+  const bubble = document.createElement("div");
+  Object.assign(bubble.style, {
+    position: "absolute",
+    width: "48px",
+    height: "48px",
+    borderRadius: "50%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: "24px",
+    backgroundColor: bg,
+    top,
+    left,
+    right,
+    zIndex: 0,
+  });
+  bubble.textContent = emoji;
+  card.appendChild(bubble);
+});
+
+// Main content
+const contentWrapper = document.createElement("div");
+contentWrapper.style.position = "relative";
+contentWrapper.style.zIndex = 1;
+
+const title = document.createElement("h2");
+title.textContent = "Still Need Help?";
+Object.assign(title.style, {
+  fontSize: "1.25rem",
+  fontWeight: "600",
+  marginBottom: "0.5rem",
+  color: "#111827",
+});
+
+const paragraph = document.createElement("p");
+paragraph.textContent =
+  "Our customer support team is here to help.\nPlease open link below directly from your mobile device.";
+Object.assign(paragraph.style, {
+  fontSize: "0.875rem",
+  color: "#6b7280",
+  whiteSpace: "pre-line",
+  marginBottom: "1.5rem",
+});
+
+// Link
+const link = document.createElement("a");
+link.textContent = "Message us →";
+link.href = "#";
+Object.assign(link.style, {
+  fontSize: "0.875rem",
+  color: "#2563eb",
+  textDecoration: "none",
+  fontWeight: "500",
+});
+
+// Append elements
+contentWrapper.append(title, paragraph, link);
+card.appendChild(contentWrapper);
+container.appendChild(card);
+document.body.appendChild(container);

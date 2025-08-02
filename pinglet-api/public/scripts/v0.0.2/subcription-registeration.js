@@ -1,8 +1,4 @@
 import { _showPopup } from "./default.js";
-
-const publicVapidKey =
-  "BJ9GvEJAs47DOgqw-rN80ZGIVvIvcp-xE4ZNweCT4eJ0B-rIzMtfhLWh8ySUCeKgiW_Fym69h0Fx3vhAcAy6C2k";
-
 export async function revokePushSubscription(url, projectId) {
   try {
     const registration = await navigator.serviceWorker.ready;
@@ -40,7 +36,7 @@ export async function revokePushSubscription(url, projectId) {
   }
 }
 
-export async function subscribeUser(endpoint, projectId) {
+export async function subscribeUser(endpoint, projectId, publicVapidKey) {
   try {
     const registration = await navigator.serviceWorker.register(
       endpoint + "/sw.js"

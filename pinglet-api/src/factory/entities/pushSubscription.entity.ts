@@ -14,9 +14,7 @@ import {
 import { ProjectEntity } from "./project.entity";
 
 @Entity("push_subscriptions")
-@Unique(["endpoint", "project_id"],{
-    
-})
+@Unique(["endpoint", "project_id"])
 export class PushSubscriptionEntity {
     @PrimaryGeneratedColumn()
     id!: number;

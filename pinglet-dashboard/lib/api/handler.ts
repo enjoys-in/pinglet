@@ -8,7 +8,7 @@ import { signal } from "../requestController";
 import { TemplateCategoryResponse } from "../interfaces/template-category.interface";
 import { TemplateCategoryWithTemplate, TemplateResponse } from "../interfaces/templates.interface";
 import { AllProjectsResponse } from "../interfaces/project.interface";
- 
+
 const adminRoutes = (url: string) => `/api/v1/admin${url}`
 const apiRoutes = (url: string) => `/api/v1/${url}`
 
@@ -98,20 +98,22 @@ export class API {
             // signal: signal("/api/v1/template-categories", "DELETE")
         })
     }
-
+    static demoNotification(data: any) {
+        return instance.post('/api/v1/notifications/send', data)
+    }
     static createProject(data: any) {
         return instance.post<ApiResponse<{ id: number }>>('/api/v1/project', data)
     }
-     static deleteProject(id: string|number) {
-        return instance.delete<ApiResponse<{ id: number }>>('/api/v1/project/'+id, )
+    static deleteProject(id: string | number) {
+        return instance.delete<ApiResponse<{ id: number }>>('/api/v1/project/' + id,)
     }
-     static getProject(id: string|number) {
-        return instance.get<ApiResponse<{ id: number }>>('/api/v1/project/'+id,)
+    static getProject(id: string | number) {
+        return instance.get<ApiResponse<{ id: number }>>('/api/v1/project/' + id,)
     }
-     static updateProject(id: string|number, data: any) {
-        return instance.put<ApiResponse<{ id: number }>>('/api/v1/project/'+id,data)
+    static updateProject(id: string | number, data: any) {
+        return instance.put<ApiResponse<{ id: number }>>('/api/v1/project/' + id, data)
     }
-     static getAllProjects() {
+    static getAllProjects() {
         return instance.get<ApiResponse<AllProjectsResponse[]>>('/api/v1/projects')
     }
     static getTemplatesByCategory(categoryId: string) {

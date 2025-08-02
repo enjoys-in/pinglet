@@ -17,24 +17,7 @@ export class JwtAuth {
 	 */
 	static validateUser(req: Request, res: Response, next: NextFunction) {
 		try {
-			const routeHandler = RouteResolver.mappedRoutes.find((layer: any) => {
-				const path = req.originalUrl.split("?")[0];
-				const matcher = match(layer.path, { decode: decodeURIComponent });
-				const result = matcher(path);
-				// const regex = new RegExp(
-				//     `^${layer.path
-				//         .replace(/\/:([^/]+)\?/g, '(?:/[^/]*)?')
-				//         .replace(/\/:([^/]+)/g, '/[^/]+')}$`
-				// );
-				// return regex.test(path);
-				return !!result;
-			})?.handler;
-			const isPublicRoute =
-				routeHandler && Reflect.getMetadata(PUBLIC_ROUTE_KEY, routeHandler);
-
-			if (isPublicRoute) {
-				return next();
-			}
+			 
 			const authHeader =
 				req.cookies?.access_token ||
 				(req.headers.authorization as string) ||

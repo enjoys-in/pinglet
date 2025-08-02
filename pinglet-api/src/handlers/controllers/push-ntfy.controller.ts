@@ -5,21 +5,16 @@ import { projectService } from "../services/project.service";
 
 import { Cache } from "@/utils/services/redis/cacheService";
 import { NotificationBody, notificationSchema } from "@/utils/validators/notfication-send";
-import webpush from "web-push";
 import { pushSubscriptionService } from "@/handlers/services/subscription.service";
+import { DEFAULT_WIDGET_TEMPLATE, WidgetErrorTemplate } from "@/factory/templates/widget.template";
+import { WidgetService } from "../services/widget.service";
+import { QueueService } from "@/utils/services/queue";
+import { ListenWorkers } from "@/utils/services/queue/worker";
 const clients = new Map<string, Set<Response>>();
 
-const vapidKeys = {
-	publicKey: "BJ9GvEJAs47DOgqw-rN80ZGIVvIvcp-xE4ZNweCT4eJ0B-rIzMtfhLWh8ySUCeKgiW_Fym69h0Fx3vhAcAy6C2k",
-	privateKey: "STXRbh1ldyhUQYth0MBMBTeJXGFndcuRapVsfuAF-ro",
-};
 
-webpush.setVapidDetails(
-	"mailto:mullayam06@outlook.com",
-	vapidKeys.publicKey,
-	vapidKeys.privateKey
-);
 
+ListenWorkers.listen();
 let base64Mp3: string | null = null;
 class PushNtfyController {
 
@@ -112,7 +107,14 @@ class PushNtfyController {
 			if (!query.projectId) {
 				throw new Error("Missing projectIds or domain");
 			}
-
+			const cacheKey = `${query.projectId}-templates`
+			const cache = await Cache.cache.get(cacheKey)
+			if (cache) {
+				res
+					.json({ message: "OK", result: JSON.parse(cache), success: true })
+					.end();
+				return;
+			}
 			const loadConfig = await projectService.getSelectedProjects({
 				where: { unique_id: query.projectId, is_active: true },
 				select: {
@@ -142,7 +144,9 @@ class PushNtfyController {
 				loadConfig.category.templates.map(t => [String(t.id), t])
 			);
 
-
+			await Cache.cache.set(String(cacheKey), JSON.stringify(templates), {
+				EX: 60 * 60 * 24
+			})
 			res
 				.json({ message: "OK", result: templates, success: true })
 				.end();
@@ -171,7 +175,7 @@ class PushNtfyController {
 				res.status(400).send("Missing projectId");
 				return;
 			}
- 
+
 			await pushSubscriptionService.handleSubscription({
 				project_id: projectId,
 				...req.body
@@ -266,18 +270,13 @@ class PushNtfyController {
 				return
 			}
 			const { projectId, ...rest } = req.body;
-			if (projectId && rest.type === "-1" && rest.body) {
+			if (projectId && rest.type === "-1" && rest?.data) {
 				// Sends to queue
-				// const payloadd = JSON.stringify({
-				// 	title: "🔥 Pinglet WebPush",
-				// 	body: "This is a push sent from the server!",
-				// 	icon: "https://cdn-icons-png.flaticon.com/512/727/727399.png",
-				// });
-				// const sub = subscriptions.get(req.body.projectId)
-				// res.setHeader("Content-Security-Policy", "img-src * data: 'self';");
-				// if (sub) {
-				// 	webpush.sendNotification(sub, payloadd)
-				// }
+				QueueService.addJob("SEND_BROWSER_NOTIFICATION", "SEND_BROWSER_NOTIFICATION", JSON.stringify(req.body));
+
+				res.setHeader("Content-Security-Policy", "img-src * data: 'self';");
+				res.setHeader("X-Content-Type-Options", "nosniff");
+				res.setHeader("X-Notification-Type", "push");
 				res.json({
 					message: "OK",
 					result: "Notification Sent",
@@ -285,14 +284,13 @@ class PushNtfyController {
 				}).end();
 				return
 			}
+			res.setHeader("X-Notification-Type", "custom");
 
 			const payload = JSON.stringify(rest);
 
 			clients.get(projectId)?.forEach((client) => {
 				client.write(`data: ${payload}\n\n`);
 			});
-
-
 
 			res.json({
 				message: "OK",
@@ -320,13 +318,15 @@ class PushNtfyController {
 		const ext = req.query?.ext as string;
 		const filePath = path.join(process.cwd(), "public", "pinglet-sound.mp3");
 		if (ext === "mp3") {
+			res.setHeader("Content-Type", "audio/mp3");
+			res.setHeader("Content-Disposition", "inline; filename=pinglet-sound.mp3");
+			res.setHeader("Cache-Control", "public, max-age=31536000"); // 1 year cache
 			res.setHeader("Content-Type", "audio/mpeg");
 			createReadStream(filePath).pipe(res);
 		} else {
-			// res.setHeader("Content-Type", "audio/mp3");
-			// res.setHeader("Content-Disposition", "inline; filename=pinglet-sound.mp3");
-			// res.setHeader("Cache-Control", "public, max-age=31536000"); // 1 year cache
-			// res.setHeader("Content-Length", "123456");
+
+			res.setHeader("Cache-Control", "public, max-age=31536000"); // 1 year cache
+
 			if (base64Mp3) {
 				res.send(`data:audio/mp3;base64,${base64Mp3}`);
 				return;
@@ -340,18 +340,91 @@ class PushNtfyController {
 		}
 	};
 	swJSFile = async (req: Request, res: Response) => {
-		const dynamicCode = `self.addEventListener("push", event => {
-      const data = event.data.json();
-      event.waitUntil(
-        self.registration.showNotification(data.title, {
-          body: data.body,
-          icon: data.icon
-        })
-      );
-    });
-  `;
+		const dynamicCode = `self.addEventListener("push", (event) => {
+  if (!event.data) return;
+
+  const data = event.data.json();
+
+  const options = {
+    body: data?.body,
+    icon: data?.icon,
+    badge: data?.badge,
+    tag: data?.tag,
+    requireInteraction: data?.requireInteraction||true,
+    silent: data?.silent||false,
+    data: data?.data,
+    actions: data?.actions,
+    image: data?.image,  
+    timestamp: Date.now(),
+    vibrate: [200, 100, 200], // Vibration pattern for mobile
+  };
+
+  // Auto-dismiss after duration
+  if (data.data && data.data.duration) {
+    setTimeout(() => {
+      self.registration
+        .getNotifications({ tag: data.tag })
+        .then((notifications) => {
+          notifications.forEach((notification) => notification.close());
+        });
+    }, data.data.duration);
+  }
+
+  event.waitUntil(self.registration.showNotification(data.title, options));
+});
+
+// Handle notification clicks
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+
+  if (event.action === "view") {
+    // Open the app/website
+    event.waitUntil(clients.openWindow(event.notification.data.url || "/"));
+  } else if (event.action === "dismiss") {
+    // Just close the notification
+    return;
+  } else {
+    // Default click action
+    event.waitUntil(clients.openWindow(event.notification.data.url || "/"));
+  }
+});
+
+// Handle notification close
+self.addEventListener("notificationclose", (event) => {
+  console.log("Notification closed:", event.notification.tag);
+});`;
 		res.set("Content-Type", "application/javascript");
 		res.send(dynamicCode);
+	};
+	loadWidgetJsFile = async (req: Request, res: Response) => {
+		const wid = req.params.wid
+		res.set("Content-Type", "application/javascript");
+		if (!wid) {
+			res.send(WidgetErrorTemplate("Widget ID is required"));
+			return
+		}
+		const cachedValue = await Cache.cache.get(wid)
+		if (!cachedValue) {
+			const widget = await WidgetService.getWidgetByWidgetId(wid);
+			if (!widget) {
+				res.send(WidgetErrorTemplate("Invalid Widget ID"));
+				return
+			}
+			Cache.cache.set(wid, JSON.stringify({
+				data: widget.data,
+				style_props: widget.style_props
+			}), { EX: 60 * 60 * 24 });
+			return
+		}
+
+		const widget = JSON.parse(cachedValue)
+		res.set("Content-Type", "application/javascript");
+		res.send(DEFAULT_WIDGET_TEMPLATE(req.params.wid,
+			widget.data.text,
+			widget.data.description,
+			widget.data.buttonText,
+			widget.data.link,
+			widget.data.imagePreview));
 	};
 
 

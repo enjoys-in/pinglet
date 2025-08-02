@@ -10,7 +10,7 @@ export default function Layout({
 }) {
   return (
     <DashboardLayout>
-       <ToastContainer position="top-right" />
+      <ToastContainer position="top-right" />
       <main className="flex-1 overflow-auto">{children}</main>
 
     </DashboardLayout>

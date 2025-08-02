@@ -200,7 +200,7 @@ export function createNotificationPermissionDialog(options = {}) {
   document.body.appendChild(dialog);
 }
 
-export function askNotificationPermissionFunction(endpoint, projectId) {
+export function askNotificationPermissionFunction(endpoint, projectId,pingletId) {
   if (!("Notification" in window)) {
     _showPopup("Unsupported Browser", "Notifications not supported.", [], "🚫");
     return;
@@ -212,7 +212,7 @@ export function askNotificationPermissionFunction(endpoint, projectId) {
         Notification.requestPermission()
           .then(async (permission) => {
             if (permission === "granted") {
-              return subscribeUser(endpoint, projectId);
+              return subscribeUser(endpoint, projectId,pingletId);
             } else {
               return _showPopup(
                 "Permission Denied",

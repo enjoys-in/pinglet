@@ -1,5 +1,5 @@
 /**
- * @typedef {"image" | "video" | "audio" | "icon" | "logo" | "iframe"} MediaType
+ * @typedef {"image" | "video" | "audio" | "iframe"} MediaType
  */
 
 /**
@@ -51,8 +51,6 @@
  * @property {MediaStyle} [image]
  * @property {MediaStyle} [video]
  * @property {MediaStyle} [audio]
- * @property {MediaStyle} [icon]
- * @property {MediaStyle} [logo]
  * @property {MediaStyle} [iframe]
  */
 /**
@@ -73,8 +71,17 @@
  * @property {ButtonStyle} [btn2]
  * @property {TextStyle} [title]
  * @property {TextStyle} [description]
- * @property {Object.<MediaType, MediaStyle>} [media]
+ * @property {Object.<MediaType & "icon"|"logo", MediaStyle>} [media]
  * @property {number} [duration]
  * @property {{ audio?: MediaControls, video?: MediaControls }} [controls]
  */
-export {MediaType, ButtonStyle, TextStyle, MediaStyle, MediaStyleMap, MediaStyleMapStrict, MediaControls, TemplateStyleConfig};
+export {
+  MediaType,
+  ButtonStyle,
+  TextStyle,
+  MediaStyle,
+  MediaStyleMap,
+  MediaStyleMapStrict,
+  MediaControls,
+  TemplateStyleConfig,
+};

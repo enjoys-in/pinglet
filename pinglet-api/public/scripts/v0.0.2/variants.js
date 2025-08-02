@@ -1,7 +1,11 @@
 /** @typedef {import('./types/project.config.js').ProjectConfig} ProjectConfig */
 /** @typedef {import('./types/index.js').GlobalConfig} GlobalConfig */
+/** @typedef {import('./types/template.config.js').MediaControls} MediaStyleMapStrict */
+/** @typedef {import('./types/template.config.js').MediaStyleMapStrict} MediaStyleMapStrict */
 /** @typedef {import('./types/index.js').NotificationDataBody} NotificationDataBody */
+/** @typedef {import('./types/index.js').MediaData} MediaData */
 
+import { audioPlayerElement } from "./audio-player.js";
 import { _btnActions, defaultConfig, defaultStyles } from "./default.js";
 import { brandingElement, playSound, toastStack } from "./widget.js";
 /**
@@ -135,7 +139,7 @@ export function createVariant(data, config) {
     display: "flex",
     flexDirection: "column",
     alignItems: "stretch",
-    width: "100%",
+    width: "320px",
     maxHeight: "calc(100vh - 40px)",
     borderRadius: "8px",
     overflowY: "auto",
@@ -161,7 +165,7 @@ export function createVariant(data, config) {
   );
 
   let mediaEl = null;
-  const isInlineMedia = ["icon", "logo"].includes(data.media?.type);
+  const isInlineMedia = "icon" in data || "logo" in data;
 
   if (data.media?.type) {
     mediaEl = createMediaElement(
@@ -169,20 +173,9 @@ export function createVariant(data, config) {
       globalStyle.media,
       globalStyle.controls
     );
-
-    if (isInlineMedia) {
-      Object.assign(mediaEl.style, {
-        width: "48px",
-        height: "48px",
-        objectFit: "contain",
-        flexShrink: "0",
-        marginRight: "6px",
-      });
-    } else {
-      mediaEl.style.marginBottom = "12px";
-    }
+    mediaEl.style.marginBottom = "12px";
   }
-
+  if (mediaEl) wrapper.appendChild(mediaEl);
   if (isInlineMedia) {
     const flexWrapper = document.createElement("div");
     Object.assign(flexWrapper.style, {
@@ -196,7 +189,13 @@ export function createVariant(data, config) {
     Object.assign(iconDiv.style, {
       flex: "0 0 auto",
     });
-    iconDiv.appendChild(mediaEl);
+    const icon = createLogoOrIconElement(
+      "icon" in data ? "icon" : "logo",
+      data?.icon || data?.logo,
+      config.style.media
+    );
+
+    icon && iconDiv.appendChild(icon);
     flexWrapper.appendChild(iconDiv);
 
     const textDiv = document.createElement("div");
@@ -231,8 +230,6 @@ export function createVariant(data, config) {
     flexWrapper.appendChild(textDiv);
     wrapper.appendChild(flexWrapper);
   } else {
-    if (mediaEl) wrapper.appendChild(mediaEl);
-
     if (data.title) {
       const title = document.createElement("div");
       title.className = "pinglet-title";
@@ -315,12 +312,6 @@ export function createVariant(data, config) {
  */
 function createMediaElement(media, style, controls) {
   switch (media.type) {
-    case "logo": {
-      const logo = document.createElement("img");
-      logo.src = media.src;
-      Object.assign(logo.style, style?.logo || defaultStyles.media.logo);
-      return logo;
-    }
     case "image": {
       const img = document.createElement("img");
       img.src = media.src;
@@ -348,59 +339,76 @@ function createMediaElement(media, style, controls) {
       return video;
     }
     case "audio": {
-      const audio = document.createElement("audio");
-      audio.src = media.src;
-      audio.autoplay =
+      return audioPlayerElement(
+        media.src,
+        controls?.audio?.muted || defaultStyles.controls?.audio.muted || false,
+        controls?.audio?.loop || defaultStyles.controls?.audio?.loop || false,
         controls?.audio?.controls ||
-        defaultStyles.controls?.audio.autoplay ||
-        false;
-      audio.muted =
-        controls?.audio?.muted || defaultStyles.controls?.audio.muted || false;
-      audio.loop =
-        controls?.audio?.loop || defaultStyles.controls?.audio?.loop || false;
-      audio.controls =
-        controls?.audio?.controls ||
-        defaultStyles.controls?.audio?.controls ||
-        false;
-      Object.assign(audio.style, audio?.video || defaultStyles.media.audio);
-
-      return audio;
+          defaultStyles.controls?.audio?.controls ||
+          false
+      );
     }
-    case "icon": {
-      const iconSpan = document.createElement("span");
 
-      if (typeof media.src === "string") {
-        const isBase64Image = /^data:image\/(png|jpeg|gif|webp);base64,/.test(
-          media.src
-        );
-        const isSvg = /^<svg[\s\S]*<\/svg>$/.test(media.src.trim());
-
-        if (isBase64Image) {
-          iconSpan.style.backgroundImage = `url('${media.src}')`;
-          iconSpan.style.backgroundSize = "cover";
-          iconSpan.textContent = "";
-        } else if (isSvg) {
-          iconSpan.innerHTML = media.src;
-        } else {
-          iconSpan.textContent = media.src; // emoji or text
-        }
-      }
-
-      iconSpan.className = "pinglet-icon";
-      Object.assign(iconSpan.style, {
-        width: "40px",
-        height: "40px",
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundPosition: "center",
-        borderRadius: "8px",
-        fontSize: "24px",
-        overflow: "hidden",
-      });
-      return iconSpan;
-    }
     default:
       return null;
   }
+}
+/**
+ * Creates a logo or icon element based on the provided type and src.
+ *
+ * For logos, creates an img element with the src set to the provided value.
+ * For icons, creates a span element and sets its background image to the
+ * provided value if it is a base64 image, sets its innerHTML to the provided
+ * value if it is an SVG, and sets its text content to the provided value if
+ * it is a text or emoji.
+ *
+ * @param {string} type - The type of the element to create, either "logo" or "icon".
+ * @param {string} src - The source of the image or icon.
+ * @param {GlobalConfig["style"]["media"]} style - Optional styles to apply to the created element.
+ * @returns {HTMLElement} The created element.
+ */
+function createLogoOrIconElement(type, src, style) {
+  if (type === "logo") {
+    {
+      const logo = document.createElement("img");
+      logo.src = src;
+      Object.assign(logo.style, style?.logo || defaultStyles.media.logo);
+      return logo;
+    }
+  }
+  if (type === "icon") {
+    const iconSpan = document.createElement("span");
+
+    if (typeof src === "string") {
+      const isBase64Image = /^data:image\/(png|jpeg|gif|webp);base64,/.test(
+        src
+      );
+      const isSvg = /^<svg[\s\S]*<\/svg>$/.test(src.trim());
+
+      if (isBase64Image) {
+        iconSpan.style.backgroundImage = `url('${src}')`;
+        iconSpan.style.backgroundSize = "cover";
+        iconSpan.textContent = "";
+      } else if (isSvg) {
+        iconSpan.innerHTML = src;
+      } else {
+        iconSpan.textContent = src; // emoji or text
+      }
+    }
+
+    iconSpan.className = "pinglet-icon";
+    Object.assign(iconSpan.style, {
+      width: "40px",
+      height: "40px",
+      display: "inline-flex",
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundPosition: "center",
+      borderRadius: "8px",
+      fontSize: "24px",
+      overflow: "hidden",
+    });
+    return iconSpan;
+  }
+  return null;
 }

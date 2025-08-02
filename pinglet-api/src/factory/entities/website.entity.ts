@@ -1,4 +1,6 @@
+import webpush from 'web-push';
 import {
+	BeforeInsert,
 	Column,
 	CreateDateColumn,
 	DeleteDateColumn,
@@ -18,10 +20,10 @@ import { UserEntity } from "./users.entity";
 export class WebsiteEntity {
 	@PrimaryGeneratedColumn("increment")
 	id!: number;
-	@Column({ type: "varchar",  length: 255 })	 
+	@Column({ type: "varchar", length: 255 })
 	name!: string;
 
-	@Column({ type: "varchar", default: [], array: true ,nullable: true })	 
+	@Column({ type: "varchar", default: [], array: true, nullable: true })
 	tags!: string[];
 
 	@Column({ type: "varchar", unique: true, length: 255 })
@@ -55,4 +57,21 @@ export class WebsiteEntity {
 		(project) => project.website,
 	)
 	projects!: ProjectEntity[];
+
+	@Column("jsonb", { nullable: true })
+	pinglet_id!: {
+		publicKey: string;
+		privateKey: string;
+	};
+
+	@BeforeInsert()
+	insertPingletId() {
+		if (!this.pinglet_id) {
+			const keys = webpush.generateVAPIDKeys()
+			this.pinglet_id = {
+				publicKey: keys.publicKey,
+				privateKey: keys.privateKey,
+			};
+		}
+	}
 }

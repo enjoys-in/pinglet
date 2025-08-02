@@ -24,6 +24,9 @@ interface Website {
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
+  pinglet_id:{
+    publicKey:string
+  }
 }
 
 

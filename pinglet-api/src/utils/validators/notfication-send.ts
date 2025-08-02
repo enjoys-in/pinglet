@@ -1,31 +1,38 @@
 import { z } from "zod";
+import { NotificationPayloadSchema } from "./browser-notification";
 
 // Icon/media schema
+const iconSchema = z.string().superRefine((data, ctx) => {
+  if (typeof data === "string" && data.startsWith("http")) {
+    ctx.addIssue({
+      path: ["icon"],
+      code: z.ZodIssueCode.custom,
+      message: "Icons must not use a URL. Provide a local text,svg,base64 or inline value instead.",
+    });
+  }
+});
+const logoSchema = z.string().superRefine((data, ctx) => {
+  if (typeof data === "string" && data.startsWith("http")) {
+    ctx.addIssue({
+      path: ["logo"],
+      code: z.ZodIssueCode.custom,
+      message: "Logo must provide a valid URL or base64.",
+    });
+  }
+});
 const mediaSchema = z
   .object({
-    type: z.enum(["icon", "image", "video", "audio", "iframe", "logo"]),
+    type: z.enum(["image", "video", "audio", "iframe"]),
     src: z.any().optional(),
   })
   .strict()
   .superRefine((data, ctx) => {
-    const isIcon = data.type === "icon";
-
-    if (isIcon) {
-      if (typeof data.src === "string" && data.src.startsWith("http")) {
-        ctx.addIssue({
-          path: ["src"],
-          code: z.ZodIssueCode.custom,
-          message: "Icons must not use a URL. Provide a local,svg,base64 or inline value instead.",
-        });
-      }
-    } else {
-      if (!data.src || typeof data.src !== "string" || !/^https?:\/\//.test(data.src)) {
-        ctx.addIssue({
-          path: ["src"],
-          code: z.ZodIssueCode.custom,
-          message: "Media types other than 'icon' must provide a valid URL.",
-        });
-      }
+    if (!data.src || typeof data.src !== "string" || !/^https?:\/\//.test(data.src)) {
+      ctx.addIssue({
+        path: ["src"],
+        code: z.ZodIssueCode.custom,
+        message: "Media types must provide a valid URL or base64.",
+      });
     }
   });
 // Buttons schema
@@ -40,10 +47,14 @@ const buttonReloadOrClose = baseButtonSchema.extend({
 });
 const buttonWithOnClick = baseButtonSchema.extend({
   action: z.literal("onClick"),
-  onClick: z.string().url(),
+  onClick: z.string(),
+});
+const buttonWithOnAlert = baseButtonSchema.extend({
+  action: z.literal("alert"),
+  src: z.string(),
 });
 const buttonWithSrc = baseButtonSchema.extend({
-  action: z.enum(["redirect", "link", "alert"]),
+  action: z.enum(["redirect", "link"]),
   src: z.string().url(),
 });
 
@@ -57,7 +68,8 @@ export const buttonSchema = z.discriminatedUnion("action", [
   buttonReloadOrClose,
   buttonWithSrc,
   buttonWithEvent,
-  buttonWithOnClick
+  buttonWithOnClick,
+  buttonWithOnAlert
 ]);
 export const buttonsArraySchema = z.array(buttonSchema);
 // Theme and branding schema
@@ -113,17 +125,18 @@ export const notificationSchema = z.object({
     title: z.string().min(3),
     description: z.string().optional(),
     media: mediaSchema.optional(),
-    buttons: z.array(buttonSchema).optional(),
-    actions: z.array(z.object({ action: z.union([z.literal("redirect"), z.literal("alert")]), title: z.string() })).optional(),
-  }).optional(),
-
-  data: z.record(z.any(), z.any()).optional()
+    buttons: z.array(buttonSchema)  .max(2, 'Maximum 2 actions allowed').optional(),
+    icon: iconSchema.optional(),
+    logo: logoSchema.optional(),
+  }).optional(), // for type 0
+  data:  NotificationPayloadSchema.optional(), // for type -1
+  custom_template: z.record(z.any(), z.any()).optional() // for type 1
 })
   .superRefine((data, ctx) => {
     const isTemplate = data.template_id !== undefined;
     const isVariant = data.variant !== undefined;
 
-    if (data.type === "1") {
+    if (data.type === "1" || data?.custom_template) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["custom_template"],
@@ -139,13 +152,14 @@ export const notificationSchema = z.object({
         message: "`template_id` is required when type is '1'",
       });
     }
-    if (data.body?.buttons && data.body?.buttons.length > 2) {
+    if (data.type === "1" && data?.body) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        path: ["buttons"],
-        message: "`buttons` cannot have more than 2 buttons",
+        path: ["body"],
+        message: "`body` is not required when type is '1'",
       });
     }
+   
     // 2. If type is not "1", template_id must not be present
     if (data.type !== "1" && isTemplate) {
       ctx.addIssue({
@@ -153,20 +167,7 @@ export const notificationSchema = z.object({
         path: ["template_id"],
         message: "`template_id` must not be provided unless type is '1'",
       });
-      if (data.type == "0" && (data.body?.actions || !data.body?.buttons)) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["buttons", "actions"],
-          message: "`buttons` is required when type is '0' and `actions` is not allowed",
-        });
-      }
-      if (data.type == "-1" && (!data.body?.actions || data.body?.buttons)) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["buttons", "actions"],
-          message: "`actions` is required when type is '-1' and `buttons` is not allowed",
-        });
-      }
+
     }
 
     // 3. variant and template_id cannot both exist
@@ -185,11 +186,11 @@ export const notificationSchema = z.object({
 
     // 4. If template_id is present: data is required, body is not allowed
     if (isTemplate) {
-      if (!data.data) {
+      if (!data?.custom_template) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          path: ["data"],
-          message: "`data` is required when using `template_id`",
+          path: ["custom_template"],
+          message: "`custom_template` is required when using `template_id`",
         });
       }
       if (data.body) {
@@ -201,24 +202,32 @@ export const notificationSchema = z.object({
       }
     }
 
-    // 5. If template_id is NOT present: body is required, data is not allowed
+    // 5. If template_id is NOT present: body is required,custom_template, data is not allowed
     if (!isTemplate) {
-      if (!data.body && data.type !== "1") {
+      if (!data.body && data.type === "0") {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ["body"],
-          message: "`body` is required when not using `template_id` and `type` is not '1'",
+          message: "`body` is required when not using `template_id` and `type` is  '0'",
         });
       }
 
 
-      if (data.data) {
+      if (data.custom_template) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ["data"],
           message: "`data` must not be provided unless using `template_id`",
         });
       }
+    }
+    // 6. If type is "-1", data is required
+    if (data.type === "-1" && !data.data) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["data"],
+        message: "`data` is required when type is '-1'",
+      });
     }
 
 

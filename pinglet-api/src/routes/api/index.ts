@@ -20,6 +20,7 @@ router.post("/notifications/subscribe", pushNtfyController.subscribeNotificatons
 router.post("/notifications/unsubscribe", pushNtfyController.subscribeNotificatons);
 router.get("/notifications/sse", pushNtfyController.customNotificatons);
 router.get("/notifications/sw.js", pushNtfyController.swJSFile);
+router.get("/load-widget/:wid?", pushNtfyController.loadWidgetJsFile);
 // API to trigger a notification
 router.post("/notifications/send", Limiter.forRoute("/notifications/subscribe", {
     windowMs: 1 * 60 * 1000, // 1 minutes

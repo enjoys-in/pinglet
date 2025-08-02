@@ -16,9 +16,11 @@
  * @property {string} [variant]
  * @property {string} title
  * @property {string} [description]
+ * @property {string} [icon]
+ * @property {string} [logo]
  * @property {MediaData} [media]
  * @property {Array<{ text: string, action: string }>} [buttons]
- * @property {Array<{ action: string, title: string }>} [actions]
+
  */
 /**
  * @typedef {Object} NotificationData
@@ -27,6 +29,28 @@
  * @property {string} tag
  * @property {1|0|-1} type // -1, 0, 1 default is 0
  * @property {NotificationDataBody} [body]
+ * @property {Object} [overrides]
+ * @property {Object} [data]
+
+ */
+
+/**
+ * @typedef {Object} NotificationDataForBrowser
+ * @property {string} project_id
+ * @property {string} [template_id]
+ * @property {string} tag
+ * @property {1|0|-1} type // -1, 0, 1 default is 0
+ * @property {NotificationDataBody} [body]
+ * @property {Object} [overrides]
+ * @property {Object} [data]
+
+ */
+/**
+ * @typedef {Object} NotificationDataCustomTemplate
+ * @property {string} project_id
+ * @property {string} [template_id]
+ * @property {string} tag
+ * @property {1|0|-1} type // -1, 0, 1 default is 0 
  * @property {Object} [overrides]
  * @property {Object} [data]
 

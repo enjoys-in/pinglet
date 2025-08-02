@@ -15,6 +15,7 @@ import {
   User2,
   Globe2,
   WalletCards,
+  HeartHandshake,
 } from "lucide-react"
 
 import {
@@ -42,12 +43,12 @@ const data = {
       items: [
         {
           title: "Dashboard",
-          url: "/dashboard",
+          url: "/u/dashboard",
           icon: LayoutDashboard,
         },
         {
           title: "Analytics",
-          url: "/analytics",
+          url: "/u/analytics",
           icon: BarChart3,
         },
       ],
@@ -57,38 +58,43 @@ const data = {
       items: [
         {
           title: "Websites",
-          url: "/websites",
+          url: "/u/websites",
           icon: Globe2,
         },
 
         {
           title: "Projects",
-          url: "/projects",
+          url: "/u/projects",
           icon: FolderOpen,
         },
-         {
+        // {
+        //   title: "Widgets",
+        //   url: "/widgets",
+        //   icon: HeartHandshake,
+        // },
+        {
           title: "Templates",
-          url: "/templates",
+          url: "/u/templates",
           icon: WalletCards,
         },
         {
           title: "Notifications",
-          url: "/notifications",
+          url: "/u/notifications",
           icon: Bell,
         },
         {
           title: "Domains",
-          url: "/domains",
+          url: "/u/domains",
           icon: Globe,
         },
         {
           title: "Flows",
-          url: "/flows",
+          url: "/u/flows",
           icon: GitBranch,
         },
         {
           title: "Webhooks",
-          url: "/webhooks",
+          url: "/u/webhooks",
           icon: Webhook,
         },
       ],
@@ -98,7 +104,7 @@ const data = {
       items: [
         {
           title: "Account",
-          url: "/settings",
+          url: "/u/settings",
           icon: Settings,
         },
       ],
@@ -115,7 +121,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <Link href="/dashboard">
+              <Link href="/dashboard" className="cursor-pointer">
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                   <span className="font-bold text-lg">P</span>
                 </div>
@@ -134,9 +140,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarGroup key={group.title}>
             <SidebarGroupLabel>{group.title}</SidebarGroupLabel>
             <SidebarGroupContent>
-              <SidebarMenu>
+              <SidebarMenu> 
                 {group.items.map((item) => (
-                  <SidebarMenuItem key={item.title}>
+                  <SidebarMenuItem key={item.title} className={`${ pathname === item.url && "bg-zinc-800"} hover:bg-zinc-100  dark:hover:bg-zinc-800/30`}>
                     <SidebarMenuButton asChild isActive={pathname === item.url} tooltip={item.title}>
                       <Link href={item.url}>
                         <item.icon />
@@ -160,7 +166,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   size="lg"
                   className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                 >
-              <Userbar />
+                  <Userbar />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
               <DropdownMenuContent

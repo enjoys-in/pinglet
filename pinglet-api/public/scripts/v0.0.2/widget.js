@@ -89,7 +89,7 @@ function createPingletToastContainer(branding) {
   toastContainer.style.alignItems = "flex-start";
   toastContainer.style.gap = "8px";
   toastContainer.style.maxWidth = "360px";
-  toastContainer.style.width = "calc(100vw - 40px)";
+  toastContainer.style.width = "360px";
   toastContainer.style.boxSizing = "border-box";
   toastContainer.style.pointerEvents = "none";
   toastContainer.style.padding = "4px";

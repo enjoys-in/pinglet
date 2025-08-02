@@ -1,0 +1,44 @@
+import { BeforeInsert, Column, CreateDateColumn, DeleteDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, Relation, UpdateDateColumn } from "typeorm";
+import { UserEntity } from "./users.entity";
+
+import helpers from "@/utils/helpers";
+import { WidgetProps } from "@/utils/interfaces/widgets.interface";
+
+@Entity("widgets")
+export class WidgetEntity {
+    @PrimaryGeneratedColumn()
+    id!: number;
+
+    @Column()
+    widget_id!: string;
+
+    @Column("jsonb")
+    data!: WidgetProps;
+
+    @Column("jsonb")
+    style_props!: Record<string, any>;
+
+    @Column({ default: true })
+    is_active!: boolean;
+
+    @ManyToOne(
+        () => UserEntity,
+        (u) => u.id, { nullable: true, onDelete: "SET NULL", }
+    )
+    user!: Relation<UserEntity> | null;
+
+    @CreateDateColumn()
+    created_at!: Date;
+
+    @UpdateDateColumn()
+    updated_at!: Date;
+
+    @DeleteDateColumn()
+    deleted_at?: Date;
+
+    @BeforeInsert()
+    generateWidgetId() {
+        this.widget_id = helpers.RandomToken(24);
+    }
+
+}

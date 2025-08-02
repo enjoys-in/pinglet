@@ -1,0 +1,27 @@
+{
+	"projectId": "0e5c2a5f527acdbe13791234",
+	"variant": "default",
+	"type": "0",
+	"body": {
+		"title": "Hello From Pinglet",
+		"description": "This is Demo Version of Pinglet, New Design are upcoming!",
+		"media": {
+			"type": "icon",
+			"src": "🤣"
+		},
+		"buttons": [
+			{
+				"text": "Fix Now",
+				"src": "http://localhost:8888/api/v1/notifications/send",
+				"action": "link"
+			},
+			{
+				"text": "Dismiss",
+				"action": "close"
+			}
+		]
+	},
+	"overrides": {
+		"auto_dismiss": false
+	}
+}

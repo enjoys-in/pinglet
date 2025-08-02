@@ -23,6 +23,13 @@ class AuthController {
 				throw new Error("Invalid Credentials");
 
 			}
+			const isMatch = await utils.ComparePassword(
+				is_user.password,
+				req.body.password
+			)
+			if (!isMatch) {
+				throw new Error("Invalid Credentials");
+			}
 			const tokenBody = {
 				id: is_user.id,
 				email: req.body.email,
@@ -32,7 +39,7 @@ class AuthController {
 			res.cookie("access_token", signJWT, {
 				httpOnly: true,
 				maxAge: exp, // 30 day
-				secure: __CONFIG__.APP.APP_ENV !== "DEV",
+				secure: __CONFIG__.APP.APP_ENV === "DEV"?false:true,
 				sameSite: __CONFIG__.APP.APP_ENV === "DEV" ? "lax" : "strict",
 				expires: new Date(Date.now() + exp),
 			});

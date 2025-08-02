@@ -4,6 +4,7 @@
 	"main": "build/main.js",
 	"scripts": {
 		"types": "npx tsc -p ./tsconfig.types.json",
+		"worker": "node ./build/worker.js",
 		"pkg": "npx rollup -c && node generate-sri.js && npm publish --access=public ./public/libs",
 		"build": "nest build",
 		"ready": "npm install",
@@ -44,6 +45,7 @@
 		"bcrypt": "^5.1.1",
 		"bcryptjs": "^3.0.2",
 		"body-parser": "^1.20.3",
+		"bullmq": "^5.56.9",
 		"class-transformer": "^0.5.1",
 		"class-validator": "^0.14.2",
 		"colorette": "^2.0.20",

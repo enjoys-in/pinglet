@@ -1,6 +1,6 @@
 import { PushSubscriptionEntity } from "@/factory/entities/pushSubscription.entity";
 import { InjectRepository } from "@/factory/typeorm";
-import type { DeepPartial, FindManyOptions, Repository } from "typeorm";
+import type { DeepPartial, FindManyOptions, FindOptionsSelectByString, Repository } from "typeorm";
 
 class PushSubscriptionService {
     constructor(
@@ -27,8 +27,10 @@ class PushSubscriptionService {
     getSubscriptions(opts: FindManyOptions<PushSubscriptionEntity>) {
         return this.subsRepo.find(opts);
     }
-    getSubscriptionsByProjectId(id: string) {
-        return this.subsRepo.find({ where: { project_id: id } });
+    getSubscriptionsByProjectId(id: string,select: FindOptionsSelectByString<PushSubscriptionEntity>=[]) {
+        return this.subsRepo.find({
+            where: { project_id: id },  select
+        });
     }
     deleteSubscription(project_id: string, endpoint: string) {
         return this.subsRepo.delete({ project_id: project_id, endpoint });

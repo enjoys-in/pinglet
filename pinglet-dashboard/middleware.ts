@@ -6,19 +6,24 @@ export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
     const access_token = request.cookies.get('access_token')?.value;
 
-    const isLoginPage = pathname === '/login';
-    const isProtectedPath = pathname.startsWith('/dashboard');
+    const isAuth = pathname.startsWith('/auth')
+    const isProtectedPath = pathname.startsWith('/u');
 
     // Case 1: Logged in user accessing login page — redirect to dashboard
-    if (access_token && isLoginPage) {
-        return NextResponse.redirect(new URL('/dashboard', request.url));
+    if (access_token && isAuth) {
+      
+        return NextResponse.redirect(new URL('/u/dashboard', request.url));
     }
 
     // Case 2: Not logged in and accessing a protected page — redirect to login
     if (!access_token && isProtectedPath) {
-        return NextResponse.redirect(new URL('/login', request.url));
+        return NextResponse.redirect(new URL('/auth/login', request.url));
     }
     if (access_token && isProtectedPath) {
+        
+        if (pathname === '/u') {
+            return NextResponse.redirect(new URL('/u/dashboard', request.url))
+        }
         return NextResponse.next();
     }
 
