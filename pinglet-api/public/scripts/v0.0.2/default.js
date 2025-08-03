@@ -2,36 +2,52 @@
 /** @typedef {import('./types/buttons.js').ButtonsData} ButtonsData  */
 
 /**
+ * Fire a custom event with the given eventname and detail
+ * @param {string} [eventname="pinglet:notificationClosed"] - The name of the event
+ * @param {detail:{contentEl: HTMLElement, reason: "user-dismiss"}} [detail] - The detail of the event
+ * @returns {boolean} whether the default action was prevented or not
+ */
+export function fireCustomEvent(
+  eventname = "pinglet:notificationClosed",
+  detail
+) {
+  return window.dispatchEvent(
+    new CustomEvent(eventname, {
+      detail,
+    })
+  );
+}
+/**
  * @function
  * @param {ButtonsData} btn
- * @param {HTMLElement} toast - The toast element to be manipulated
+ * @param {HTMLButtonElement} ele - The toast element to be manipulated
  * @returns {Function} - The function that is triggered when a notification button is clicked
  */
 export function _btnActions(btn, ele) {
   switch (btn.action) {
     case "redirect":
-      return () => window.open(btn.src, "_blank");
+    case "open":
+      return window.open(btn.src, "_blank");
     case "link":
-      return () => window.open(btn.src);
+      return window.open(btn.src);
     case "alert":
-      return () => alert(btn.src);
+      return alert(btn.src);
     case "reload":
-      return () => window.location.reload();
+      return window.location.reload();
     case "event":
-      return () => self.addEventListener(btn.src, () => {});
+      return window.addEventListener(btn.src, () => {});
     case "close":
-      return () => {
-        window.dispatchEvent(
-          new CustomEvent("pinglet:notificationClosed", {
-            detail: {
-              contentEl: ele,
-              reason: "user-dismiss",
-            },
-          })
-        );
-      };
+    case "dismiss":
+      return window.dispatchEvent(
+        new CustomEvent("pinglet:notificationClosed", {
+          detail: {
+            contentEl: ele,
+            reason: "user-dismiss",
+          },
+        })
+      );
   }
-  return () => window.open("https://pinglet.enjoys.in/docs", "_blank");
+  return window.open("https://pinglet.enjoys.in/docs", "_blank");
 }
 
 /**

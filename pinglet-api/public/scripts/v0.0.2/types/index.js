@@ -18,6 +18,7 @@
  * @property {string} [description]
  * @property {string} [icon]
  * @property {string} [logo]
+ * @property {string} [url]
  * @property {MediaData} [media]
  * @property {Array<{ text: string, action: string }>} [buttons]
 

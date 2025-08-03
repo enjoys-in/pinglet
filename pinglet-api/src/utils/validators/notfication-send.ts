@@ -128,6 +128,7 @@ export const notificationSchema = z.object({
     buttons: z.array(buttonSchema)  .max(2, 'Maximum 2 actions allowed').optional(),
     icon: iconSchema.optional(),
     logo: logoSchema.optional(),
+    url: z.string().url().optional(),
   }).optional(), // for type 0
   data:  NotificationPayloadSchema.optional(), // for type -1
   custom_template: z.record(z.any(), z.any()).optional() // for type 1

@@ -3,12 +3,16 @@
 
 /** @type {HTMLAudioElement|null} */
 let soundPlayer;
+
 /** @type {HTMLDivElement|null} */
 let toastContainer;
+
 /** @type {HTMLDivElement|null} */
 export let toastStack = null;
+
 /** @type {HTMLDivElement|null} */
 export let brandingElement = null;
+
 /** @type {string|null} */
 let soundSrc = null;
 /**
@@ -65,7 +69,7 @@ export function createBrandingElement(branding) {
  * if specified.
  *
  * @param {ProjectConfig["branding"]} branding - The branding configuration object.
- * @returns {Object} An object containing the toast container and stack elements.
+ * @returns {{ toastContainer: HTMLDivElement, toastStack: HTMLDivElement }} An object containing the toast container and stack elements.
  */
 function createPingletToastContainer(branding) {
   if (toastContainer && toastStack) return { toastContainer, toastStack };
@@ -93,7 +97,6 @@ function createPingletToastContainer(branding) {
   toastContainer.style.boxSizing = "border-box";
   toastContainer.style.pointerEvents = "none";
   toastContainer.style.padding = "4px";
- 
 
   // Add some subtle background and shadow for the container itself (optional)
 
@@ -142,10 +145,16 @@ export function renderToast(contentEl, globalConfig) {
   toastStack.appendChild(contentEl);
 
   if (config?.auto_dismiss) {
-    setTimeout(() => {
-      removeToast(contentEl, config?.transition || "fade");
+    setTimeout(() => {    
+      // Check if the content element is still in the stack
+      if (toastStack.contains(contentEl)) {
+        prepareEventBody("dropped", contentEl, "user doesn't engaged");
+        removeToast(contentEl, config?.transition || "fade");
+      }
     }, config.duration || 5000);
   }
+
+  return { toastContainer, toastStack };
 }
 
 /**
@@ -211,6 +220,24 @@ function removeToast(toast, type) {
   );
 }
 window.addEventListener("pinglet:notificationClosed", (event) => {
+  prepareEventBody("closed", event.detail.contentEl, event.detail.reason);
   removeToast(event.detail.contentEl, "fade");
-  // send notification close event i.e drop rate
 });
+/**
+ * Prepares and sends a notification event with the given type and reason.
+ *
+ * @param {"clicked"|"dropped"|"closed"} type - The type of notification event to trigger.
+ * @param {HTMLElement} contentEl - The content element associated with the notification.
+ * @param {string} [reason="user-dismiss"] - The reason for the event, defaulting to "user-dismiss".
+ * @returns {Promise<void>}
+ */
+export async function prepareEventBody(type, contentEl, reason = "user-dismiss") {
+  const notification_id = contentEl.getAttribute("data-notification-id");
+  const [project_id, timestamp] = notification_id.split("-");
+  window.sendNotificationEvent(type, {
+    project_id,
+    notification_id,
+    timestamp,
+    reason,
+  });
+}

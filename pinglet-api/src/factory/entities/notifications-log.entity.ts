@@ -10,14 +10,9 @@ import {
 } from "typeorm";
 
 import { NotificationEntity } from "./notifications.entity";
+import { ANALYTICS_EVENTS } from "@/utils/services/kafka/topics";
 
-export enum NotificationStatus {
-	SENT = "sent",
-	CLICKED = "clicked",
-	FAILED = "failed",
-	DELIVERED = "delivered",
-	DROPPED = "dropped",
-}
+
 
 @Entity("notification_logs")
 export class NotificationLogEntity {
@@ -35,23 +30,28 @@ export class NotificationLogEntity {
 	notification!: Relation<NotificationEntity>;
 
 	@Column()
-	@Index()
 	notification_id!: string;
 
-	@Column({ type: "enum", enum: NotificationStatus })
-	status!: NotificationStatus;
+	@Column({ type: "enum", enum: ANALYTICS_EVENTS })
+	event!: ANALYTICS_EVENTS;
 
 	@Column({ nullable: true })
-	form_id!: string;
+	type!: string;
 
 	@Column({ nullable: true })
-	user_id!: string; // anonymous or registered user
+	triggered_at!: string;
 
-	@Column({ nullable: true })
-	ip_address!: string;
+	// @Column({ nullable: true })
+	// form_id!: string;
 
-	@Column({ nullable: true })
-	user_agent!: string;
+	// @Column({ nullable: true })
+	// user_id!: string; // anonymous or registered user
+
+	// @Column({ nullable: true })
+	// ip_address!: string;
+
+	// @Column({ nullable: true })
+	// user_agent!: string;
 
 	@CreateDateColumn()
 	created_at!: Date;

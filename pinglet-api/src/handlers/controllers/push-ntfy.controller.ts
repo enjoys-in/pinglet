@@ -1,5 +1,5 @@
-import { createReadStream, readFile } from "node:fs";
-import path from "node:path";
+import { createReadStream, readFile, readFileSync } from "node:fs";
+import path, { join } from "node:path";
 import type { Request, Response } from "express";
 import { projectService } from "../services/project.service";
 
@@ -10,15 +10,31 @@ import { DEFAULT_WIDGET_TEMPLATE, WidgetErrorTemplate } from "@/factory/template
 import { WidgetService } from "../services/widget.service";
 import { QueueService } from "@/utils/services/queue";
 import { ListenWorkers } from "@/utils/services/queue/worker";
-import webpush from 'web-push';
+import { KafkaAnalyticsConsumer } from "../services/kafka/notificationConsumer";
+import { AppEvents } from "@/utils/services/Events";
+import { OnEvent } from "@/utils/decorators";
+import { QUEUE_JOBS } from "@/utils/services/queue/name";
 const clients = new Map<string, Set<Response>>();
 
 const sendPushQueue = QueueService.createQueue("SEND_BROWSER_NOTIFICATION")
+const sendToKafkaQueue = QueueService.createQueue("SEND_KAFKA_NOTIFICATION")
 
 ListenWorkers.listen();
+const analyticsConsumer = new KafkaAnalyticsConsumer()
+analyticsConsumer.start()
 let base64Mp3: string | null = null;
+
+
 class PushNtfyController {
 
+	logEvent = async (req: Request, res: Response) => {
+		const body = req.body
+		sendToKafkaQueue.add(QUEUE_JOBS.SEND_KAFKA_NOTIFICATION, body, {
+			removeOnComplete: true,
+			jobId: `${body.project_id}-${body.notificationTag}-${body.timestamp}-${body.event}`
+		})
+		res.end();
+	}
 	loadConfig = async (req: Request, res: Response) => {
 		try {
 			const query = req.query as { projectId: string, domain: string };
@@ -272,17 +288,12 @@ class PushNtfyController {
 			}
 			const { projectId, ...rest } = req.body;
 			if (projectId && rest.type === "-1" && rest?.data) {
-				const value = await Cache.cache.get(`${projectId}-notification`)
-				if (!value) {
-					await sendPushQueue.add("send-browser-notification1", JSON.stringify(req.body));
-				} else {
-					const t = JSON.parse(value) as { subcription: { endpoint: string, keys: { p256dh: string, auth: string } }[], vapidKeys: { publicKey: string, privateKey: string } }
-					webpush.setVapidDetails('mailto:6yqyD@example.com', t.vapidKeys.publicKey, t.vapidKeys.privateKey);
-					t.subcription.forEach((sub) => {
-						webpush.sendNotification(sub, JSON.stringify(rest.data));
-					})
-				}
+				sendPushQueue.add("send-browser-notification", JSON.stringify(req.body), {
+					jobId: `${projectId}-${Date.now()}`,
+					removeOnComplete: true,
+					removeOnFail: true,
 
+				});
 				res.setHeader("Content-Security-Policy", "img-src * data: 'self';");
 				res.setHeader("X-Content-Type-Options", "nosniff");
 				res.setHeader("X-Notification-Type", "push");
@@ -295,7 +306,7 @@ class PushNtfyController {
 			}
 			res.setHeader("X-Notification-Type", "custom");
 
-			const payload = JSON.stringify(rest);
+			const payload = JSON.stringify(req.body);
 
 			clients.get(projectId)?.forEach((client) => {
 				client.write(`data: ${payload}\n\n`);
@@ -349,60 +360,135 @@ class PushNtfyController {
 		}
 	};
 	swJSFile = async (req: Request, res: Response) => {
-		const dynamicCode = `self.addEventListener("push", (event) => {
+		const dynamicCode = `self.addEventListener("install", (event) => {
+  self.skipWaiting();
+});
+
+self.addEventListener("activate", (event) => {
+  clients.claim();
+});
+self.addEventListener("push", (event) => {
+  console.log("[Service Worker] Push Received.");
   if (!event.data) return;
 
-  const data = event.data.json();
-
+  const data = event.data?.json?.() || {};
   const options = {
     body: data?.body,
     icon: data?.icon,
     badge: data?.badge,
     tag: data?.tag,
-    requireInteraction: data?.requireInteraction||true,
-    silent: data?.silent||false,
+    requireInteraction: data?.requireInteraction || true,
+    silent: data?.silent || false,
     data: data?.data,
     actions: data?.actions,
-    image: data?.image,  
+    image: data?.image,
     timestamp: Date.now(),
     vibrate: [200, 100, 200], // Vibration pattern for mobile
   };
-
   // Auto-dismiss after duration
   if (data.data && data.data.duration) {
     setTimeout(() => {
       self.registration
         .getNotifications({ tag: data.tag })
         .then((notifications) => {
-          notifications.forEach((notification) => notification.close());
+          notifications.forEach((notification) => {
+            broadcastCustomEvent("dropped", {
+              ...data,
+              notificationTag: notification.tag,
+              timestamp: Date.now(),
+            });
+            notification.close();
+          });
         });
-    }, data.data.duration);
+    }, data.data?.duration||5000);
   }
 
   event.waitUntil(self.registration.showNotification(data.title, options));
 });
-
+async function broadcastCustomEvent(eventName, payload) {
+  const clients = await self.clients.matchAll({
+    includeUncontrolled: true,
+  });
+  clients.forEach((client) => {
+    client.postMessage({
+      type: "CUSTOM_NOTIFICATION_EVENT",
+      eventName: eventName,
+      payload: payload,
+    });
+  });
+}
 // Handle notification clicks
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
+  const notificationData = event.notification.data || {};
+  const actionId = event.action;
+ 
+  if (
+    actionId &&
+    notificationData.actionEvents &&
+    notificationData.actionEvents[actionId]
+  ) {
+    const actionConfig = notificationData.actionEvents[actionId];
+    async function handleCustomAction(actionConfig, notificationData, event) {
+      const { eventName, eventData, url, windowAction } = actionConfig;
 
-  if (event.action === "view") {
-    // Open the app/website
-    event.waitUntil(clients.openWindow(event.notification.data.url || "/"));
+      try {
+        await broadcastCustomEvent(eventName, {
+          ...eventData,
+          notificationTag: event.notification.tag,
+          timestamp: Date.now(),
+        });
+
+        // 2. Handle window/URL actions
+        if (windowAction === "open" && url) {
+          await clients.openWindow(url);
+        } else if (windowAction === "focus") {
+          const windowClients = await clients.matchAll({ type: "window" });
+          if (windowClients.length > 0) {
+            await windowClients[0].focus();
+          } else if (url) {
+            await clients.openWindow(url);
+          }
+        }
+
+        // 3. Log action for analytics
+      } catch (error) {}
+    }
+    event.waitUntil(handleCustomAction(actionConfig, notificationData, event));
   } else if (event.action === "dismiss") {
-    // Just close the notification
-    return;
+     event.waitUntil(
+      broadcastCustomEvent("closed", {
+        ...notificationData,
+        notificationTag: event.notification.tag,
+        timestamp: Date.now(),
+      })
+    );
+    return event.notification.close();
   } else {
-    // Default click action
-    event.waitUntil(clients.openWindow(event.notification.data.url || "/"));
+    if ("url" in notificationData) {
+      const url = notificationData.url;
+      event.waitUntil(clients.openWindow(url));
+    }
+    event.waitUntil(
+      broadcastCustomEvent("clicked", {
+        ...notificationData,
+        notificationTag: event.notification.tag,
+        timestamp: Date.now(),
+      })
+    );
   }
 });
 
 // Handle notification close
 self.addEventListener("notificationclose", (event) => {
   console.log("Notification closed:", event.notification.tag);
-});`;
+});
+`;
+		// const ty = readFileSync(join(process.cwd(), "public", "scripts", "v0.0.2", "sw.js"), "utf-8")
 		res.set("Content-Type", "application/javascript");
+		res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+		res.set('Pragma', 'no-cache');
+		res.set('Expires', '0');
 		res.send(dynamicCode);
 	};
 	loadWidgetJsFile = async (req: Request, res: Response) => {

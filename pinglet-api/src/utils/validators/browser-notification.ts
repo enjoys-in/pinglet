@@ -40,8 +40,8 @@ const NotificationPayloadSchema = z.object({
 
     badge: z.string()
         .url('Badge must be a valid URL')
-        .optional()
-        .default('/default-badge.png'),
+        .optional(),
+ 
 
     image: z.string()
         .url('Image must be a valid URL')

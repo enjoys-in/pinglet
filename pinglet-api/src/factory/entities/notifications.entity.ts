@@ -3,6 +3,7 @@ import {
 	Column,
 	CreateDateColumn,
 	Entity,
+	Index,
 	JoinColumn,
 	ManyToOne,
 	OneToMany,
@@ -12,7 +13,6 @@ import {
 } from "typeorm";
 import { NotificationLogEntity } from "./notifications-log.entity";
 import { ProjectEntity } from "./project.entity";
-import { TemplateCategoryEntity } from './template-category.entity';
 
 @Entity("notifications")
 export class NotificationEntity {
@@ -31,10 +31,10 @@ export class NotificationEntity {
 		{ onDelete: "CASCADE" },
 	)
 	@JoinColumn({ name: "project_id" })
-	project!: Relation<ProjectEntity>;
+	project!: string;
 
 
-	@Column()
+	@Column({ nullable: true })
 	category_id!: string;
 
 	@Column({ default: true })
@@ -42,7 +42,11 @@ export class NotificationEntity {
 
 
 	@Column()
+	@Index("unique_project", ["project_id"], { unique: true })
 	project_id!: string;
+
+	@Column({ type: "int", default: 0 })
+	total_request!: number;
 
 	@Column({ type: "int", default: 0 })
 	total_sent!: number;
@@ -52,6 +56,9 @@ export class NotificationEntity {
 
 	@Column({ type: "int", default: 0 })
 	total_failed!: number;
+
+	@Column({ type: "int", default: 0 })
+	total_closed!: number;
 
 	@Column({ type: "int", default: 0 })
 	total_dropped!: number;
@@ -71,4 +78,6 @@ export class NotificationEntity {
 		(log) => log.notification,
 	)
 	logs!: NotificationLogEntity[];
+
+
 }

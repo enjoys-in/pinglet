@@ -1,10 +1,11 @@
+/** @typedef {import("./types/native").NotificationPayloadOptions} NotificationPayloadOptions */
+// Initialize event handler registry
+window.notificationEventHandlers = {};
 // Listen for custom events from service worker
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.addEventListener("message", (event) => {
     const { type, eventName, payload } = event.data;
-
     if (type === "CUSTOM_NOTIFICATION_EVENT") {
-      // Trigger custom event on main thread
       triggerCustomNotificationEvent(eventName, payload);
     }
   });
@@ -13,7 +14,7 @@ if ("serviceWorker" in navigator) {
 /**
  * Trigger custom event on main thread
  * @param {string} eventName - Event name
- * @param {Object} payload - Event payload
+ * @param {NotificationPayloadOptions} payload - Event payload
  */
 function triggerCustomNotificationEvent(eventName, payload) {
   // Method 1: Custom DOM event
@@ -21,70 +22,47 @@ function triggerCustomNotificationEvent(eventName, payload) {
     detail: payload,
   });
   document.dispatchEvent(customEvent);
-
-  // Method 2: Call registered handlers
-  if (
-    window.notificationEventHandlers &&
-    window.notificationEventHandlers[eventName]
-  ) {
-    window.notificationEventHandlers[eventName](payload);
-  }
 }
 
 // ===== NOTIFICATION EVENT HANDLER SYSTEM =====
 
-// Initialize event handler registry
-window.notificationEventHandlers = {};
-
 /**
  * Register custom notification event handler
  * @param {string} eventName - Event name
- * @param {Function} handler - Event handler function
+ * @param {(payload:NotificationPayloadOptions)=>void} handler - Event handler function
  */
 function onNotificationEvent(eventName, handler) {
-  window.notificationEventHandlers[eventName] = handler;
-
   // Also listen for DOM events
   document.addEventListener(`notification:${eventName}`, (event) => {
     handler(event.detail);
   });
 }
+// Declare and assign to window
+/**
+ * @typedef {typeof globalThis & {
+ *   sendNotificationEvent: ({ eventName: string, payload: NotificationPayloadOptions}) => void;
+ * }} CustomWindow
+ */
+/** @type {CustomWindow} */
+window.sendNotificationEvent = triggerCustomNotificationEvent;
 
-onNotificationEvent("order_approved", (payload) => {
-  console.log("Order approved:", payload);
-  // Update UI, show success message, etc.
-  updateOrderStatus(payload.orderId, "approved");
-});
+onNotificationEvent("clicked", (payload) => sentEvent("clicked", payload));
 
-onNotificationEvent("message_reply", (payload) => {
-  // Open chat interface, pre-fill reply, etc.
-  openChatWindow(payload.conversationId, payload.replyText);
-});
+onNotificationEvent("dropped", (payload) => sentEvent("dropped", payload));
 
-onNotificationEvent("task_completed", (payload) => {
-  console.log("Task completed:", payload);
-  // Update task list, show completion animation, etc.
-  markTaskComplete(payload.taskId);
-});
-
-function updateOrderStatus(orderId, status) {
-  // Update order in UI
-  const orderElement = document.querySelector(`[data-order-id="${orderId}"]`);
-  if (orderElement) {
-    orderElement.classList.add(`status-${status}`);
-  }
-}
-
-function openChatWindow(conversationId, prefilledText) {
-  window.open(
-    `/chat/${conversationId}?reply=${encodeURIComponent(prefilledText)}`
-  );
-}
-
-function markTaskComplete(taskId) {
-  // Mark task as complete
-  const taskElement = document.querySelector(`[data-task-id="${taskId}"]`);
-  if (taskElement) {
-    taskElement.classList.add("completed");
-  }
+onNotificationEvent("closed", (payload) => sentEvent("closed", payload));
+/**
+ * Triggered when a notification is sent
+ * @param {"clicked"|"dropped"|"closed"} event - Event name
+ * @param {NotificationPayloadOptions|import("./types").NotificationData} data - Notification payload
+ */
+async function sentEvent(event, data) {
+  if (!("project_id" in data)) return;
+  await fetch(`http://localhost:8888/api/v1/log/event`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ ...data, event }),
+  });
 }

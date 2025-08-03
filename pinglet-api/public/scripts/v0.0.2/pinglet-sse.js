@@ -9,14 +9,14 @@ import {
 } from "./default.js";
 
 import { createVariant } from "./variants.js";
-import { createBrandingElement, initWidget, renderToast } from "./widget.js";
+import { createBrandingElement, initWidget, prepareEventBody, renderToast } from "./widget.js";
 import { loadAllTemplates } from "./load-templates.js";
 import {
   askNotificationPermissionFunction,
   TriggerBrowserNotificationApi,
 } from "./push-notification.js";
 import { ShowTestimonials } from "./testimonials.js";
-// import './sw.js';
+import "./sw.js";
 import "./main.js";
 const scriptEl = Array.from(document.scripts).find(
   (s) => s.src.includes("pinglet-sse") && s.dataset.endpoint
@@ -32,6 +32,7 @@ const checksum = currentScript?.dataset.checksum;
 const testimonials = currentScript?.dataset.testimonials;
 
 (async (global) => {
+  global.projectId = projectId;
   if (global.PingletWidget) {
     console.warn("PingletWidget is already initialized.");
     return;
@@ -197,7 +198,18 @@ const testimonials = currentScript?.dataset.testimonials;
         // Customized Templates in form of  Push Notification
         if (parsed?.type === "0" && parsed?.body) {
           const variantEl = createVariant(parsed.body, globalConfig);
-          renderToast(variantEl, globalConfig);
+          variantEl.setAttribute(
+            "data-notification-id",
+            `${parsed?.project_id || projectId}-${Date.now()}`
+          );
+
+          const { toastContainer } = renderToast(variantEl, globalConfig);
+          "url" in parsed.body &&
+            toastContainer.addEventListener("click", () => {
+              prepareEventBody("clicked", variantEl, "user clicked");
+              variantEl.remove();
+              window.open(parsed.body.url, "_blank");
+            });
           return;
         }
         // only browser notifications

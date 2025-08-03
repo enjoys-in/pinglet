@@ -6,7 +6,12 @@
 /** @typedef {import('./types/index.js').MediaData} MediaData */
 
 import { audioPlayerElement } from "./audio-player.js";
-import { _btnActions, defaultConfig, defaultStyles } from "./default.js";
+import {
+  _btnActions,
+  defaultConfig,
+  defaultStyles,
+  fireCustomEvent,
+} from "./default.js";
 import { brandingElement, playSound, toastStack } from "./widget.js";
 /**
  * Create a notification header that displays the domain name, time and a close button.
@@ -104,13 +109,17 @@ function createNotificationHeader(
   if (globalConfig?.dismissible) {
     row.appendChild(closeBtn);
   }
+  closeBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    fireCustomEvent("pinglet:notificationClosed", {
+      contentEl: closeBtn.parentElement?.parentElement,
+      reason: "user-dismiss",
+    });
 
-  closeBtn.onclick = () => {
-    closeBtn.parentElement?.parentElement?.remove();
     if (toastStack && toastStack.children.length === 0) {
       brandingElement?.remove();
     }
-  };
+  });
 
   return row;
 }
@@ -280,7 +289,10 @@ export function createVariant(data, config) {
           btnEl.addEventListener("click", func);
         }
       } else {
-        btnEl.addEventListener("click", _btnActions(btn, wrapper));
+        btnEl.addEventListener("click", (e) => {
+          e.stopPropagation();
+          return _btnActions(btn, wrapper);
+        });
       }
 
       btnWrap.appendChild(btnEl);

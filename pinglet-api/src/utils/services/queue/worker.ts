@@ -7,20 +7,75 @@ import webpush from "web-push";
 import { Cache } from "../redis/cacheService";
 import { NotificationBody } from "@/utils/validators/notfication-send";
 import { pushSubscriptionService } from "@/handlers/services/subscription.service";
-import { websiteService } from '../../../handlers/services/website.service';
+import { websiteService } from '@/handlers/services/website.service';
+
+import { KafkaNotificationProducer } from "../kafka/producer";
+import { KafkaNotificationLogger } from "../kafka/notificationLogger";
+const kafkaProducer = new KafkaNotificationProducer([`${__CONFIG__.KAFKA.KAFKA_HOST}:${__CONFIG__.KAFKA.KAFKA_PORT}`]);
+const logger = new KafkaNotificationLogger(kafkaProducer, "notification-events");
 
 export class ListenWorkers extends QueueService {
     static listen() {
         console.log("Listening to Queue");
-        ListenWorkers.ProcessSendtoSocketNotification();
-    }
+        kafkaProducer.connect();
 
-    private static ProcessSendtoSocketNotification() {
+        ListenWorkers.ProcessSendtoSocketNotification();
+        ListenWorkers.ProcessSendtoKafka();
+    }
+    private static ProcessSendtoKafka() {
         const worker = new Worker(
             QUEUE_NAME.SEND_BROWSER_NOTIFICATION,
             async (job) => {
+                const { project_id, timestamp, event, ...metadata } = job.data as {
+                    project_id: string
+                    timestamp: number
+                    event: 'clicked' | 'dropped' | 'closed'
+                } & Record<string, any>
+                await logger.log({
+                    event,
+                    timestamp,
+                    type: job.data.type,
+                    projectId: job.data.projectId,
+                    notificationId: `${project_id}-${timestamp}`,
+                    metadata
+                });
+            }, {
+            connection: ListenWorkers.connection,
+            useWorkerThreads: true,
+            concurrency: os.cpus().length,
+        }
+        )
+        worker.on("completed", async (job) => {
+            console.log("Sent to Kafka " + job.id);
+        });
+        worker.on("error", async (error: Error) => {
+            console.log("error", error);
+        })
+    }
+    private static ProcessSendtoSocketNotification() {
 
+        const worker = new Worker(
+            QUEUE_NAME.SEND_BROWSER_NOTIFICATION,
+            async (job) => {
                 const { projectId, ...payload } = JSON.parse(job.data) as NotificationBody
+
+                if (payload?.data?.data) {
+                    (payload.data.data as any)["project_id"] = projectId;
+                } else {
+                    (payload.data as any) = {
+                        data: {
+                            project_id: projectId
+                        }
+                    };
+                }
+
+
+                const notificationPayload = JSON.stringify(Object.assign({}, payload.data,
+                    payload.data?.icon && { icon: payload.data?.icon },
+                    payload.data?.badge && { badge: payload.data?.badge },
+                    payload.data?.image && { image: payload.data?.image },
+
+                ));
 
                 try {
                     const value = await Cache.cache.get(`${projectId}-notification`)
@@ -60,30 +115,7 @@ export class ListenWorkers extends QueueService {
                                     endpoint: item.endpoint,
                                     keys: item.keys
                                 }
-                                const notificationPayload = JSON.stringify({
-                                    title: payload?.data?.title || 'Default Title',
-                                    body: payload?.data?.body || 'Default message body',
-                                    // icon: payload?.data?.icon || '/default-icon.png',
-                                    // badge: payload?.data?.badge || '/default-badge.png',
-                                    tag: payload?.data?.tag || 'pinglet', // Prevents duplicate notifications
-                                    requireInteraction: payload?.data?.requireInteraction || false, // Auto-dismiss after duration
-                                    silent: payload?.data?.silent || false,
-                                    // data: {
-                                    //     url: '/', // URL to open when clicked
-                                    //     duration: duration
-                                    // },
-                                    actions: [
-                                        {
-                                            action: 'view',
-                                            title: 'View',
-                                            icon: '/action-icon.png'
-                                        },
-                                        {
-                                            action: 'dismiss',
-                                            title: 'Dismiss'
-                                        }
-                                    ]
-                                });
+
                                 return webpush.sendNotification(subscription, notificationPayload).then(res => {
                                     // console.log('Notification sent successfully:', res);
                                 })
@@ -116,7 +148,6 @@ export class ListenWorkers extends QueueService {
                         },
                         subcription: { endpoint: string, keys: { p256dh: string, auth: string } }[]
                     }
-
                     webpush.setVapidDetails(
                         "mailto:mullayam06@outlook.com",
                         parsedValue.vapidKeys.publicKey,
@@ -127,32 +158,9 @@ export class ListenWorkers extends QueueService {
                             endpoint: item.endpoint,
                             keys: item.keys
                         }
-                        const notificationPayload = JSON.stringify({
-                            title: 'Default Title',
-                            body: 'Default message body',
-                            icon: '/default-icon.png',
-                            badge: '/default-badge.png',
-                            tag: 'notification-tag', // Prevents duplicate notifications
-                            requireInteraction: false, // Auto-dismiss after duration
-                            silent: false,
-                            // data: {
-                            //     url: '/', // URL to open when clicked
-                            //     duration: duration
-                            // },
-                            actions: [
-                                {
-                                    action: 'view',
-                                    title: 'View',
-                                    icon: '/action-icon.png'
-                                },
-                                {
-                                    action: 'dismiss',
-                                    title: 'Dismiss'
-                                }
-                            ]
-                        });
+
                         return webpush.sendNotification(subscription, notificationPayload).then(res => {
-                            // console.log('Notification sent successfully:', res);
+                            console.log('Notification sent successfully:', res.statusCode);
                         })
                             .catch(err => {
                                 console.error('Error sending notification:', err);
@@ -172,14 +180,30 @@ export class ListenWorkers extends QueueService {
         ListenWorkers.workerEventListener(worker);
     }
     private static workerEventListener(worker: Worker) {
-        worker.on("completed", (job) => {
-            console.log(`${job.id} has completed!`);
+        worker.on("completed", async (job) => {
+            await logger.log({
+                event: "sent",
+                timestamp: Date.now(),
+                type: job.data.type,
+                projectId: job.data.projectId,
+                notificationId: job.id!,
+                metadata: job.data
+            });
         });
-        worker.on("error", (error: Error) => {
+        worker.on("error", async (error: Error) => {
             console.log("error", error);
+
         });
-        worker.on("failed", (job, err) => {
+        worker.on("failed", async (job, err) => {
             console.log(`${job} has failed with ${err.message}`);
+            await logger.log({
+                event: "failed",
+                timestamp: Date.now(),
+                type: job?.data.type,
+                projectId: job?.data.projectId,
+                notificationId: job?.id!,
+                metadata: job?.data
+            });
         });
     }
 }

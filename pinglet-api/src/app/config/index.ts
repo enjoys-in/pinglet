@@ -42,7 +42,11 @@ const __config = {
 	CACHE: {
 		CACHE_ENBALED: String(process.env.CACHE_ENBALED),
 		CACHE_HOST: String(process.env.CACHE_HOST),
-		CACHE_PORT: Number(process.env.PORT) || 6379,
+		CACHE_PORT: Number(process.env.CACHE_PORT) || 6379,
+	},
+	KAFKA: {
+		KAFKA_HOST: String(process.env.KAFKA_HOST),
+		KAFKA_PORT: Number(process.env.KAFKA_PORT) || 9092,
 	},
 };
 export const ConfigService = {

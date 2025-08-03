@@ -11,7 +11,7 @@ export class QueueService {
     static connection: ConnectionOptions = {
         url: __CONFIG__.CACHE_HOST + ":" + __CONFIG__.CACHE_PORT,
     }
-    public static createQueue(name: keyof typeof QUEUE_NAME): BullMQQueue {
+    public static createQueue(name: keyof typeof QUEUE_NAME): BullMQQueue { 
         if (!this.queues.has(QUEUE_NAME[name])) {
             const queue = new BullMQQueue(QUEUE_NAME[name], {
                 connection: QueueService.connection,
