@@ -31,7 +31,7 @@ class PushNtfyController {
 		const body = req.body
 		sendToKafkaQueue.add(QUEUE_JOBS.SEND_KAFKA_NOTIFICATION, body, {
 			removeOnComplete: true,
-			jobId: `${body.project_id}-${body.notificationTag}-${body.timestamp}-${body.event}`
+			jobId: `${body.project_id}-${body.timestamp}-${body.event}`
 		})
 		res.end();
 	}

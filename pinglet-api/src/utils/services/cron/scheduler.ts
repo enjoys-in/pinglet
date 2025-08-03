@@ -1,5 +1,6 @@
+import { CronExpression } from "@/utils/interfaces/cron-expression.interface";
 import { METADATA_KEYS } from "@utils/helpers/constants";
-import type { CronExpression } from "@utils/types/cron-expression.interface";
+
 import cron from "node-cron";
 export class Scheduler {
 	private static _instance: Scheduler;

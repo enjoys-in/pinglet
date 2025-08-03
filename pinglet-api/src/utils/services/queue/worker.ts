@@ -24,7 +24,7 @@ export class ListenWorkers extends QueueService {
     }
     private static ProcessSendtoKafka() {
         const worker = new Worker(
-            QUEUE_NAME.SEND_BROWSER_NOTIFICATION,
+            QUEUE_NAME.SEND_KAFKA_NOTIFICATION,
             async (job) => {
                 const { project_id, timestamp, type, event, ...metadata } = job.data as {
                     project_id: string

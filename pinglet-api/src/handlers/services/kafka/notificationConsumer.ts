@@ -31,15 +31,14 @@ export class KafkaAnalyticsConsumer {
         eachMessage: async ({ message }) => {
           const data = JSON.parse(message.value!.toString()) as NotificationEvent;
           const { projectId, event } = data;
-          console.log(data)
+         
           // const redisKey = `analytics:${projectId}:${event}`; // e.g., analytics:proj123:click
-          // // await Cache.cache.incr(redisKey);
-          // const counterKey = REDIS_KEYS_NAME.ANALYTICS_DELTA.replace('projectId', projectId);
-          // const bufferKey = REDIS_KEYS_NAME.ANALYTICS_BUFFER.replace('projectId', projectId);
+          // await Cache.cache.incr(redisKey);
+          const counterKey = REDIS_KEYS_NAME.ANALYTICS_DELTA.replace('projectId', projectId);
+          const bufferKey = REDIS_KEYS_NAME.ANALYTICS_BUFFER.replace('projectId', projectId);
 
-          // // 1. Increment HINCRBY for type
-          // await Cache.cache.hIncrBy(counterKey, event, 1);
-          // await Cache.cache.rPush(bufferKey, message.value!.toString());
+          await Cache.cache.hIncrBy(counterKey, event, 1);
+          await Cache.cache.rPush(bufferKey, message.value!.toString());
         },
       });
     } catch (error) {
