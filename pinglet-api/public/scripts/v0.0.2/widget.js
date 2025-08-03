@@ -233,11 +233,13 @@ window.addEventListener("pinglet:notificationClosed", (event) => {
  */
 export async function prepareEventBody(type, contentEl, reason = "user-dismiss") {
   const notification_id = contentEl.getAttribute("data-notification-id");
+  const notification_type=contentEl.getAttribute("data-notification-type")||"0";
   const [project_id, timestamp] = notification_id.split("-");
   window.sendNotificationEvent(type, {
     project_id,
     notification_id,
     timestamp,
     reason,
+    type:notification_type
   });
 }

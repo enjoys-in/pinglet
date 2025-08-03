@@ -1,4 +1,5 @@
 import { __CONFIG__ } from '@/app/config';
+import { Logging } from '@/logs';
 import { NotificationEvent } from '@/utils/services/kafka';
 import { Cache } from '@/utils/services/redis/cacheService';
 import { REDIS_KEYS_NAME } from '@/utils/services/redis/name';
@@ -20,19 +21,18 @@ export class KafkaAnalyticsConsumer {
 
   async start() {
     try {
-      console.log('Connecting to Kafka Consumer...');
       await this.consumer.connect();
-      console.log('Connected to Kafka Consumer');
+      Logging.dev('Connected to Kafka Consumer', "notice");
 
       await this.consumer.subscribe({ topic: 'notification-events', fromBeginning: false });
-      console.log('Subscribed to Consumer topic');
+      Logging.dev('Subscribed to Consumer topic', "info");
 
       await this.consumer.run({
         eachMessage: async ({ message }) => {
           const data = JSON.parse(message.value!.toString()) as NotificationEvent;
-          const {projectId, event } = data;
-
-          // // const redisKey = `analytics:${projectId}:${event}`; // e.g., analytics:proj123:click
+          const { projectId, event } = data;
+          console.log(data)
+          // const redisKey = `analytics:${projectId}:${event}`; // e.g., analytics:proj123:click
           // // await Cache.cache.incr(redisKey);
           // const counterKey = REDIS_KEYS_NAME.ANALYTICS_DELTA.replace('projectId', projectId);
           // const bufferKey = REDIS_KEYS_NAME.ANALYTICS_BUFFER.replace('projectId', projectId);

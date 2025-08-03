@@ -9,7 +9,12 @@ import {
 } from "./default.js";
 
 import { createVariant } from "./variants.js";
-import { createBrandingElement, initWidget, prepareEventBody, renderToast } from "./widget.js";
+import {
+  createBrandingElement,
+  initWidget,
+  prepareEventBody,
+  renderToast,
+} from "./widget.js";
 import { loadAllTemplates } from "./load-templates.js";
 import {
   askNotificationPermissionFunction,
@@ -202,7 +207,7 @@ const testimonials = currentScript?.dataset.testimonials;
             "data-notification-id",
             `${parsed?.project_id || projectId}-${Date.now()}`
           );
-
+          variantEl.setAttribute("data-notification-type", parsed?.type || "0");
           const { toastContainer } = renderToast(variantEl, globalConfig);
           "url" in parsed.body &&
             toastContainer.addEventListener("click", () => {

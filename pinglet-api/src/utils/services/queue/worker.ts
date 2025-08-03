@@ -26,16 +26,17 @@ export class ListenWorkers extends QueueService {
         const worker = new Worker(
             QUEUE_NAME.SEND_BROWSER_NOTIFICATION,
             async (job) => {
-                const { project_id, timestamp, event, ...metadata } = job.data as {
+                const { project_id, timestamp, type, event, ...metadata } = job.data as {
                     project_id: string
                     timestamp: number
+                    type: "0" | "1" | "-1"
                     event: 'clicked' | 'dropped' | 'closed'
-                } & Record<string, any>
+                } & Record<string, any> & {}
                 await logger.log({
                     event,
                     timestamp,
-                    type: job.data.type,
-                    projectId: job.data.projectId,
+                    type,
+                    projectId: project_id,
                     notificationId: `${project_id}-${timestamp}`,
                     metadata
                 });
@@ -61,10 +62,12 @@ export class ListenWorkers extends QueueService {
 
                 if (payload?.data?.data) {
                     (payload.data.data as any)["project_id"] = projectId;
+                    (payload.data.data as any)["type"] = payload.type;
                 } else {
                     (payload.data as any) = {
                         data: {
-                            project_id: projectId
+                            project_id: projectId,
+                            type: payload.type,
                         }
                     };
                 }
