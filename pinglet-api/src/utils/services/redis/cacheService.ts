@@ -9,7 +9,7 @@ export class CacheService {
 	private subscriber: RedisClientType;
 	private static subscriberInitialized = false;
 	constructor() {
-	 
+
 		Logging.dev("Redis Cache Enabled");
 		this.cache = createClient({
 			url: `${__CONFIG__.CACHE.CACHE_HOST}:${__CONFIG__.CACHE.CACHE_PORT}`,
@@ -17,7 +17,7 @@ export class CacheService {
 		this.publisher = this.cache.duplicate();
 		this.subscriber = this.cache.duplicate();
 		this.ConnectRedisClient();
-		this.connectPubSub();
+		// this.connectPubSub();
 	}
 	/**
 	 * Connect to the Redis client.

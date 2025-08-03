@@ -1,4 +1,9 @@
-let isTabOpen = false;
+import { __CONFIG__ } from "@/app/config"
+
+const URL = __CONFIG__.APP.APP_ENV == "DEV" ?
+    "http://localhost:8888/api/v1" :
+    "https://pinglet.enjoys.in/api/v1";
+export const DEFAULT_SW_FILE_CONTENT = `let isTabOpen = false;
 self.addEventListener("install", (event) => {
   self.skipWaiting();
 });
@@ -34,6 +39,7 @@ self.addEventListener("push", async (event) => {
             type: "window",
             includeUncontrolled: true,
           });
+          
           notifications.forEach((notification) => {
             if (clientsList.length > 0) {
                  broadcastCustomEvent("dropped", {
@@ -43,7 +49,7 @@ self.addEventListener("push", async (event) => {
             });
             }else{
               fireCustomEvent("dropped", {
-                ...data,
+                ...data?.data,
                 notificationTag: notification.tag,
                 timestamp: Date.now(),
               });
@@ -82,8 +88,9 @@ async function broadcastCustomEvent(eventName, payload) {
  * @returns {Promise<void>} whether the default action was prevented or not
  */
 async function fireCustomEvent(event, data) {
+ 
   if (!("project_id" in data)) return;
-  await fetch("http://localhost:8888/api/v1/log/event", {
+  await fetch("${URL}/log/event", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -108,11 +115,21 @@ self.addEventListener("notificationclick", (event) => {
 
       try {
         if (isTabOpen) {
-          await broadcastCustomEvent(eventName, {
-            ...eventData,
-            notificationTag: event.notification.tag,
-            timestamp: Date.now(),
-          });
+            event.waitUntil(
+                broadcastCustomEvent("closed", {
+                ...notificationData,
+                notificationTag: event.notification.tag,
+                timestamp: Date.now(),
+                })
+            );
+        } else {
+            event.waitUntil(
+                fireCustomEvent("clicked", {
+                ...notificationData,
+                notificationTag: event.notification.tag,
+                timestamp: Date.now(),
+                })
+            );
         }
 
         // 2. Handle window/URL actions
@@ -131,7 +148,7 @@ self.addEventListener("notificationclick", (event) => {
       } catch (error) {}
     }
     event.waitUntil(handleCustomAction(actionConfig, notificationData, event));
-  } else if (event.action === "dismiss") {
+  } else if (event.action === "dismiss") { 
     if (isTabOpen) {
       event.waitUntil(
         broadcastCustomEvent("closed", {
@@ -143,7 +160,7 @@ self.addEventListener("notificationclick", (event) => {
     } else {
       event.waitUntil(
         fireCustomEvent("closed", {
-          ...eventData,
+          ...notificationData,
           notificationTag: event.notification.tag,
           timestamp: Date.now(),
         })
@@ -167,7 +184,7 @@ self.addEventListener("notificationclick", (event) => {
     } else {
       event.waitUntil(
         fireCustomEvent("clicked", {
-          ...eventData,
+          ...notificationData,
           notificationTag: event.notification.tag,
           timestamp: Date.now(),
         })
@@ -180,3 +197,4 @@ self.addEventListener("notificationclick", (event) => {
 self.addEventListener("notificationclose", (event) => {
   console.log("Notification closed:", event.notification.tag);
 });
+`

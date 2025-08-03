@@ -9,19 +9,14 @@ import { pushSubscriptionService } from "@/handlers/services/subscription.servic
 import { DEFAULT_WIDGET_TEMPLATE, WidgetErrorTemplate } from "@/factory/templates/widget.template";
 import { WidgetService } from "../services/widget.service";
 import { QueueService } from "@/utils/services/queue";
-import { ListenWorkers } from "@/utils/services/queue/worker";
-import { KafkaAnalyticsConsumer } from "../services/kafka/notificationConsumer";
-import { AppEvents } from "@/utils/services/Events";
-import { OnEvent } from "@/utils/decorators";
 import { QUEUE_JOBS } from "@/utils/services/queue/name";
+import { DEFAULT_SW_FILE_CONTENT } from "../services/default/swFileContent";
 const clients = new Map<string, Set<Response>>();
 
 const sendPushQueue = QueueService.createQueue("SEND_BROWSER_NOTIFICATION")
 const sendToKafkaQueue = QueueService.createQueue("SEND_KAFKA_NOTIFICATION")
 
-ListenWorkers.listen();
-const analyticsConsumer = new KafkaAnalyticsConsumer()
-analyticsConsumer.start()
+
 let base64Mp3: string | null = null;
 
 
@@ -32,7 +27,7 @@ class PushNtfyController {
 		sendToKafkaQueue.add(QUEUE_JOBS.SEND_KAFKA_NOTIFICATION, body, {
 			removeOnComplete: true,
 			jobId: `${body.project_id}-${body.timestamp}-${body.event}`
-		})
+		})		 
 		res.end();
 	}
 	loadConfig = async (req: Request, res: Response) => {
@@ -360,136 +355,13 @@ class PushNtfyController {
 		}
 	};
 	swJSFile = async (req: Request, res: Response) => {
-		const dynamicCode = `self.addEventListener("install", (event) => {
-  self.skipWaiting();
-});
-
-self.addEventListener("activate", (event) => {
-  clients.claim();
-});
-self.addEventListener("push", (event) => {
-  console.log("[Service Worker] Push Received.");
-  if (!event.data) return;
-
-  const data = event.data?.json?.() || {};
-  const options = {
-    body: data?.body,
-    icon: data?.icon,
-    badge: data?.badge,
-    tag: data?.tag,
-    requireInteraction: data?.requireInteraction || true,
-    silent: data?.silent || false,
-    data: data?.data,
-    actions: data?.actions,
-    image: data?.image,
-    timestamp: Date.now(),
-    vibrate: [200, 100, 200], // Vibration pattern for mobile
-  };
-  // Auto-dismiss after duration
-  if (data.data && data.data.duration) {
-    setTimeout(() => {
-      self.registration
-        .getNotifications({ tag: data.tag })
-        .then((notifications) => {
-          notifications.forEach((notification) => {
-            broadcastCustomEvent("dropped", {
-              ...data,
-              notificationTag: notification.tag,
-              timestamp: Date.now(),
-            });
-            notification.close();
-          });
-        });
-    }, data.data?.duration||5000);
-  }
-
-  event.waitUntil(self.registration.showNotification(data.title, options));
-});
-async function broadcastCustomEvent(eventName, payload) {
-  const clients = await self.clients.matchAll({
-    includeUncontrolled: true,
-  });
-  clients.forEach((client) => {
-    client.postMessage({
-      type: "CUSTOM_NOTIFICATION_EVENT",
-      eventName: eventName,
-      payload: payload,
-    });
-  });
-}
-// Handle notification clicks
-self.addEventListener("notificationclick", (event) => {
-  event.notification.close();
-  const notificationData = event.notification.data || {};
-  const actionId = event.action;
- 
-  if (
-    actionId &&
-    notificationData.actionEvents &&
-    notificationData.actionEvents[actionId]
-  ) {
-    const actionConfig = notificationData.actionEvents[actionId];
-    async function handleCustomAction(actionConfig, notificationData, event) {
-      const { eventName, eventData, url, windowAction } = actionConfig;
-
-      try {
-        await broadcastCustomEvent(eventName, {
-          ...eventData,
-          notificationTag: event.notification.tag,
-          timestamp: Date.now(),
-        });
-
-        // 2. Handle window/URL actions
-        if (windowAction === "open" && url) {
-          await clients.openWindow(url);
-        } else if (windowAction === "focus") {
-          const windowClients = await clients.matchAll({ type: "window" });
-          if (windowClients.length > 0) {
-            await windowClients[0].focus();
-          } else if (url) {
-            await clients.openWindow(url);
-          }
-        }
-
-        // 3. Log action for analytics
-      } catch (error) {}
-    }
-    event.waitUntil(handleCustomAction(actionConfig, notificationData, event));
-  } else if (event.action === "dismiss") {
-     event.waitUntil(
-      broadcastCustomEvent("closed", {
-        ...notificationData,
-        notificationTag: event.notification.tag,
-        timestamp: Date.now(),
-      })
-    );
-    return event.notification.close();
-  } else {
-    if ("url" in notificationData) {
-      const url = notificationData.url;
-      event.waitUntil(clients.openWindow(url));
-    }
-    event.waitUntil(
-      broadcastCustomEvent("clicked", {
-        ...notificationData,
-        notificationTag: event.notification.tag,
-        timestamp: Date.now(),
-      })
-    );
-  }
-});
-
-// Handle notification close
-self.addEventListener("notificationclose", (event) => {
-  console.log("Notification closed:", event.notification.tag);
-});
-`;
+	 
 		// const ty = readFileSync(join(process.cwd(), "public", "scripts", "v0.0.2", "sw.js"), "utf-8")
 		res.set("Content-Type", "application/javascript");
 		res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
 		res.set('Pragma', 'no-cache');
 		res.set('Expires', '0');
-		res.send(dynamicCode);
+		res.send(DEFAULT_SW_FILE_CONTENT);
 	};
 	loadWidgetJsFile = async (req: Request, res: Response) => {
 		const wid = req.params.wid

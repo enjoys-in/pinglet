@@ -5,6 +5,7 @@
 	"scripts": {
 		"types": "npx tsc -p ./tsconfig.types.json",
 		"worker": "node ./build/worker.js",
+		"consumer": "node ./build/consumer.js",
 		"pkg": "npx rollup -c && node generate-sri.js && npm publish --access=public ./public/libs",
 		"build": "nest build",
 		"ready": "npm install",

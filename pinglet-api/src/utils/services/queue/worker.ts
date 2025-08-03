@@ -38,7 +38,7 @@ export class ListenWorkers extends QueueService {
                     type,
                     projectId: project_id,
                     notificationId: `${project_id}-${timestamp}`,
-                    metadata
+                    metadata:metadata??{}
                 });
             }, {
             connection: ListenWorkers.connection,

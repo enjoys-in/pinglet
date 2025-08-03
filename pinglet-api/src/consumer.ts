@@ -3,6 +3,7 @@ import "reflect-metadata";
 import { register } from "tsconfig-paths";
 import tsConfig from "../tsconfig.json";
 register({ baseUrl: __dirname, paths: tsConfig.compilerOptions.paths });
-import { ListenWorkers } from "./utils/services/queue/worker";
+import { KafkaAnalyticsConsumer } from "./handlers/services/kafka/notificationConsumer"
 
-ListenWorkers.listen();
+const analyticsConsumer = new KafkaAnalyticsConsumer()
+analyticsConsumer.start()
