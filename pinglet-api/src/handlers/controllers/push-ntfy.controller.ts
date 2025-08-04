@@ -1,5 +1,5 @@
-import { createReadStream, readFile, readFileSync } from "node:fs";
-import path, { join } from "node:path";
+import { createReadStream, readFile } from "node:fs";
+import path from "node:path";
 import type { Request, Response } from "express";
 import { projectService } from "../services/project.service";
 
@@ -11,12 +11,14 @@ import { WidgetService } from "../services/widget.service";
 import { QueueService } from "@/utils/services/queue";
 import { QUEUE_JOBS } from "@/utils/services/queue/name";
 import { DEFAULT_SW_FILE_CONTENT } from "../services/default/swFileContent";
+import { KafkaAnalyticsConsumer } from "../services/kafka/notificationConsumer";
+import { ListenWorkers } from "@/utils/services/queue/worker";
 const clients = new Map<string, Set<Response>>();
 
 const sendPushQueue = QueueService.createQueue("SEND_BROWSER_NOTIFICATION")
 const sendToKafkaQueue = QueueService.createQueue("SEND_KAFKA_NOTIFICATION")
-
-
+ListenWorkers.listen()
+new KafkaAnalyticsConsumer().start()
 let base64Mp3: string | null = null;
 
 
@@ -27,7 +29,7 @@ class PushNtfyController {
 		sendToKafkaQueue.add(QUEUE_JOBS.SEND_KAFKA_NOTIFICATION, body, {
 			removeOnComplete: true,
 			jobId: `${body.project_id}-${body.timestamp}-${body.event}`
-		})		 
+		})
 		res.end();
 	}
 	loadConfig = async (req: Request, res: Response) => {
@@ -355,7 +357,7 @@ class PushNtfyController {
 		}
 	};
 	swJSFile = async (req: Request, res: Response) => {
-	 
+
 		// const ty = readFileSync(join(process.cwd(), "public", "scripts", "v0.0.2", "sw.js"), "utf-8")
 		res.set("Content-Type", "application/javascript");
 		res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');

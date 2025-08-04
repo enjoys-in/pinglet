@@ -211,7 +211,7 @@ export default function ProjectsPage() {
               {filteredProjects.map((project) => (
                 <TableRow key={project.id}>
                   <TableCell>
-                    <Link href={`/projects/${project.id}`} className="space-y-1">
+                    <Link href={`/u/projects/${project.id}`} className="space-y-1">
                       <div className="font-medium">{project.name}</div>
                       <div className="text-sm text-muted-foreground">{project.unique_id}</div>
                     </Link>

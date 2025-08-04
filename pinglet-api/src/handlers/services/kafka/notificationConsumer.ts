@@ -31,9 +31,9 @@ export class KafkaAnalyticsConsumer {
         eachMessage: async ({ message }) => {
           const data = JSON.parse(message.value!.toString()) as NotificationEvent;
           const { projectId, event } = data;
-         
-          // const redisKey = `analytics:${projectId}:${event}`; // e.g., analytics:proj123:click
-          // await Cache.cache.incr(redisKey);
+        
+          const redisKey = `analytics:${projectId}:${event}`; // e.g., analytics:proj123:click
+          await Cache.cache.incr(redisKey);
           const counterKey = REDIS_KEYS_NAME.ANALYTICS_DELTA.replace('projectId', projectId);
           const bufferKey = REDIS_KEYS_NAME.ANALYTICS_BUFFER.replace('projectId', projectId);
 

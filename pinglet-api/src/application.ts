@@ -1,8 +1,6 @@
+import cors from "cors";
 import * as http from "node:http";
 import { join } from "node:path";
-import cors from "cors";
-
-import { Cors } from "@/app/common/Cors";
 import { useHttpsRedirection } from "@/app/common/HttpsRedirection";
 import { Interceptor } from "@/app/common/Interceptors";
 import { RouteResolver } from "@/app/common/RouteResolver";
@@ -26,6 +24,7 @@ import { Modifiers } from "./app/common/Modifiers";
 import { __CONFIG__ } from "./app/config";
 import { AppEvents } from "./utils/services/Events";
 import { Cache } from "./utils/services/redis/cacheService";
+import "./handlers/cron-jobs";
 
 const io = getSocketIo();
 

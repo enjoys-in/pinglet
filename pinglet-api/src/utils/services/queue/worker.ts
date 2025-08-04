@@ -38,7 +38,7 @@ export class ListenWorkers extends QueueService {
                     type,
                     projectId: project_id,
                     notificationId: `${project_id}-${timestamp}`,
-                    metadata:metadata??{}
+                    metadata: metadata ?? {}
                 });
             }, {
             connection: ListenWorkers.connection,
@@ -184,11 +184,13 @@ export class ListenWorkers extends QueueService {
     }
     private static workerEventListener(worker: Worker) {
         worker.on("completed", async (job) => {
+            const p = JSON.parse(job.data);
+
             await logger.log({
                 event: "sent",
                 timestamp: Date.now(),
-                type: job.data.type,
-                projectId: job.data.projectId,
+                type: p.type,
+                projectId: p?.projectId,
                 notificationId: job.id!,
                 metadata: job.data
             });
@@ -199,11 +201,12 @@ export class ListenWorkers extends QueueService {
         });
         worker.on("failed", async (job, err) => {
             console.log(`${job} has failed with ${err.message}`);
+            const p = JSON.parse(job?.data);
             await logger.log({
                 event: "failed",
                 timestamp: Date.now(),
-                type: job?.data.type,
-                projectId: job?.data.projectId,
+                type: p.type || "-1",
+                projectId: p.projectId,
                 notificationId: job?.id!,
                 metadata: job?.data
             });

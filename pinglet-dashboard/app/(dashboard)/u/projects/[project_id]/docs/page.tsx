@@ -261,6 +261,7 @@ const PingletApiUsage = () => {
                                                                     <div><span className="text-gray-400">description:</span> <span className="text-green-400">"New design incoming!"</span></div>
                                                                     <div><span className="text-gray-400">icon:</span> <span className="text-green-400">"🔥" (emoji/text/svg/base64)</span></div>
                                                                     <div><span className="text-gray-400">logo:</span> <span className="text-green-400">"url/base64"</span></div>
+                                                                    <div><span className="text-gray-400">url:</span> <span className="text-green-400">"url" (optional, when click on toast, open new tab)</span></div>
 
                                                                     <div>
                                                                         <div className="text-gray-400">media:</div>

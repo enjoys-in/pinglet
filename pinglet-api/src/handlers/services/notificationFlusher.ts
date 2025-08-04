@@ -1,12 +1,13 @@
 import { NotificationLogEntity } from "@/factory/entities/notifications-log.entity";
 import { NotificationEntity } from "@/factory/entities/notifications.entity";
+import { InjectRepository } from "@/factory/typeorm";
 import { Cache } from "@/utils/services/redis/cacheService";
 import { REDIS_KEYS_NAME } from "@/utils/services/redis/name";
 
 import { Repository } from "typeorm";
 
 
-export class NotificationFlusherService {
+class NotificationFlusherService {
     private readonly redis = Cache.cache;
     constructor(
         private readonly notificationRepo: Repository<NotificationEntity>,
@@ -50,8 +51,6 @@ export class NotificationFlusherService {
         ]);
 
         // 1. Update aggregates
-
-
 
         const insertValues = {
             project_id: projectId,
@@ -104,4 +103,9 @@ export class NotificationFlusherService {
             this.redis.del(tmpBufferKey),
         ]);
     }
+    async fetchAllRegisteredProjects(): Promise<void> {
+        
+    }
 }
+
+export const notificationFlusherService = new NotificationFlusherService(InjectRepository(NotificationEntity), InjectRepository(NotificationLogEntity));
