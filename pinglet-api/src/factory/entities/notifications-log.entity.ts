@@ -2,15 +2,14 @@ import {
 	Column,
 	CreateDateColumn,
 	Entity,
-	Index,
 	JoinColumn,
 	ManyToOne,
 	PrimaryGeneratedColumn,
 	type Relation,
 } from "typeorm";
 
-import { NotificationEntity } from "./notifications.entity";
 import { ANALYTICS_EVENTS } from "@/utils/services/kafka/topics";
+import { ProjectEntity } from "./project.entity";
 
 
 
@@ -20,17 +19,17 @@ export class NotificationLogEntity {
 	id!: string;
 
 	@ManyToOne(
-		() => NotificationEntity,
-		(notification) => notification.logs,
+		() => ProjectEntity,
+		(project) => project.unique_id,
 		{
 			onDelete: "CASCADE",
 		},
 	)
-	@JoinColumn({ name: "notification_id" })
-	notification!: Relation<NotificationEntity>;
+	@JoinColumn({ name: "project_id", referencedColumnName: "unique_id" })
+	project!: Relation<ProjectEntity>;
 
 	@Column()
-	notification_id!: string;
+	project_id!: string;
 
 	@Column({ type: "enum", enum: ANALYTICS_EVENTS })
 	event!: ANALYTICS_EVENTS;
@@ -41,17 +40,11 @@ export class NotificationLogEntity {
 	@Column({ nullable: true })
 	triggered_at!: string;
 
-	// @Column({ nullable: true })
-	// form_id!: string;
+	@Column({ nullable: true })
+	notification_id!: string;
 
-	// @Column({ nullable: true })
-	// user_id!: string; // anonymous or registered user
-
-	// @Column({ nullable: true })
-	// ip_address!: string;
-
-	// @Column({ nullable: true })
-	// user_agent!: string;
+	@Column("jsonb", { nullable: true })
+	metadata!: Record<string, any>;	
 
 	@CreateDateColumn()
 	created_at!: Date;

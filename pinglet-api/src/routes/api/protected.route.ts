@@ -1,20 +1,19 @@
-import pushNtfyController from "@/handlers/controllers/push-ntfy.controller";
-
 import {
-	NotificationController,
+	WidgetController,
 	ProjectController,
+	TemplateController,
 	UserAuthController,
 	WebhookController,
+	SubscriptionController,
 	WebsiteController,
 	TemplateCategoryController,
-	TemplateController
+	NotificationController,
 } from "@handlers/controllers/user";
 import { Router } from "express";
-import { WebSocketServer } from "ws";
+
 const router: Router = Router();
 
-// Notification
-// router.use("/notification", NotificationController.default);
+
 // Project
 router.get("/projects", ProjectController.default.getAllProjects);
 router.post("/project", ProjectController.default.createNewProject);
@@ -30,32 +29,34 @@ router.get("/websites", WebsiteController.default.getWebsites);
 router.post("/website", WebsiteController.default.createWebsite);
 router.delete("/website/:id", WebsiteController.default.deleteWebsite);
 router.put("/website/:id", WebsiteController.default.updateWebsite);
-// // Webhook
+
+// Subscriptions
+router.get("/get-subscriptions", SubscriptionController.default.getSubscriptionsOfUser);
+router.get("/get-my-subscriptions", SubscriptionController.default.getSubscriptionsByProjectId);
+
+// Widgets
+router.get("/widgets", WidgetController.default.getWidgets);
+router.get("/widget", WidgetController.default.getWidget);
+router.post("/widget", WidgetController.default.createWidget);
+router.put("/widget/:id", WidgetController.default.updateWidget);
+router.delete("/widget/:id", WidgetController.default.deleteWidget);
+
+// Notification
+router.get("/my-notifications", NotificationController.default.getNotification);
+router.get("/my-notification/:id", NotificationController.default.getAllNotifications);
+router.get("/my-notifications/:project_id", NotificationController.default.getNotificationsByProjectId);
+router.get("/my-notifications/logs", NotificationController.default.getRawNotificationsByProjectId);
+router.get("/my-notification/logs/:id", NotificationController.default.getRawNotificationsByProjectId);
+
+
+// Webhook
 // router.use("/webhook", WebhookController.default);
-// // Template
+// Template
 // router.use("/template", TemplateController.default);
-// // Template Category
+// Template Category
 router.get("/template-categories", TemplateCategoryController.default.getTemplateCategories);
 router.get("/template-categories/:id/templates", TemplateCategoryController.default.getTemplatesByCategory);
 
-const sockets = new Map<string, Set<WebSocket>>();
 
-
-
-// const server = http.createServer( );
-// const wss = new WebSocketServer({ port: 7146, path: '/notifications/ws' });
-// wss.on('connection', (ws, req) => {
-//     // const url = new URL(req.url, `http://${req.headers.host}`);
-//     // const projectId = url.searchParams.get('projectId');
-
-//     // if (!projectId) return ws.close();
-
-//     // if (!sockets.has(projectId)) sockets.set(projectId, new Set());
-//     // sockets.get(projectId).add(ws);
-
-//     // ws.on('close', () => {
-//     //     sockets.get(projectId)?.delete(ws);
-//     // });
-// });
 
 export default router;

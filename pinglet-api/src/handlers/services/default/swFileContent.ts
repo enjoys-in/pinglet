@@ -43,7 +43,7 @@ self.addEventListener("push", async (event) => {
           notifications.forEach((notification) => {
             if (clientsList.length > 0) {
                  broadcastCustomEvent("dropped", {
-              ...data,
+              ...data?.data,
               notificationTag: notification.tag,
               timestamp: Date.now(),
             });
@@ -116,8 +116,8 @@ self.addEventListener("notificationclick", (event) => {
       try {
         if (isTabOpen) {
             event.waitUntil(
-                broadcastCustomEvent("closed", {
-                ...notificationData,
+                broadcastCustomEvent(eventName, {
+                ...eventData,
                 notificationTag: event.notification.tag,
                 timestamp: Date.now(),
                 })
@@ -175,7 +175,7 @@ self.addEventListener("notificationclick", (event) => {
     }
     if (isTabOpen) {
       event.waitUntil(
-        broadcastCustomEvent("closed", {
+        broadcastCustomEvent("clicked", {
           ...notificationData,
           notificationTag: event.notification.tag,
           timestamp: Date.now(),

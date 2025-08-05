@@ -1,4 +1,5 @@
 export type EVENTS = "request" | "sent" | "failed" | "clicked" | "closed" | "dropped";
+
 export enum ANALYTICS_EVENTS {
     NOTIFICATION_REQUEST = "notification.request",
     NOTIFICATION_SENT = "notification.sent",

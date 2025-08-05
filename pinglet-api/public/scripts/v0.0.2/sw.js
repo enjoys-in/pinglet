@@ -36,19 +36,19 @@ self.addEventListener("push", async (event) => {
           });
           notifications.forEach((notification) => {
             if (clientsList.length > 0) {
-                 broadcastCustomEvent("dropped", {
-              ...data,
-              notificationTag: notification.tag,
-              timestamp: Date.now(),
-            });
-            }else{
+              broadcastCustomEvent("dropped", {
+                ...data?.data,
+                notificationTag: notification.tag,
+                timestamp: Date.now(),
+              });
+            } else {
               fireCustomEvent("dropped", {
-                ...data,
+                ...data?.data,
                 notificationTag: notification.tag,
                 timestamp: Date.now(),
               });
             }
-         
+
             notification.close();
           });
         });
@@ -108,11 +108,21 @@ self.addEventListener("notificationclick", (event) => {
 
       try {
         if (isTabOpen) {
-          await broadcastCustomEvent(eventName, {
-            ...eventData,
-            notificationTag: event.notification.tag,
-            timestamp: Date.now(),
-          });
+          event.waitUntil(
+            broadcastCustomEvent(eventName, {
+              ...eventData,
+              notificationTag: event.notification.tag,
+              timestamp: Date.now(),
+            })
+          );
+        } else {
+          event.waitUntil(
+            fireCustomEvent("clicked", {
+              ...notificationData,
+              notificationTag: event.notification.tag,
+              timestamp: Date.now(),
+            })
+          );
         }
 
         // 2. Handle window/URL actions
@@ -158,7 +168,7 @@ self.addEventListener("notificationclick", (event) => {
     }
     if (isTabOpen) {
       event.waitUntil(
-        broadcastCustomEvent("closed", {
+        broadcastCustomEvent("clicked", {
           ...notificationData,
           notificationTag: event.notification.tag,
           timestamp: Date.now(),

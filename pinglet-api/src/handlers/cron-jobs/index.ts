@@ -5,6 +5,7 @@ class CronJobs {
 
     @CronJob("EVERY_10_SECONDS")
     async FlushDataToDb() {
+        
         notificationFlusherService.fetchAllRegisteredProjects();
     }
 }

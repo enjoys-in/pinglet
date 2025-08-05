@@ -5,13 +5,12 @@ import {
 	Entity,
 	Index,
 	JoinColumn,
-	ManyToOne,
-	OneToMany,
+	ManyToOne,	
 	PrimaryGeneratedColumn,
-	type Relation,
+	Relation,
 	UpdateDateColumn,
 } from "typeorm";
-import { NotificationLogEntity } from "./notifications-log.entity";
+
 import { ProjectEntity } from "./project.entity";
 
 @Entity("notifications")
@@ -19,31 +18,20 @@ export class NotificationEntity {
 	@PrimaryGeneratedColumn("uuid")
 	id!: string;
 
-	@Column()
-	name!: string;
-
-	@Column()
-	template!: string;
-
 	@ManyToOne(
 		() => ProjectEntity,
-		(project) => project.category,
+		(project) => project.unique_id,
 		{ onDelete: "CASCADE" },
 	)
-	@JoinColumn({ name: "project_id" })
-	project!: string;
-
-
-	@Column({ nullable: true })
-	category_id!: string;
-
-	@Column({ default: true })
-	is_active!: boolean;
-
+	@JoinColumn({ name: "project_id", referencedColumnName: "unique_id" })
+	project!: Relation<ProjectEntity>;
 
 	@Column()
 	@Index("unique_project", ["project_id"], { unique: true })
 	project_id!: string;
+
+	@Column({ default: true })
+	is_active!: boolean;
 
 	@Column({ type: "int", default: 0 })
 	total_request!: number;
@@ -73,11 +61,6 @@ export class NotificationEntity {
 	})
 	updated_at!: Date;
 
-	@OneToMany(
-		() => NotificationLogEntity,
-		(log) => log.notification,
-	)
-	logs!: NotificationLogEntity[];
 
 
 }
