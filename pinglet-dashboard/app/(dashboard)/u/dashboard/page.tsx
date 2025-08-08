@@ -11,6 +11,13 @@ import { Bell, Users, Globe, TrendingUp, TrendingDown, Calendar, Edit, MapPin, M
 // Mock data
 const statsData = [
   {
+    title: "Total Requests Sent",
+    value: "345",
+    change: "+2%",
+    trend: "up",
+    icon: Bell,
+  },
+  {
     title: "Total Notifications Sent",
     value: "12,345",
     change: "+12%",
@@ -30,6 +37,13 @@ const statsData = [
     change: "-0.5%",
     trend: "down",
     icon: TrendingDown,
+  },
+  {
+    title: "Closed Notifications",
+    value: "4",
+    change: "0%",
+    trend: "down",
+    icon: Bell,
   },
   {
     title: "Failed Notifications",
@@ -139,82 +153,9 @@ export default function DashboardPage() {
           </Card>
         ))}
       </div>
-
-      {/* Charts */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Notification Analytics</CardTitle>
-                <CardDescription>Sent vs Failed notifications</CardDescription>
-              </div>
-              <Select defaultValue="weekly">
-                <SelectTrigger className="w-32">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="today">Today</SelectItem>
-                  <SelectItem value="hourly">Hourly</SelectItem>
-                  <SelectItem value="weekly">Weekly</SelectItem>
-                  <SelectItem value="monthly">Monthly</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={notificationChartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="sent" fill="#3b82f6" name="Sent" />
-                <Bar dataKey="failed" fill="#ef4444" name="Failed" />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Performance Rates</CardTitle>
-                <CardDescription>Click rate vs Drop rate percentage</CardDescription>
-              </div>
-              <Select defaultValue="weekly">
-                <SelectTrigger className="w-32">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="today">Today</SelectItem>
-                  <SelectItem value="hourly">Hourly</SelectItem>
-                  <SelectItem value="weekly">Weekly</SelectItem>
-                  <SelectItem value="monthly">Monthly</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={rateChartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Line type="monotone" dataKey="clickRate" stroke="#10b981" name="Click Rate %" />
-                <Line type="monotone" dataKey="dropRate" stroke="#f59e0b" name="Drop Rate %" />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Subscribers Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Subscribers</CardTitle>
+          <CardTitle>Recent Subscribers</CardTitle>
           <CardDescription>Manage your notification subscribers</CardDescription>
         </CardHeader>
         <CardContent>
@@ -263,6 +204,11 @@ export default function DashboardPage() {
           </Table>
         </CardContent>
       </Card>
+
+
+
+
+
     </div>
   )
 }

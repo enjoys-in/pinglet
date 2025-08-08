@@ -49,5 +49,7 @@ export class PushSubscriptionEntity {
     updated_at!: Date;
 
     @DeleteDateColumn({ type: "timestamp", onUpdate: "CURRENT_TIMESTAMP", nullable: true, default: null })
-    is_deleted!: boolean;
+    deleted_at!: Date|null;
+
+
 }

@@ -5,7 +5,7 @@ import {
 	Entity,
 	Index,
 	JoinColumn,
-	ManyToOne,	
+	ManyToOne,
 	PrimaryGeneratedColumn,
 	Relation,
 	UpdateDateColumn,

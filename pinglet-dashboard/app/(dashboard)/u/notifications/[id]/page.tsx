@@ -190,7 +190,24 @@ export default function NotificationsPage() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-[300px] pl-8"
                 />
-              </div>            
+              </div>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-[150px]">
+                  <Filter className="mr-2 h-4 w-4" />
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="sent">Sent</SelectItem>
+                  <SelectItem value="clicked">Clicked</SelectItem>
+                  <SelectItem value="failed">Failed</SelectItem>
+                  <SelectItem value="closed">Closed</SelectItem>
+                  <SelectItem value="request">Request</SelectItem>
+                  <SelectItem value="dropped">Dropped</SelectItem>
+                  <SelectItem value="scheduled">Scheduled</SelectItem>
+                  <SelectItem value="draft">Draft</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             {selectedNotifications.length > 0 && (
@@ -205,33 +222,39 @@ export default function NotificationsPage() {
 
           <Table>
             <TableHeader>
-              <TableRow>              
+              <TableRow>
+                <TableHead className="w-12">
+                  <Checkbox
+                    checked={selectedNotifications.length === filteredNotifications.length}
+                    onCheckedChange={handleSelectAll}
+                  />
+                </TableHead>
 
                 <TableHead>Project</TableHead>
                 <TableHead>Website</TableHead>
-                <TableHead>Request</TableHead>
                 <TableHead>Sent</TableHead>
                 <TableHead>Clicked</TableHead>
                 <TableHead>Failed</TableHead>
                 <TableHead>Closed</TableHead>
                 <TableHead>Dropped</TableHead>
-                <TableHead>Subscribers</TableHead>
                 <TableHead>Created</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredNotifications.map((notification) => (
                 <TableRow key={notification.id}>
-                 
+                  <TableCell>
+                    <Checkbox
+                      checked={selectedNotifications.includes(notification.id)}
+                      onCheckedChange={(checked) => handleSelectNotification(notification.id, checked as boolean)}
+                    />
+                  </TableCell>
 
                   <TableCell>
                     <Badge variant="outline">{notification.project.name}</Badge>
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">{notification.project.website.domain}</TableCell>
-                     <TableCell>
-                    <span className="font-medium">{notification.total_request.toLocaleString()}</span>
-                  </TableCell>
                   <TableCell>
                     <span className="font-medium">{notification.total_sent.toLocaleString()}</span>
                   </TableCell>
@@ -252,23 +275,12 @@ export default function NotificationsPage() {
                   <TableCell>
                     <span className="font-medium">{notification.total_dropped.toLocaleString()}</span>
                   </TableCell>
-                   <TableCell>
-                    <span className="font-medium">{0}</span>
-                  </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
                     {new Date(notification.created_at).toLocaleDateString()}
                   </TableCell>
-                  <TableCell className="text-right">
-                         {/* <MoreHorizontal className="mr-2 h-4 w-4" /> */}
-
-                    {/* <Link href={`/u/notifications/${notification.id}`}> */}
-                     {/* <Button variant={"ghost"} size={"sm"} >
-                        Subscribers
-                      </Button>
-                      */}
-                    {/* </Link> */}
-                     <Button variant={"outline"} size={"sm"} >
-                       
+                  <TableCell className="text-center">
+                      <Button variant={"outline"} size={"sm"} >
+                        <Eye className="mr-2 h-4 w-4" />
                         View Details
                       </Button>
                   </TableCell>

@@ -75,6 +75,6 @@ export class WebhookEntity {
 	})
 	updated_at!: Date;
 
-	@DeleteDateColumn()
-	deleted_at?: Date;
+	@DeleteDateColumn({nullable: true})
+	deleted_at!: Date|null;
 }

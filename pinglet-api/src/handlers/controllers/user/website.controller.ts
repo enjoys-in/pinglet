@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { websiteService } from "@/handlers/services/website.service";
+import { projectService } from "@/handlers/services/project.service";
 class WebsiteController {
 	async getWebsites(req: Request, res: Response) {
 		try {
@@ -65,6 +66,30 @@ class WebsiteController {
 		try {
 			const body = req.body;
 			const userID = req.user?.id
+			const getOldWebsite = await websiteService.getWebsiteWithOptions({
+				where: {
+					domain: body.domain
+				},
+				withDeleted: true
+			});
+
+			if (getOldWebsite) {
+				await websiteService.restoreWebsite(body.domain)
+				await projectService.restoreProject({
+					website: {
+						domain: body.domain
+					}
+				})
+
+				res
+					.json({
+						message: "Website Updated",
+						result: getOldWebsite.id,
+						success: true,
+					})
+					.end();
+				return
+			}
 			const createWebsite = await websiteService.createNewWebsite({
 				...body,
 				user: {
@@ -139,7 +164,12 @@ class WebsiteController {
 	async deleteWebsite(req: Request, res: Response) {
 		try {
 			const id = +req.params.id;
-			await websiteService.deleteWebsite(id);
+			const result = await websiteService.deleteWebsite(id);
+
+
+			if (result?.affected && result?.affected > 0) {
+				await projectService.deleteProjectByWebsiteId(id);
+			}
 			res
 				.json({
 					message: "Website Deleted",

@@ -8,6 +8,7 @@ import { signal } from "../requestController";
 import { TemplateCategoryResponse } from "../interfaces/template-category.interface";
 import { TemplateCategoryWithTemplate, TemplateResponse } from "../interfaces/templates.interface";
 import { AllProjectsResponse } from "../interfaces/project.interface";
+import { GetAllNotificationsResponse } from "../interfaces/notifications.interface";
 
 const adminRoutes = (url: string) => `/api/v1/admin${url}`
 const apiRoutes = (url: string) => `/api/v1/${url}`
@@ -123,5 +124,20 @@ export class API {
     }
     static getUserProfile() {
         return instance.get<ApiResponse<UserProfileResponse>>('/api/v1/auth/profile')
+    }
+    static getMyNotifications(isLatest: boolean = false, limited: boolean = false) {
+        return instance.get<ApiResponse<GetAllNotificationsResponse[]>>('/api/v1/my-notifications' + (isLatest ? '?latest=true' : '') + (limited ? '?limited=true' : ''))
+    }
+    static getMyNotification(notification_id: string | number) {
+        return instance.get<ApiResponse<any>>('/api/v1/my-notification/' + notification_id)
+    }
+    static getMyNotificationsByProjectId(project_id: string | number) {
+        return instance.get<ApiResponse<any>>('/api/v1/my-notification/' + project_id)
+    }
+    static getMyNotificationsLogs() {
+        return instance.get<ApiResponse<any>>('/api/v1/my-notification/logs')
+    }
+    static getMyNotificationsLogById(logs_id: string | number) {
+        return instance.get<ApiResponse<any>>('/api/v1/my-notification/logs' + logs_id)
     }
 }

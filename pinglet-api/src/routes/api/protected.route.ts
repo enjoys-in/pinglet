@@ -42,8 +42,8 @@ router.put("/widget/:id", WidgetController.default.updateWidget);
 router.delete("/widget/:id", WidgetController.default.deleteWidget);
 
 // Notification
-router.get("/my-notifications", NotificationController.default.getNotification);
-router.get("/my-notification/:id", NotificationController.default.getAllNotifications);
+router.get("/my-notifications", NotificationController.default.getAllNotifications);
+router.get("/my-notification/:id", NotificationController.default.getNotification);
 router.get("/my-notifications/:project_id", NotificationController.default.getNotificationsByProjectId);
 router.get("/my-notifications/logs", NotificationController.default.getRawNotificationsByProjectId);
 router.get("/my-notification/logs/:id", NotificationController.default.getRawNotificationsByProjectId);

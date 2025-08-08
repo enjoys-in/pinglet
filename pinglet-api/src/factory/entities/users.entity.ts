@@ -17,10 +17,10 @@ export class UserEntity {
 	@PrimaryGeneratedColumn("increment")
 	id!: number;
 
-	@Column({ type: "varchar", length: 255,nullable: true })
+	@Column({ type: "varchar", length: 255, nullable: true })
 	first_name!: string;
 
-	@Column({ type: "varchar", length: 255,nullable: true })
+	@Column({ type: "varchar", length: 255, nullable: true })
 	last_name!: string;
 
 	@Column({ type: "varchar", length: 255, unique: true })
@@ -40,7 +40,7 @@ export class UserEntity {
 	updated_at!: Date;
 
 	@DeleteDateColumn()
-	deleted_at?: Date;
+	deleted_at!: Date|null;
 
 	@Column({ type: "boolean", default: true })
 	is_active!: boolean;

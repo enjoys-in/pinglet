@@ -1,6 +1,7 @@
-import { Column, CreateDateColumn, DeleteDateColumn, Entity,  ManyToOne, OneToMany,  PrimaryGeneratedColumn, Relation, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, Relation, UpdateDateColumn } from "typeorm";
 import { UserEntity } from "./users.entity";
 import { TemplatesEntity } from "./templates.entity";
+import { ProjectEntity } from "./project.entity";
 
 @Entity("template_category")
 export class TemplateCategoryEntity {
@@ -29,7 +30,15 @@ export class TemplateCategoryEntity {
         () => UserEntity,
         (u) => u.id, { nullable: true, onDelete: "SET NULL", }
     )
-    user!: Relation<UserEntity>| null;
+    @JoinColumn({ name: "user_id" })
+    user!: Relation<UserEntity> | null;
+
+     @OneToMany(
+        () => ProjectEntity,
+        (u) => u.category
+    )
+    @JoinColumn()
+    project!:ProjectEntity[];
 
     @CreateDateColumn()
     created_at!: Date;
@@ -38,6 +47,6 @@ export class TemplateCategoryEntity {
     updated_at!: Date;
 
     @DeleteDateColumn()
-    deleted_at?: Date;
+    deleted_at!: Date|null;
 
 }

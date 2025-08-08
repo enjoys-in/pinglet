@@ -24,8 +24,8 @@ interface Website {
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
-  pinglet_id:{
-    publicKey:string
+  pinglet_id: {
+    publicKey: string
   }
 }
 
@@ -44,60 +44,59 @@ interface Category {
 
 
 export interface AllProjectsResponse {
-  id: number;
-  unique_id: string;
-  name: string;
-  description: null;
-  logo: null;
-  banner: null;
-  created_at: string;
-  updated_at: string;
-  deleted_at: null;
-  is_active: boolean;
-  website: Website;
-  category: Category;
+  website_domain: string
+  sent_notications?: number
+  total_clicked?: number
+  id: number
+  unique_id: string
+  name: string
+  created_at: string
+  logo: string
+  category_name: string
+  category_slug: string
+  subscriptions: string
+  is_active: boolean
 }
 
 export interface ProjectConfig {
-    position?: "top-right" | "top-left" | "bottom-right" | "bottom-left";
-    transition?: "fade" | "slide" | "zoom";
-    branding?: {
-        show: boolean;
-        once: boolean;
-        html: string;
-    };
-    sound?: {
-        play: boolean;
-        src: string;
-        volume: number,
-    };
-    duration?: number;
-    auto_dismiss?: boolean;
-    maxVisible?: number;
-    stacking?: boolean;
-    dismissible?: boolean;
-    pauseOnHover?: boolean;
-    website?: string;  
-    time?: boolean; 
-    favicon?: boolean;
-    theme?: {
-        mode?: "light" | "dark" | "auto";
-        customClass?: string;
-        rounded?: boolean;
-        shadow?: boolean;
-        border?: boolean;
-    };
+  position?: "top-right" | "top-left" | "bottom-right" | "bottom-left";
+  transition?: "fade" | "slide" | "zoom";
+  branding?: {
+    show: boolean;
+    once: boolean;
+    html: string;
+  };
+  sound?: {
+    play: boolean;
+    src: string;
+    volume: number,
+  };
+  duration?: number;
+  auto_dismiss?: boolean;
+  maxVisible?: number;
+  stacking?: boolean;
+  dismissible?: boolean;
+  pauseOnHover?: boolean;
+  website?: string;
+  time?: boolean;
+  favicon?: boolean;
+  theme?: {
+    mode?: "light" | "dark" | "auto";
+    customClass?: string;
+    rounded?: boolean;
+    shadow?: boolean;
+    border?: boolean;
+  };
 
-    iconDefaults?: {
-        show?: boolean;
-        size?: number;
-        position?: "left" | "right" | "top";
-    };
+  iconDefaults?: {
+    show?: boolean;
+    size?: number;
+    position?: "left" | "right" | "top";
+  };
 
-    progressBar?: {
-        show?: boolean;
-        color?: string;
-        height?: number;
-    };
+  progressBar?: {
+    show?: boolean;
+    color?: string;
+    height?: number;
+  };
 }
- 

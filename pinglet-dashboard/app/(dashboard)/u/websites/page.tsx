@@ -325,7 +325,7 @@ export default function WebsitesPage() {
                     <div className="space-y-1">
                       <div className="font-medium">{website.name}</div>
                       <div className="flex gap-1">
-                        {website.tags.map((tag) => (
+                        {(website?.tags || []).map((tag) => (
                           <Badge key={tag} variant="secondary" className="text-xs">
                             {tag}
                           </Badge>

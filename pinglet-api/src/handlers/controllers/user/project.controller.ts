@@ -5,29 +5,12 @@ class ProjectController {
     async getAllProjects(req: Request, res: Response) {
         try {
             const userId = req.user!.id
-            const website = await projectService.getAllProjects({
-                relations: {
-                    website: true,
-                    category: true,
-                },
-                where: { user: { id: userId } },
-                select: {
-                    website: {
-                        id: true,
-                        domain: true,
-                    },
-                    category: {
-                        id: true,
-                        name: true,
-                        slug: true,
-                    }
-                }
 
-            });
+            const projects = await projectService.getAllProjectWithSubsAndNotificationCount(userId)
             res
                 .json({
-                    message: "Logged In",
-                    result: website,
+                    message: "All Projects",
+                    result: projects,
                     success: true,
                 })
                 .end();

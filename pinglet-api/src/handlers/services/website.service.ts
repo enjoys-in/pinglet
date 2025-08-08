@@ -6,7 +6,7 @@ class WebsiteService {
 		this.websiteRepo = websiteRepo;
 	}
 	createNewWebsite(website: DeepPartial<WebsiteEntity>) {
-		const newWebsite = this.websiteRepo.create(website);
+		const newWebsite = this.websiteRepo.create(website);		 
 		return this.websiteRepo.save(newWebsite);
 	}
 	getAllWebsites(opts?: FindManyOptions<WebsiteEntity>) {
@@ -36,6 +36,9 @@ class WebsiteService {
 	}
 	deleteWebsite(id: number) {
 		return this.websiteRepo.softDelete(id);
+	}
+	restoreWebsite(domain: string) {		 
+		return  this.websiteRepo.restore({ domain });
 	}
 }
 

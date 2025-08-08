@@ -53,8 +53,8 @@ export default function ProjectsPage() {
     return projects.filter((project) => {
       const matchesSearch =
         project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        project.website.name.toLowerCase().includes(searchQuery.toLowerCase())
-      const matchesCategory = categoryFilter === "all" || project.category.slug === categoryFilter
+        project.website_domain.toLowerCase().includes(searchQuery.toLowerCase())
+      const matchesCategory = categoryFilter === "all" || project.category_slug === categoryFilter
 
       return matchesSearch && matchesCategory
     })
@@ -123,7 +123,7 @@ export default function ProjectsPage() {
             <Bell className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{projects.reduce((sum, p) => sum + (p?.notifications || 0), 0)}</div>
+            <div className="text-2xl font-bold">{projects.reduce((sum, p) => sum + (p?.sent_notications || 0), 0)}</div>
             <p className="text-xs text-muted-foreground">Across all projects</p>
           </CardContent>
         </Card>
@@ -135,7 +135,7 @@ export default function ProjectsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {projects.reduce((sum, p) => sum + (p?.subscribers || 0), 0).toLocaleString()}
+            {projects.reduce((sum, p) => sum + (+(p?.subscriptions) || 0), 0)}
             </div>
             <p className="text-xs text-muted-foreground">Unique subscribers</p>
           </CardContent>
@@ -148,7 +148,7 @@ export default function ProjectsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {(projects.reduce((sum, p) => sum + (p?.clickRate || 0), 0) / projects.length).toFixed(1)}%
+              {(projects.reduce((sum, p) => sum + (p?.total_clicked || 0), 0) / projects.length).toFixed(1)}%
             </div>
             <p className="text-xs text-muted-foreground">Across all projects</p>
           </CardContent>
@@ -203,7 +203,7 @@ export default function ProjectsPage() {
                 <TableHead>Notifications</TableHead>
                 <TableHead>Subscribers</TableHead>
                 <TableHead>Click Rate</TableHead>
-                <TableHead>Updated</TableHead>
+                <TableHead>Created on</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -218,22 +218,22 @@ export default function ProjectsPage() {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      <span>{project?.category?.name}</span>
+                      <span>{project?.category_name}</span>
                     </div>
                   </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">{project?.website?.domain}</TableCell>
+                  <TableCell className="text-sm text-muted-foreground">{project?.website_domain}</TableCell>
                   <TableCell>{getStatusBadge(project.is_active ? "active" : "paused")}</TableCell>
                   <TableCell>
-                    <span className="font-medium">{project?.notifications || 0}</span>
+                    <span className="font-medium">{project?.sent_notications || 0}</span>
                   </TableCell>
                   <TableCell>
-                    <span className="font-medium">{project?.subscribers?.toLocaleString() || 0}</span>
+                    <span className="font-medium">{project?.subscriptions?.toLocaleString() || 0}</span>
                   </TableCell>
                   <TableCell>
-                    <span className="font-medium">{project?.clickRate || 0}%</span>
+                    <span className="font-medium">{project?.total_clicked || 0}%</span>
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
-                    {new Date(project.updated_at).toLocaleDateString()}
+                    {new Date(project.created_at).toLocaleDateString()}
                   </TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>

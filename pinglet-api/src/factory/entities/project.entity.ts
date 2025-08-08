@@ -22,6 +22,7 @@ import { UserEntity } from "./users.entity";
 import helpers from "@/utils/helpers";
 import { ProjectConfig } from "@/utils/interfaces/project.interface";
 import { PROJECT_DEFAULT_CONFIG } from "@/handlers/services/default/constant";
+import { PushSubscriptionEntity } from "./pushSubscription.entity";
 
 
 @Entity("projects")
@@ -59,8 +60,8 @@ export class ProjectEntity {
 	@Column({ type: "jsonb", default: PROJECT_DEFAULT_CONFIG })
 	config!: ProjectConfig;
 
-	@DeleteDateColumn()
-	deleted_at?: Date;
+	@DeleteDateColumn({ nullable: true })
+	deleted_at!: Date;
 
 	@Column({ type: "boolean", default: true })
 	is_active!: boolean;
@@ -88,13 +89,15 @@ export class ProjectEntity {
 	)
 	notifications!: NotificationEntity[];
 
-	@OneToOne(
+	@ManyToOne(
 		() => TemplateCategoryEntity,
-		(p) => p.id, { nullable: true, onDelete: "SET NULL", }
+		(p) => p.project, { nullable: true, onDelete: "SET NULL", }
 	)
 	@JoinColumn({ name: "category_id" })
 	category!: Relation<TemplateCategoryEntity>;
 
+	@OneToMany(() => PushSubscriptionEntity, sub => sub.project)
+	subscriptions!: PushSubscriptionEntity[];
 
 	@OneToMany(
 		() => WebhookEntity,

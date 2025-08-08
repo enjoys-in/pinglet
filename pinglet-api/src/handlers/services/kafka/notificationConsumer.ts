@@ -3,15 +3,16 @@ import { Logging } from '@/logs';
 import { NotificationEvent } from '@/utils/services/kafka';
 import { Cache } from '@/utils/services/redis/cacheService';
 import { REDIS_KEYS_NAME } from '@/utils/services/redis/name';
-import { Kafka } from 'kafkajs';
+import { Kafka, logLevel } from 'kafkajs';
 export class KafkaAnalyticsConsumer {
   private kafka = new Kafka({
     clientId: 'analytics-consumer',
     brokers: [`${__CONFIG__.KAFKA.KAFKA_HOST}:${__CONFIG__.KAFKA.KAFKA_PORT}`],
     retry: {
       initialRetryTime: 100,
-      retries: 8
-    }
+      retries: 3
+    },
+
   });
   private consumer = this.kafka.consumer({
     groupId: 'analytics-group',
@@ -31,13 +32,13 @@ export class KafkaAnalyticsConsumer {
         eachMessage: async ({ message }) => {
           const data = JSON.parse(message.value!.toString()) as NotificationEvent;
           const { projectId, event } = data;
-        
+
           // const redisKey = `analytics:${projectId}:${event}`; // e.g., analytics:proj123:click
           // await Cache.cache.incr(redisKey);
 
           const counterKey = REDIS_KEYS_NAME.ANALYTICS_DELTA.replace('projectId', projectId);
           const bufferKey = REDIS_KEYS_NAME.ANALYTICS_BUFFER.replace('projectId', projectId);
-        
+
           await Cache.cache.hIncrBy(counterKey, event, 1);
           await Cache.cache.rPush(bufferKey, message.value!.toString());
         },

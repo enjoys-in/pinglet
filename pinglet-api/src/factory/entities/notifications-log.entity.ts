@@ -1,6 +1,7 @@
 import {
 	Column,
 	CreateDateColumn,
+	DeleteDateColumn,
 	Entity,
 	JoinColumn,
 	ManyToOne,
@@ -44,8 +45,8 @@ export class NotificationLogEntity {
 	notification_id!: string;
 
 	@Column("jsonb", { nullable: true })
-	metadata!: Record<string, any>;	
+	metadata!: Record<string, any>;
 
-	@CreateDateColumn()
-	created_at!: Date;
+	@DeleteDateColumn({ nullable: true })
+	deleted_at!: Date|null;
 }

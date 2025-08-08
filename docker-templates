@@ -1,27 +1,25 @@
 docker run -d --name pinglet-redis -p 6380:6379   --memory="512m" -v /home/mullayam/redis/enjoys.acl:/usr/local/etc/redis/enjoys.acl redis:7  redis-server --aclfile /usr/local/etc/redis/enjoys.acl --maxmemory 450mb 
+nsqW78ERxX
+
+docker run -d --name valkey \
+  -p 6380:6379 \
+  --memory="512m" \
+  -v /home/mullayam/services/redis/valkey.conf:/usr/local/etc/valkey/valkey.conf \
+  valkey/valkey \
+  valkey-server /usr/local/etc/valkey/valkey.conf \
+  --requirepass "NAtQGmdxWxbc6WEQnwg" \
+  --masteruser "enjoys"
+
+
+
 docker run -d \
   --name kafka-kraft \
   --user root \
   -p 9092:9092 \
-  -v /opt/kafka/data:/tmp/kraft-combined-logs \
-  -e KAFKA_NODE_ID=1 \
-  -e KAFKA_PROCESS_ROLES=broker,controller \
-  -e KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093 \
-  -e KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://185.193.19.118:9092 \
-  -e KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER \
-  -e KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT \
-  -e KAFKA_LOG_DIRS=/tmp/kraft-combined-logs \
-  -e KAFKA_CONTROLLER_QUORUM_VOTERS=1@localhost:9093 \
-  -e KAFKA_ENABLE_KRAFT=true \
-  -e CLUSTER_ID=kraft-cluster-123 \
-  apache/kafka:latest
-
-
-  docker run -d \
-  --name kafka-kraft \
-  --user root \
-  -p 9092:9092 \
+  --memory="2g" \
+  --cpus="1" \
   -v C:/docker/kafka:/tmp/kraft-combined-logs \
+  # -v /opt/kafka/data:/tmp/kraft-combined-logs \
   -e KAFKA_NODE_ID=1 \
   -e KAFKA_PROCESS_ROLES=broker,controller \
   -e KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093 \

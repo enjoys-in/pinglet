@@ -8,12 +8,42 @@ class NotificationController {
         try {
             const isLatest = req.query?.latest === 'true'
             const limited = req.query?.limited === 'true'
+            const query = req.query
+            if (query?.page || query?.limit) {
+
+            }
             const subscriptions = await notificationService.getNotifications({
                 where: {
                     project: {
                         user: {
                             id: req.user!.id
                         }
+                    }
+
+                },
+                select: {
+                    id: true,
+                    "is_active": true,
+                    "total_request": true,
+                    "total_sent": true,
+                    "total_clicked": true,
+                    "total_failed": true,
+                    "total_closed": true,
+                    "total_dropped": true,
+                    "created_at": true,
+                    project: {
+                        id: true,
+                        unique_id: true,
+                        name: true,
+                        website: {
+                            id: true,
+                            domain: true
+                        }
+                    }
+                },
+                relations: {
+                    project: {
+                        website: true
                     }
                 },
                 order: isLatest ? { created_at: 'DESC' } : { created_at: 'ASC' },

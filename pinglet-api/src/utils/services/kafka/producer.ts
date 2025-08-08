@@ -5,7 +5,7 @@ import { Logging } from "@/logs";
 export class KafkaNotificationProducer {
     private producer: Producer;
 
-    constructor(brokers: string[]=["185.193.19.118:9092"]) {
+    constructor(brokers: string[]=["77.237.241.24:9092"]) {
         const kafka = new Kafka({ clientId: "notification-service", brokers });
         this.producer = kafka.producer();
     }

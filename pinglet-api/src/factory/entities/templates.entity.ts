@@ -73,7 +73,7 @@ export class TemplatesEntity {
     @UpdateDateColumn()
     updated_at!: Date;
 
-    @DeleteDateColumn()
-    deleted_at?: Date;
+   @DeleteDateColumn()
+   deleted_at!: Date|null;
 
 }

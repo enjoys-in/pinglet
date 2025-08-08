@@ -9,6 +9,7 @@ const page = async ({ params }: any) => {
   try {
     const { project_id } = await params as { project_id: string }
     const { data } = await serverAxios.get<ApiResponse<ProjectDetailsResponse>>('/api/v1/project/' + project_id)
+    
     if (!data.success) {
       throw new Error(data.message || "Failed to fetch project details")
     }
