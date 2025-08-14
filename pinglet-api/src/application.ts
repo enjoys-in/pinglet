@@ -59,7 +59,7 @@ class AppServer {
 		AppServer.App.use(morgan("dev"));
 		AppServer.App.use(
 			cors({
-				origin: ["*"],
+				origin: "*",
 				credentials: true,
 				optionsSuccessStatus: 200,
 				preflightContinue: true,
