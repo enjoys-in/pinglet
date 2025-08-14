@@ -9,6 +9,7 @@ import { Router } from "express";
 const router = Router();
 
 router.post("/auth/login", UserAuthController.default.Login);
+router.post("/auth/google", UserAuthController.default.GoogleLogin);
 router.post("/auth/register", UserAuthController.default.Register);
 router.get("/auth/callback", UserAuthController.default.Callback);
 router.post("/auth/logout", UserAuthController.default.Logout);

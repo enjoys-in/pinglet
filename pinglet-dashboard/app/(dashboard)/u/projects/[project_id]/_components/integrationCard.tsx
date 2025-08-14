@@ -38,7 +38,7 @@ export const TemplateCard = ({ project, getCategoryColor }: { project: ProjectDe
       data-configured-domain="${project.website.domain}"
       data-project-id="${project.unique_id}"
       data-pinglet-id="${project.website?.pinglet_id?.publicKey}"
-      data-checksum="sha384-Y7YXYX2j5YloeGIEAei75Q6PcXH+o/A93sGoo8u3SxeGjMUbmR+JqizhPOPKfiy3" 
+      data-checksum="sha384-bt2+37hfBbS8dxEUfbyk7QYPqeaSU/22+ZdVPh3xC1lMUeTKGl1UPg6wjiW0EkkN" 
       data-load-templates="true"
     ></script>
 `},

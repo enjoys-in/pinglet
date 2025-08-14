@@ -182,7 +182,10 @@ export function _showPopup(
           btnEl.addEventListener("click", func);
         }
       } else {
-        btnEl.addEventListener("click", _btnActions(btn, btnEl));
+        btnEl.addEventListener("click", (e) => {
+          e.stopPropagation();
+          return _btnActions(btn, btnEl);
+        });
       }
 
       btnRow.appendChild(btnEl);

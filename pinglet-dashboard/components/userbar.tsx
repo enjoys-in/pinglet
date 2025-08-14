@@ -1,37 +1,26 @@
-"use client"
-import { API } from '@/lib/api/handler'
-import { ChevronUp, User2 } from 'lucide-react'
-import React, { use, useLayoutEffect } from 'react'
-import { Skeleton } from './ui/skeleton'
+import React from 'react'
+import { Button } from './ui/button'
+import { LogoutUser } from './server-actions/handleLogoutUser'
+import { useRouter } from 'next/navigation'
 
 const Userbar = () => {
-    const [user, setUser] = React.useState<{ name?: string, email: string } | null>(null)
-    const [loading, setLoading] = React.useState<boolean>(true)
-    const fetchUser = async () => {
+    const router = useRouter()
+    const handleLogoutUser = async () => {
         try {
-            const response = await API.getUserProfile()
-            setUser(response.data.result)
-            setLoading(false)
+
+            const isLogout = await LogoutUser()
+            isLogout && router.push('/auth/login')
         } catch (error) {
-            console.error(error)
+
+
         }
     }
-    useLayoutEffect(() => {
-        fetchUser()
-    }, [])
-    return (
-        <div>
-            {
-                loading ? <Skeleton className="h-4 flex gap-2 px-2 items-center w-48" /> : (<>
-                    {/* <User2 className="h-4 w-4" /> */}
-                    <div className="grid flex-1 text-left text-sm leading-tight">
-                        {user?.name && <span className="truncate font-semibold">{user?.name}</span>}
-                        <span className="truncate text-xs">{user?.email}</span>
-                    </div>
-                    {/* <ChevronUp className="ml-auto size-4" /> */}
-                </>)
-            }
 
+    return (
+        <div className='w-full'>
+            <Button variant="outline" onClick={handleLogoutUser} className="flex gap-2 px-2 items-center w-full">
+                Logout
+            </Button>
         </div>
     )
 }

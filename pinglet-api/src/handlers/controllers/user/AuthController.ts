@@ -125,7 +125,7 @@ class AuthController {
 				.end();
 		}
 	}
-	async googleLogin(req: Request, res: Response) {
+	async GoogleLogin(req: Request, res: Response) {
 		try {
 			const is_user = await userService.findUser(req.body.email);
 			if (!is_user) {

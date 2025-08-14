@@ -11,11 +11,11 @@ import {
   GitBranch,
   Settings,
   Heart,
-  ChevronUp,
-  User2,
+ 
+ 
   Globe2,
   WalletCards,
-  HeartHandshake,
+  
 } from "lucide-react"
 
 import {
@@ -31,7 +31,6 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import Userbar from "./userbar"
@@ -140,9 +139,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarGroup key={group.title}>
             <SidebarGroupLabel>{group.title}</SidebarGroupLabel>
             <SidebarGroupContent>
-              <SidebarMenu> 
+              <SidebarMenu>
                 {group.items.map((item) => (
-                  <SidebarMenuItem key={item.title} className={`${ pathname === item.url && "bg-zinc-800"} hover:bg-zinc-100  dark:hover:bg-zinc-800/30`}>
+                  <SidebarMenuItem key={item.title} className={`${pathname === item.url && "bg-zinc-800"} hover:bg-zinc-100  dark:hover:bg-zinc-800/30`}>
                     <SidebarMenuButton asChild isActive={pathname === item.url} tooltip={item.title}>
                       <Link href={item.url}>
                         <item.icon />
@@ -160,32 +159,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <SidebarMenuButton
-                  size="lg"
-                  className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-                >
-                  <Userbar />
-                </SidebarMenuButton>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
-                side="bottom"
-                align="end"
-                sideOffset={4}
-              >
-                {/* <DropdownMenuItem>
-                  <span>Account</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <span>Billing</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <span>Sign out</span>
-                </DropdownMenuItem> */}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <SidebarMenuButton
+              size="lg"
+              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+            >
+              <Userbar />
+            </SidebarMenuButton>
+
           </SidebarMenuItem>
         </SidebarMenu>
 

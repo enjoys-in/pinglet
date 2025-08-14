@@ -47,7 +47,7 @@ const testimonials = currentScript?.dataset.testimonials;
   testimonials && ShowTestimonials();
   let allTemplates = {};
   const PingletWidget = {
-    version: "1.0.5",
+    version: "1.0.9",
     checksum: checksum.replace("sha384-", ""),
     /**
      * Initialize the PingletWidget.
@@ -65,7 +65,7 @@ const testimonials = currentScript?.dataset.testimonials;
         "%cPingletWidget initialized successfully.",
         "color: #1e90ff; font-weight: bold;"
       );
-      if (this.version !== "1.0.5") {
+      if (this.version !== "1.0.9") {
         _showPopup(
           "Pinglet Unsupported Version",
           `PingletWidget version ${this.version} is not supported. Please update to the latest version.`,

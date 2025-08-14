@@ -27,6 +27,12 @@ import { Cache } from "./utils/services/redis/cacheService";
 import "./handlers/cron-jobs";
 
 const io = getSocketIo();
+const allowedWithCreds = [
+	'http://pinglet.enjoys.in',
+	'https://pinglet.enjoys.in',
+	'http://localhost:3000'
+];
+
 
 class AppServer {
 	static App: Application = express();
@@ -59,7 +65,18 @@ class AppServer {
 		AppServer.App.use(morgan("dev"));
 		AppServer.App.use(
 			cors({
-				origin: "*",
+				origin: (origin, callback) => {
+					if (!origin) {
+						// For requests like curl, Postman, or same-origin requests
+						return callback(null, '*');
+					}
+
+					if (allowedWithCreds.includes(origin)) {
+						callback(null, true); // Allow origin for credentials
+					} else {
+						callback(null, '*'); // Public access for files
+					}
+				},
 				credentials: true,
 				optionsSuccessStatus: 200,
 				preflightContinue: true,

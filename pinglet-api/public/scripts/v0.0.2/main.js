@@ -64,5 +64,6 @@ async function sentEvent(event, data) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ ...data, event }),
+    credentials: "omit",
   });
 }
