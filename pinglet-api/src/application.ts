@@ -59,7 +59,7 @@ class AppServer {
 		AppServer.App.use(morgan("dev"));
 		AppServer.App.use(
 			cors({
-				origin: ["http://localhost:3000", "https://pinglet.enjoys.in"],
+				origin: ["*"],
 				credentials: true,
 				optionsSuccessStatus: 200,
 				preflightContinue: true,
