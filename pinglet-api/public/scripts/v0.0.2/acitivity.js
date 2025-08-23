@@ -1,5 +1,5 @@
 (function () {
-  const API_ENDPOINT = "https://your-api.com/track"; // Change to your backend
+  const API_ENDPOINT = "https://pinglet.enjoys.in/api/v1/log/track"; // Change to your backend
 
   // Generate or retrieve a persistent anonymous user ID
   function getAnonUserId() {
@@ -46,6 +46,7 @@
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
+        credentials: "omit",
       });
   }
 

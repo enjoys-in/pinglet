@@ -83,7 +83,7 @@ async function broadcastCustomEvent(eventName, payload) {
  */
 async function fireCustomEvent(event, data) {
   if (!("project_id" in data)) return;
-  await fetch("http://localhost:8888/api/v1/log/event", {
+  await fetch("https://pinglet.enjoys.in/api/v1/log/event", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

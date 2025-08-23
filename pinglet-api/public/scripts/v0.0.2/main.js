@@ -58,7 +58,7 @@ onNotificationEvent("closed", (payload) => sentEvent("closed", payload));
  */
 async function sentEvent(event, data) {
   if (!("project_id" in data)) return;
-  await fetch(`http://localhost:8888/api/v1/log/event`, {
+  await fetch(`https://pinglet.enjoys.in/api/v1/log/track`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
