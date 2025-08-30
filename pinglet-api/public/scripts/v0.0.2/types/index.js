@@ -64,6 +64,7 @@
  */
 /**
  * @typedef {Object} TemplateData
+ * @property {string|number} [id]
  * @property {string} compiled_text
  * @property {TemplateStyleConfig} config
  * @property {boolean} is_active

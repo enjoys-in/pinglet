@@ -44,9 +44,9 @@ const testimonials = currentScript?.dataset.testimonials;
   injectFont();
   askNotificationPermissionFunction(endpoint, projectId, pingletId);
   testimonials && ShowTestimonials();
-  let allTemplates = {};
+
   const PingletWidget = {
-    version: "1.1.0",
+    version: "1.1.3",
     checksum: checksum.replace("sha384-", ""),
     /**
      * Initialize the PingletWidget.
@@ -63,8 +63,9 @@ const testimonials = currentScript?.dataset.testimonials;
       console.log(
         "%cPingletWidget initialized successfully.",
         "color: #1e90ff; font-weight: bold;",
-      this.version);
-      if (this.version !== "1.1.0") {
+        this.version
+      );
+      if (this.version !== "1.1.3") {
         _showPopup(
           "Pinglet Unsupported Version",
           `PingletWidget version ${this.version} is not supported. Please update to the latest version.`,
@@ -127,14 +128,15 @@ const testimonials = currentScript?.dataset.testimonials;
         return console.error("Failed to load configuration for PingletWidget.");
       }
       createBrandingElement(data.result.config.branding);
-      allTemplates = await loadAllTemplates(
+      /** @type {GlobalConfig["templates"]} */
+      let allTemplates = await loadAllTemplates(
         endpoint,
         projectId,
         pingletId,
         this.checksum,
         this.version
       );
-      if (!templates) {
+      if (!allTemplates) {
         _showPopup(
           "Configuration Error",
           "Failed to load templates for PingletWidget."
@@ -154,12 +156,7 @@ const testimonials = currentScript?.dataset.testimonials;
               is_default: true,
             },
           },
-          loadTemplates === "true"
-            ? allTemplates
-            : {
-                [String(data.result.template?.id.toString())]:
-                  data.result.template,
-              }
+          allTemplates
         ),
         style: Object.assign({}, defaultStyles, data.result.template?.config),
         config: Object.assign({}, defaultConfig, data.result.config),
