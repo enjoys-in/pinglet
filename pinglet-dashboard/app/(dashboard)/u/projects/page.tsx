@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect,  useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -26,6 +26,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { db } from "@/lib/db"
 import { API } from "@/lib/api/handler"
 import { AllProjectsResponse } from "@/lib/interfaces/project.interface"
+import { __config } from "@/constants/config"
+import axios from "axios"
 
 
 const getStatusBadge = (status: string) => {
@@ -46,7 +48,7 @@ export default function ProjectsPage() {
   const [categoryFilter, setCategoryFilter] = useState("all")
   const [templateCategories, setTemplateCategories] = useState<{ name: string; slug: string }[]>([])
 
-
+  const URL = __config.APP.BASE_URL
   const [projects, setProjects] = useState<AllProjectsResponse[]>([])
 
   const filteredProjects = useMemo(() => {
@@ -84,7 +86,92 @@ export default function ProjectsPage() {
     fetchAllProjects()
     fetchTemplateCategories()
   }, [])
+  const handleSendBrowserNotification = async (projectId: string) => {
+    const res = await axios.post(URL + '/api/v1/notifications/send',  {
+        "projectId": projectId,
+        "variant": "default",
+        "type": "-1",
+        "data": {
+          "title": "Hello From Pinglet12",
+          "body": "This is Demo Version of Pinglet, New Design are upcoming!",
+          "url": URL,
+          "requireInteraction": true,
+          "tag": "order-12345",
+          "data": {
+            "duration": 10000,
+            "actionEvents": {
+              "approve_order": {
+                "eventName": "order_approved",
+                "eventData": {
+                  "orderId": "12345",
+                  "customerId": "customer-456",
+                  "amount": 99.99
+                },
+                "url": "/orders/12345/approve",
+                "windowAction": "open"
+              },
+              "view_details": {
+                "eventName": "order_viewed",
+                "eventData": {
+                  "orderId": "12345",
+                  "source": "notification"
+                },
+                "windowAction": "focus"
+              }
+            },
+            "closeEvent": {
+              "eventName": "notification_dismissed",
+              "eventData": {
+                "notificationType": "order",
+                "orderId": "12345"
+              }
+            }
+          },
+          "actions": [
+            {
+              "action": "approve_order",
+              "title": "Approve"
+            },
+            {
+              "action": "dismiss",
+              "title": "Dismiss"
+            }
+          ]
+        }
+      })
+  }
 
+  const handleSendCustomNotification = async (projectId: string) => {
+    const res = await axios.post(URL + '/api/v1/notifications/send', {
+      "projectId": projectId,
+      "variant": "default",
+      "type": "0",
+      "body": {
+        "title": "Hello From Pinglet",
+        "description": "This is Demo Version of Pinglet, New Design are upcoming!",
+        "url": URL,
+        "media": {
+          "type": "image",
+          "src": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSsYKuOLDbICLfrUn-vlTWMEtQA3rMw3ihL5Q&s"
+        },
+        "icon": "🅿️",
+        "buttons": [
+          {
+            "text": "Fix Now",
+            "src": URL,
+            "action": "link"
+          },
+          {
+            "text": "Dismiss",
+            "action": "close"
+          }
+        ]
+      },
+      "overrides": {
+        "auto_dismiss": false
+      }
+    })
+  }
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between space-y-2">
@@ -135,7 +222,7 @@ export default function ProjectsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-            {projects.reduce((sum, p) => sum + (+(p?.subscriptions) || 0), 0)}
+              {projects.reduce((sum, p) => sum + (+(p?.subscriptions) || 0), 0)}
             </div>
             <p className="text-xs text-muted-foreground">Unique subscribers</p>
           </CardContent>
@@ -255,9 +342,14 @@ export default function ProjectsPage() {
                             Edit Project
                           </DropdownMenuItem></Link>
 
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleSendCustomNotification(project.unique_id)}>
                           <Bell className="mr-2 h-4 w-4" />
-                          Send Notification
+                          Send Custom Notification
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleSendBrowserNotification(project.unique_id)}>
+
+                          <Bell className="mr-2 h-4 w-4" />
+                          Send Browser Notification
                         </DropdownMenuItem>
                         <DropdownMenuItem className="text-destructive">
                           <Trash2 className="mr-2 h-4 w-4" />
