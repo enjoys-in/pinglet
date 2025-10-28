@@ -23,6 +23,7 @@ import {
 import { ShowTestimonials } from "./testimonials.js";
 import "./sw.js";
 import "./main.js";
+import { createWrapper } from "./wrapper-v2.js";
 const scriptEl = Array.from(document.scripts).find(
   (s) => s.src.includes("pinglet-sse") && s.dataset.endpoint
 );
@@ -38,7 +39,7 @@ const testimonials = currentScript?.dataset.testimonials;
 (async (global) => {
   global.projectId = projectId;
   if (global.PingletWidget) {
-    console.warn("PingletWidget is already initialized.");
+    console.warn("PingletNotification is already initialized.");
     return;
   }
   injectFont();
@@ -188,9 +189,24 @@ const testimonials = currentScript?.dataset.testimonials;
 
         // User created Templates will load here and we parse the data
         if (parsed?.type === "1" && parsed?.template_id && parsed?.data) {
-          const template = ``;
-          const element = interPolateTemplateWithData(template, parsed?.data);
-          return renderToast(element, globalConfig);
+          // fetch the template from globalConfig
+          /** @type {import("./types/index.js").TemplateData} */
+          const template = globalConfig.templates[parsed.template_id];
+
+          const elementWithData = interPolateTemplateWithData(
+            template.compiled_text(),
+            parsed?.data
+          );
+          const run = new Function(elementWithData + "\nreturn element;");
+          const element = run();
+          if (Array.isArray(element)) {
+            createWrapper(element, { side: "left" });
+          } else {
+            createWrapper([element], { side: "left" });
+          }
+
+          // return document.body.appendChild(element);
+          return;
         }
 
         // Customized Templates in form of  Push Notification

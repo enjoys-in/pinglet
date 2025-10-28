@@ -5,7 +5,13 @@ class WidgetController {
 
     async getWidgets(req: Request, res: Response) {
         try {
-            const Widgets = await WidgetService.getWidgetsByUserId(+req.user!.id);
+            const Widgets = await WidgetService.getAllWidgets({
+                where: { user: { id: req.user?.id } },
+                select:[
+                    "id","widget_id","style_props","is_active","created_at","updated_at"
+                ],
+                order: { created_at: "DESC" },
+            });
             res
                 .json({
                     message: "All Widgets",
@@ -34,7 +40,7 @@ class WidgetController {
             if (!req.params?.id) {
                 throw new Error("Invalid Widget ID");
             }
-            const Widget = await WidgetService.getWidgetById(+req.params.id);
+            const Widget = await WidgetService.getWidgetByWidgetId(req.params.id);
             res
                 .json({
                     message: "OK",
@@ -64,7 +70,7 @@ class WidgetController {
             const body = req.body;
             const userID = req.user?.id
             const createWidget = await WidgetService.createNewWidget({
-                ...body,
+                data:body,
                 user: {
                     id: userID
                 }

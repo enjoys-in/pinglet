@@ -10,11 +10,10 @@ import {
   Webhook,
   GitBranch,
   Settings,
-  Heart,
- 
- 
+  Heart, 
   Globe2,
   WalletCards,
+  HeartHandshake,
   
 } from "lucide-react"
 
@@ -66,11 +65,11 @@ const data = {
           url: "/u/projects",
           icon: FolderOpen,
         },
-        // {
-        //   title: "Widgets",
-        //   url: "/widgets",
-        //   icon: HeartHandshake,
-        // },
+        {
+          title: "Widgets",
+          url: "/u/widgets",
+          icon: HeartHandshake,
+        },
         {
           title: "Templates",
           url: "/u/templates",

@@ -140,4 +140,20 @@ export class API {
     static getMyNotificationsLogById(logs_id: string | number) {
         return instance.get<ApiResponse<any>>('/api/v1/my-notification/logs' + logs_id)
     }
+
+    static getWidgets() {
+        return instance.get<ApiResponse<any>>('/api/v1/widgets')
+    }
+    static createWidget(data: any) {
+        return instance.post<ApiResponse<any>>('/api/v1/widget', data)
+    }
+    static updateWidget(widget_id: string, data: any) {
+        return instance.put<ApiResponse<any>>('/api/v1/widget/' + widget_id, data)
+    }
+    static deleteWidget(widget_id: string) {
+        return instance.delete<ApiResponse<any>>('/api/v1/widget/' + widget_id)
+    }
+    static getWidgetById(widget_id: string) {
+        return instance.get<ApiResponse<any>>('/api/v1/widget/' + widget_id)
+    }
 }

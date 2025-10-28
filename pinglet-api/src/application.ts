@@ -83,7 +83,7 @@ class AppServer {
 
 			}),
 		);
-		AppServer.App.use(bodyParser.json());
+		AppServer.App.use(bodyParser.json({ limit: "1mb" }));
 		AppServer.App.use(useHttpsRedirection);
 		AppServer.App.use(SessionHandler.forRoot());
 		AppServer.App.use(fileUpload({ tempFileDir: "./" }));

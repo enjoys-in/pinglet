@@ -1,3 +1,4 @@
+// chat widget only
 class ChatWidget {
   constructor() {
     this.init();

@@ -365,8 +365,9 @@ class PushNtfyController {
 		res.set('Expires', '0');
 		res.send(DEFAULT_SW_FILE_CONTENT);
 	};
-	loadWidgetJsFile = async (req: Request, res: Response) => {
+	loadWidgetJsV1File = async (req: Request, res: Response) => {
 		const wid = req.params.wid
+		const prebuilt = req.query?.prebuilt as string;
 		res.set("Content-Type", "application/javascript");
 		if (!wid) {
 			res.send(WidgetErrorTemplate("Widget ID is required"));
@@ -396,7 +397,31 @@ class PushNtfyController {
 			widget.data.imagePreview));
 	};
 
+	loadWidgetJsV2File = async (req: Request, res: Response) => {
+		const wid = req.params.wid
+		res.set("Content-Type", "application/javascript");
+		if (!wid) {
+			res.send(WidgetErrorTemplate("Widget ID is required"));
+			return
+		}
+		const cachedValue = await Cache.cache.get(wid)
+		if (!cachedValue) {
+			const widget = await WidgetService.getWidgetByWidgetId(wid);
+			if (!widget) {
+				res.send(WidgetErrorTemplate("Invalid Widget ID"));
+				return
+			}
+			Cache.cache.set(wid, JSON.stringify({
+				data: widget.data,
+				style_props: widget.style_props
+			}), { EX: 60 * 60 * 24 });
+			return
+		}
 
+		const widget = JSON.parse(cachedValue)
+		res.set("Content-Type", "application/javascript");
+		res.send(`const element = [document.createElement("p")];element[0].innerText = "Right side notification!";`);
+	};
 
 
 }

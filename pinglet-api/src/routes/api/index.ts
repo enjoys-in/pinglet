@@ -21,7 +21,8 @@ router.post("/notifications/subscribe", pushNtfyController.subscribeNotificatons
 router.post("/notifications/unsubscribe", pushNtfyController.subscribeNotificatons);
 router.get("/notifications/sse", pushNtfyController.customNotificatons);
 router.get("/notifications/sw.js", pushNtfyController.swJSFile);
-router.get("/load-widget/:wid?", pushNtfyController.loadWidgetJsFile);
+router.get("/load-widget-v1/:wid?", pushNtfyController.loadWidgetJsV1File);
+router.get("/load-widget-v2/:wid?", pushNtfyController.loadWidgetJsV2File);
 router.post("/log/event", pushNtfyController.logEvent);
 // API to trigger a notification
 router.post("/notifications/send", Limiter.forRoute("/notifications/subscribe", {

@@ -196,8 +196,8 @@ export const DEFAULT_WIDGET_TEMPLATE = (wid: string, text: string, description: 
         content.appendChild(link);
       }
       
-      widget.appendChild(content);
-      document.currentScript.parentNode.insertBefore(widget, document.currentScript);
+      widget.appendChild(content);      
+      document.body.appendChild(widget);
     })();
   `
 }

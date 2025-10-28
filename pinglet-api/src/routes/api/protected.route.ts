@@ -36,7 +36,7 @@ router.get("/get-my-subscriptions", SubscriptionController.default.getSubscripti
 
 // Widgets
 router.get("/widgets", WidgetController.default.getWidgets);
-router.get("/widget", WidgetController.default.getWidget);
+router.get("/widget/:id", WidgetController.default.getWidget);
 router.post("/widget", WidgetController.default.createWidget);
 router.put("/widget/:id", WidgetController.default.updateWidget);
 router.delete("/widget/:id", WidgetController.default.deleteWidget);

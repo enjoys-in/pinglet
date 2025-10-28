@@ -1,3 +1,4 @@
+// message widget only
 const container = document.createElement("div");
 Object.assign(container.style, {
   minHeight: "100vh",

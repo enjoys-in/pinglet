@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Animated Card with Detached Close</title>
+<style>
+  /* Card Animations */
+  @keyframes slideFadeIn {
+    from { opacity: 0; transform: translateY(50px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes slideFadeOut {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(50px); }
+  }
+
+  .animate-in { animation: slideFadeIn 0.5s forwards; }
+  .animate-out { animation: slideFadeOut 0.5s forwards; }
+
+  /* Floating Close Button Animations */
+  .close-btn {
+    transition: transform 0.3s, background-color 0.3s, opacity 0.3s;
+    opacity: 1;
+  }
+  .close-btn:hover { transform: scale(1.3); }
+  .close-btn.hide { opacity: 0; transform: scale(0); }
+</style>
+</head>
+<body>
+
+<div id="wrapper"></div>
+
+<script>
+  // ===== CONFIG =====
+  const position = 'bottom-right'; // 'bottom-left' or 'bottom-right'
+  const learnMoreLink = 'https://example.com';
+
+  const wrapper = document.getElementById('wrapper');
+  wrapper.style.position = 'fixed';
+  wrapper.style.bottom = '20px';
+  wrapper.style.right = position === 'bottom-right' ? '20px' : 'auto';
+  wrapper.style.left = position === 'bottom-left' ? '20px' : 'auto';
+  wrapper.style.display = 'flex';
+  wrapper.style.flexDirection = 'column';
+  wrapper.style.alignItems = position === 'bottom-right' ? 'flex-end' : 'flex-start';
+  wrapper.style.gap = '12px';
+  wrapper.style.fontFamily = 'Arial, sans-serif';
+
+  // ===== CARD =====
+  const card = document.createElement('div');
+  card.style.width = '300px';
+  card.style.borderRadius = '12px';
+  card.style.overflow = 'hidden';
+  card.style.boxShadow = '0 4px 16px rgba(0,0,0,0.2)';
+  card.style.backgroundColor = '#fff';
+  card.style.display = 'flex';
+  card.style.flexDirection = 'column';
+  card.style.gap = '12px';
+  card.style.position = 'relative';
+  card.classList.add('animate-in');
+
+  // IMAGE
+  const img = document.createElement('img');
+  img.src = 'https://picsum.photos/300/180';
+  img.style.width = '100%';
+  img.style.height = '180px';
+  img.style.objectFit = 'cover';
+  card.appendChild(img);
+
+  // TEXT
+  const textDiv = document.createElement('div');
+  textDiv.style.padding = '12px';
+
+  const desc = document.createElement('p');
+  desc.textContent = 'Embedding widgets was so easy. Just copy-paste and they work perfectly on my site. Love the remote updates!';
+  desc.style.fontSize = '14px';
+  desc.style.color = '#333';
+  desc.style.margin = '0';
+  textDiv.appendChild(desc);
+
+  const button = document.createElement('button');
+  button.textContent = 'Learn More →';
+  button.style.marginTop = '8px';
+  button.style.padding = '8px 16px';
+  button.style.border = 'none';
+  button.style.borderRadius = '6px';
+  button.style.backgroundColor = '#111';
+  button.style.color = '#fff';
+  button.style.cursor = 'pointer';
+  button.style.fontSize = '14px';
+  button.style.transition = 'background 0.3s';
+  button.onclick = () => window.open(learnMoreLink, '_blank');
+  button.onmouseover = () => button.style.backgroundColor = '#333';
+  button.onmouseout = () => button.style.backgroundColor = '#111';
+  textDiv.appendChild(button);
+
+  card.appendChild(textDiv);
+  wrapper.appendChild(card);
+
+  // ===== BRANDING FUNCTION =====
+  function renderBranding(position) {
+    const branding = document.createElement('div');
+    branding.id = 'branding';
+    branding.textContent = 'Powered by Pinglet';
+    branding.style.position = 'fixed';
+    branding.style.bottom = '5px';
+    branding.style.right = position === 'bottom-right' ? '20px' : 'auto';
+    branding.style.left = position === 'bottom-left' ? '20px' : 'auto';
+    branding.style.fontFamily = 'Arial, sans-serif';
+    branding.style.fontSize = '12px';
+    branding.style.color = '#777';
+    branding.style.transition = 'opacity 0.3s';
+    document.body.appendChild(branding);
+    return branding;
+  }
+
+  const branding = renderBranding(position);
+
+  // ===== DETACHED FLOATING CLOSE BUTTON =====
+  const closeBtn = document.createElement('button');
+  closeBtn.textContent = '×';
+  closeBtn.style.position = 'fixed';
+  closeBtn.style.width = '30px';
+  closeBtn.style.height = '30px';
+  closeBtn.style.border = 'none';
+  closeBtn.style.borderRadius = '50%';
+  closeBtn.style.backgroundColor = '#111';
+  closeBtn.style.color = '#fff';
+  closeBtn.style.cursor = 'pointer';
+  closeBtn.style.fontSize = '18px';
+  closeBtn.style.boxShadow = '0 2px 8px rgba(0,0,0,0.3)';
+  closeBtn.classList.add('close-btn');
+
+  // Position the button slightly outside the wrapper
+  function positionCloseBtn() {
+    const rect = wrapper.getBoundingClientRect();
+    closeBtn.style.top = (rect.top - 15) + 'px';
+    closeBtn.style.left = position === 'bottom-right' ? (rect.right - 15) + 'px' : (rect.left - 15) + 'px';
+  }
+  positionCloseBtn();
+  window.addEventListener('resize', positionCloseBtn);
+  document.body.appendChild(closeBtn);
+
+  closeBtn.onmouseover = () => closeBtn.style.backgroundColor = '#333';
+  closeBtn.onmouseout = () => closeBtn.style.backgroundColor = '#111';
+
+  // ===== HIDE FUNCTION =====
+  function hideAll() {
+    // Animate card
+    card.classList.remove('animate-in');
+    card.classList.add('animate-out');
+    // Animate close button
+    closeBtn.classList.add('hide');
+    // Remove elements after animation
+    setTimeout(() => {
+      wrapper.remove();
+      closeBtn.remove();
+      branding.remove();
+    }, 500);
+  }
+
+  closeBtn.onclick = hideAll;
+
+  // ===== AUTO-HIDE AFTER 10s =====
+  let hideTimeout = setTimeout(() => {
+    if (!wrapper.matches(':hover')) hideAll();
+  }, 10000);
+
+  wrapper.addEventListener('mouseenter', () => clearTimeout(hideTimeout));
+  wrapper.addEventListener('mouseleave', () => {
+    hideTimeout = setTimeout(() => {
+      if (!wrapper.matches(':hover')) hideAll();
+    }, 5000);
+  });
+</script>
+</body>
+</html>

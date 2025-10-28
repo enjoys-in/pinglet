@@ -15,7 +15,7 @@ export class WidgetEntity {
     @Column("jsonb")
     data!: WidgetProps;
 
-    @Column("jsonb")
+    @Column("jsonb", { default: {} ,nullable: true})
     style_props!: Record<string, any>;
 
     @Column({ default: true })

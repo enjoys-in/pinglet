@@ -14,6 +14,9 @@ import { Label } from '@/components/ui/label';
 import { Upload, Link, Image, Video, X } from 'lucide-react';
 import WidgetPreview from './Widget';
 import StyleEditorForm from './styleEditor';
+import { API } from '@/lib/api/handler';
+import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 
 const formSchema = z.object({
     text: z.string().min(1, 'Title is required').max(100, 'Title must be less than 100 characters'),
@@ -46,10 +49,10 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
-export function WidgetForm() {
+export function WidgetForm({ data }: { data?: FormData }) {
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [dragActive, setDragActive] = useState(false);
-
+    const router = useRouter()
     const form = useForm<FormData>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -120,11 +123,34 @@ export function WidgetForm() {
             form.setValue('imageUrl', '');
         }
     }, [watchMediaType, form]);
+    React.useEffect(() => {
+        if (data) {
+            form.reset(data);
+        }
+    }, [data, form]);
+    const onSubmit = async (input: FormData) => {
+        try {
+            if (input.mediaType === 'image') {
+                if (input.imageSource === 'upload' && input.imageFile) {
+                    input.imageUrl = imagePreview as string
+                }
+            }
 
-    const onSubmit = (data: FormData) => {
-        console.log('Form submitted:', data);
-        // Here you would typically send the data to your API
-        alert('Content created successfully!');
+            const { data } = await API.createWidget(input)
+            if (!data.success) {
+                throw new Error(data.message || 'Failed to create widget');
+            }
+            toast.success('Widget created successfully!');
+
+            form.reset();
+            setImagePreview(null);
+            setDragActive(false);
+            router.push('/u/widgets')
+        } catch (error) {
+            toast.error((error as Error).message || 'Something went wrong');
+            return;
+        }
+
     };
 
     return (
