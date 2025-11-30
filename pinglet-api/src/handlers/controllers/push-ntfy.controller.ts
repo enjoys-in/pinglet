@@ -338,7 +338,6 @@ class PushNtfyController {
 			res.setHeader("X-Notification-Type", "custom");
 
 			const payload = JSON.stringify(req.body);
-
 			clients.get(projectId)?.forEach((client) => {
 				client.write(`data: ${payload}\n\n`);
 			});

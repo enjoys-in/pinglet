@@ -6,7 +6,9 @@ import { QUEUE_JOBS } from "./name";
 const triggerWebhookQueue = QueueService.createQueue("TRIGGER_WEBHOOK")
 const mailer = MailService.getInstance()
 export class EventListeners {
-    constructor() { }
+    constructor() {
+        console.log("EventListeners")
+    }
 
     @OnEvent("resetPassword", { async: false })
     private sendResetPassEmail(payload: any) {
@@ -18,8 +20,9 @@ export class EventListeners {
             context: { name: data.name, email: data.email, password: data.password }
         })
     }
-    @OnEvent("triggerWebhook", { async: false })
+    @OnEvent("triggerWebhook", { async: true })
     private async triggerWebhook(payload: any) {
+        console.log("first")
         const data = JSON.parse(payload) as {
             webhookType: WebhookType.API,
             event: WebhookEvent.NOTIFICATION_SENT,
@@ -27,9 +30,10 @@ export class EventListeners {
             notificationType: "1" | "0" | "-1",
             notificationData: Record<string, any>
         }
-        await triggerWebhookQueue.add(QUEUE_JOBS.TRIGGER_WEBHOOK, data, {
-            removeOnComplete: true,
-            jobId: `${data.projectId}-${data.event}`
-        })
+        console.log(data)
+        // await triggerWebhookQueue.add(QUEUE_JOBS.TRIGGER_WEBHOOK, data, {
+        //     removeOnComplete: true,
+        //     jobId: `${data.projectId}-${data.event}`
+        // })
     }
 }

@@ -180,6 +180,7 @@ const testimonials = currentScript?.dataset.testimonials;
         const parsed = JSON.parse(e.data);
 
         const data = parsed.data;
+
         globalConfig?.is_tdd &&
           Object.assign(
             globalConfig.config,
@@ -196,14 +197,15 @@ const testimonials = currentScript?.dataset.testimonials;
           const elementWithData = interPolateTemplateWithData(
             template.compiled_text(),
             parsed?.data
-          
+          );
+
           const run = new Function(elementWithData + "\nreturn element;");
           const element = run();
-         i (Array.isArray(element)) {
-          createWrapper(element, { side: "left" });
-          else {
-           ceateWrapper([element], { side: "left" });
-        }
+          //  if (Array.isArray(element)) {
+          //   createWrapper(element, { side: "left" });
+          //   else {
+          //    createWrapper([element], { side: "left" });
+          // }
 
           // return document.body.appendChild(element);
           return;
@@ -227,11 +229,13 @@ const testimonials = currentScript?.dataset.testimonials;
           return;
         }
         // only browser notifications
-        TriggerBrowserNotificationApi(
-          body.title,
-          body.description,
-          body.type?.icon?.src || ""
-        );
+        if (parsed && parsed?.type === "-1") {
+          TriggerBrowserNotificationApi(
+            body.title,
+            body.description,
+            body.type?.icon?.src || ""
+          );
+        }
         // trigger browser notification
       };
     },

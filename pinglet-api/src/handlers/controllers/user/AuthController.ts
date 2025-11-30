@@ -7,6 +7,7 @@ import type {
 	GoogleAuthProviderResponse,
 	ID_TOKEN,
 } from "@/utils/interfaces/provider.interface";
+import { AppEvents } from "@/utils/services/Events";
 import { MailService } from "@/utils/services/mail/mailService";
 import type { Request, Response } from "express";
 const emailSvc = MailService.createInstance()
@@ -39,7 +40,12 @@ class AuthController {
 			if (!user) {
 				throw new Error("User not found.");
 			}
+			AppEvents.emit("resetPassword", {
 
+				email: user.email,
+				name: user?.first_name ? user?.first_name : "User",
+				password: req.body.password,
+			});
 			await userService.updateUserPassword(email as string, await utils.HashPassword(req.body.password));
 			tokenStore.delete(email as string); // Invalidate the token after use
 

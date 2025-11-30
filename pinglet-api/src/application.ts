@@ -25,6 +25,7 @@ import { __CONFIG__ } from "./app/config";
 import { AppEvents } from "./utils/services/Events";
 import { Cache } from "./utils/services/redis/cacheService";
 import "./handlers/cron-jobs";
+import "./utils/services/queue/event-listener";
 
 const io = getSocketIo();
 const allowedWithCreds = [

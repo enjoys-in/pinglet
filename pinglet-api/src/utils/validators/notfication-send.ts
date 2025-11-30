@@ -125,26 +125,19 @@ export const notificationSchema = z.object({
     title: z.string().min(3),
     description: z.string().optional(),
     media: mediaSchema.optional(),
-    buttons: z.array(buttonSchema)  .max(2, 'Maximum 2 actions allowed').optional(),
+    buttons: z.array(buttonSchema).max(2, 'Maximum 2 actions allowed').optional(),
     icon: iconSchema.optional(),
     logo: logoSchema.optional(),
     url: z.string().url().optional(),
   }).optional(), // for type 0
-  data:  NotificationPayloadSchema.optional(), // for type -1
+  data: NotificationPayloadSchema.optional(), // for type -1
   custom_template: z.record(z.any(), z.any()).optional() // for type 1
 })
   .superRefine((data, ctx) => {
     const isTemplate = data.template_id !== undefined;
     const isVariant = data.variant !== undefined;
 
-    if (data.type === "1" || data?.custom_template) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["custom_template"],
-        message: "Custom template is not supported yet,feature coming soon",
-      });
 
-    }
     // 1. If type is "1", template_id is required
     if (data.type === "1" && !isTemplate) {
       ctx.addIssue({
@@ -153,14 +146,14 @@ export const notificationSchema = z.object({
         message: "`template_id` is required when type is '1'",
       });
     }
-    if (data.type === "1" && data?.body) {
+    if (data.type === "1" && (data?.body || data?.data)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["body"],
-        message: "`body` is not required when type is '1'",
+        message: "`body` and `data` are not required when type is '1'",
       });
     }
-   
+
     // 2. If type is not "1", template_id must not be present
     if (data.type !== "1" && isTemplate) {
       ctx.addIssue({
