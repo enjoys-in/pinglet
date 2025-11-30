@@ -145,7 +145,7 @@ export function renderToast(contentEl, globalConfig) {
   toastStack.appendChild(contentEl);
 
   if (config?.auto_dismiss) {
-    setTimeout(() => {    
+    setTimeout(() => {
       // Check if the content element is still in the stack
       if (toastStack.contains(contentEl)) {
         prepareEventBody("dropped", contentEl, "user doesn't engaged");
@@ -231,15 +231,21 @@ window.addEventListener("pinglet:notificationClosed", (event) => {
  * @param {string} [reason="user-dismiss"] - The reason for the event, defaulting to "user-dismiss".
  * @returns {Promise<void>}
  */
-export async function prepareEventBody(type, contentEl, reason = "user-dismiss") {
+export async function prepareEventBody(
+  type,
+  contentEl,
+  reason = "user-dismiss"
+) {
   const notification_id = contentEl.getAttribute("data-notification-id");
-  const notification_type=contentEl.getAttribute("data-notification-type")||"0";
+  const notification_type =
+    contentEl.getAttribute("data-notification-type") || "0";
   const [project_id, timestamp] = notification_id.split("-");
+
   window.sendNotificationEvent(type, {
     project_id,
     notification_id,
     timestamp,
     reason,
-    type:notification_type
+    type: notification_type,
   });
 }

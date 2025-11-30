@@ -14,6 +14,8 @@ import { DEFAULT_SW_FILE_CONTENT } from "../services/default/swFileContent";
 import { KafkaAnalyticsConsumer } from "../services/kafka/notificationConsumer";
 import { AppEvents } from "@/utils/services/Events";
 import { WebhookEvent, WebhookType } from "@/factory/entities/webhook.entity";
+import { templateService } from "../services/template.service";
+import { In } from "typeorm";
 
 const clients = new Map<string, Set<Response>>();
 
@@ -127,10 +129,11 @@ class PushNtfyController {
 	};
 	loadTemplates = async (req: Request, res: Response) => {
 		try {
-			const query = req.query as { projectId: string };
+			const query = req.query as { projectId: string, templatesIds: string };
 
-			if (!query.projectId) {
-				throw new Error("Missing projectIds or domain");
+
+			if (!query.projectId || !query.templatesIds) {
+				throw new Error("Missing projectIds or templatesIds");
 			}
 			const cacheKey = `${query.projectId}-templates`
 			const cache = await Cache.cache.get(cacheKey)
@@ -140,8 +143,17 @@ class PushNtfyController {
 					.end();
 				return;
 			}
+
 			const loadConfig = await projectService.getSelectedProjects({
-				where: { unique_id: query.projectId, is_active: true },
+				where: {
+					unique_id: query.projectId,
+					is_active: true,
+					category: {
+						templates: {
+							id: In(query.templatesIds.split(","))
+						}
+					}
+				},
 				select: {
 					id: true,
 					config: true,

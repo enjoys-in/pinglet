@@ -24,6 +24,7 @@ import { ShowTestimonials } from "./testimonials.js";
 import "./sw.js";
 import "./main.js";
 import { createWrapper } from "./wrapper-v2.js";
+
 const scriptEl = Array.from(document.scripts).find(
   (s) => s.src.includes("pinglet-sse") && s.dataset.endpoint
 );
@@ -35,6 +36,7 @@ const projectId = currentScript?.dataset.projectId;
 const pingletId = currentScript?.dataset.pingletId;
 const checksum = currentScript?.dataset.checksum;
 const testimonials = currentScript?.dataset.testimonials;
+const templatesIds = currentScript?.dataset.templates;
 
 (async (global) => {
   global.projectId = projectId;
@@ -42,6 +44,7 @@ const testimonials = currentScript?.dataset.testimonials;
     console.warn("PingletNotification is already initialized.");
     return;
   }
+
   injectFont();
   askNotificationPermissionFunction(endpoint, projectId, pingletId);
   testimonials && ShowTestimonials();
@@ -66,6 +69,63 @@ const testimonials = currentScript?.dataset.testimonials;
         "color: #1e90ff; font-weight: bold;",
         this.version
       );
+      if (!templatesIds) {
+        _showPopup(
+          "Configuration Error",
+          "Missing templatesIds.",
+          [
+            {
+              text: "Retry",
+              action: "reload",
+            },
+            {
+              text: "See Docs",
+              action: "redirect",
+              src: "https://pinglet.enjoys.in/docs",
+            },
+          ],
+          "❌"
+        );
+        return console.error("Missing templatesIds.");
+      }
+      if (!pingletId) {
+        _showPopup(
+          "Configuration Error",
+          "Missing Pinglet ID.",
+          [
+            {
+              text: "Retry",
+              action: "reload",
+            },
+            {
+              text: "See Docs",
+              action: "redirect",
+              src: "https://pinglet.enjoys.in/docs",
+            },
+          ],
+          "❌"
+        );
+        return console.error("Missing pingletId.");
+      }
+      if (!endpoint) {
+        _showPopup(
+          "Configuration Error",
+          "Missing Endpoint.",
+          [
+            {
+              text: "Retry",
+              action: "reload",
+            },
+            {
+              text: "See Docs",
+              action: "redirect",
+              src: "https://pinglet.enjoys.in/docs",
+            },
+          ],
+          "❌"
+        );
+        return console.error("Missing pingletId.");
+      }
       if (this.version !== "1.1.3") {
         _showPopup(
           "Pinglet Unsupported Version",
@@ -135,7 +195,8 @@ const testimonials = currentScript?.dataset.testimonials;
         projectId,
         pingletId,
         this.checksum,
-        this.version
+        this.version,
+        templatesIds
       );
       if (!allTemplates) {
         _showPopup(
@@ -181,7 +242,7 @@ const testimonials = currentScript?.dataset.testimonials;
 
         const data = parsed.data;
 
-        globalConfig?.is_tdd &&
+        globalConfig?.is_tff &&
           Object.assign(
             globalConfig.config,
             globalConfig.config,
@@ -189,25 +250,36 @@ const testimonials = currentScript?.dataset.testimonials;
           );
 
         // User created Templates will load here and we parse the data
-        if (parsed?.type === "1" && parsed?.template_id && parsed?.data) {
+        if (
+          parsed?.type === "1" &&
+          parsed?.template_id &&
+          parsed?.custom_template
+        ) {
           // fetch the template from globalConfig
           /** @type {import("./types/index.js").TemplateData} */
           const template = globalConfig.templates[parsed.template_id];
-
-          const elementWithData = interPolateTemplateWithData(
-            template.compiled_text(),
-            parsed?.data
+          if (!template || template.compiled_text.length === 0) {
+            return console.log("Template not found");
+          }
+          const func = new Function("return " + template.compiled_text)();
+          /** @type {HTMLElement} */
+          const element = func(parsed?.custom_template);
+          let wrapper;
+          if (Array.isArray(element)) {
+            wrapper = createWrapper(element, { side: "left" });
+          } else {
+            wrapper = createWrapper([element], { side: "left" });
+          }
+          wrapper.setAttribute(
+            "data-notification-id",
+            `${parsed?.project_id || projectId}-${Date.now()}`
           );
-
-          const run = new Function(elementWithData + "\nreturn element;");
-          const element = run();
-          //  if (Array.isArray(element)) {
-          //   createWrapper(element, { side: "left" });
-          //   else {
-          //    createWrapper([element], { side: "left" });
-          // }
-
-          // return document.body.appendChild(element);
+          wrapper.setAttribute("data-notification-type", parsed?.type || "1");
+          wrapper.addEventListener("click", () => {
+            prepareEventBody("clicked", wrapper, "user clicked");
+            parsed.custom_template.url &&
+              window.open(parsed.custom_template.url, "_blank");
+          });
           return;
         }
 

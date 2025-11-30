@@ -89,11 +89,9 @@ const displayError = (msg) => {
     } else {
       createWrapper([element], { side: "right" });
     }
-
-    
   }
   injectFont();
-  initWidget(); 
+  initWidget();
 })(window);
 
 export { Wrapper };

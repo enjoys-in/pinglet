@@ -18,7 +18,8 @@ window.addEventListener("beforeunload", () => {
   navigator.sendBeacon("/track-session", JSON.stringify(events));
 });
 
-<div id="replay" style="height: 600px;"></div>
+{
+  /* <div id="replay" style="height: 600px;"></div>
 <script src="https://cdn.jsdelivr.net/npm/rrweb-player@latest/dist/index.js"></script>
 <link href="https://cdn.jsdelivr.net/npm/rrweb-player@latest/dist/style.css" rel="stylesheet"/>
 
@@ -34,4 +35,5 @@ window.addEventListener("beforeunload", () => {
         }
       });
     });
-</script>
+</script> */
+}

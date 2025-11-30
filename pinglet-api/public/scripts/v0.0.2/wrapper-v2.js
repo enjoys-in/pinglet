@@ -1,5 +1,7 @@
+import { prepareEventBody } from "./widget.js";
+
 const config = {
-  autoCloseDelay: 50000,
+  autoCloseDelay: 2000,
   brandingText: "Powered by Enjoys",
   brandingPosition: "right",
   defaultClass: "pinglet-wigdet-wrapper",
@@ -56,13 +58,14 @@ export function createWrapper(dynamicElements = [], customConfig = {}) {
   const wrapper = document.createElement("div");
   wrapper.style.position = "relative";
   wrapper.style.width = "300px";
-  wrapper.style.padding = "4px";
+  // wrapper.style.padding = "4px";
   wrapper.style.borderRadius = "10px";
   wrapper.style.boxShadow = "0 4px 12px rgba(0,0,0,0.15)";
   wrapper.style.backgroundColor = "#fff";
   wrapper.style.transition = "transform 0.3s ease, opacity 0.3s ease";
   wrapper.style.animation = "slideIn 0.4s forwards";
   wrapper.style.pointerEvents = "all";
+  wrapper.id = "pinglet-custom-wrapper";
 
   dynamicElements.forEach((el) => wrapper.appendChild(el));
 
@@ -87,9 +90,11 @@ export function createWrapper(dynamicElements = [], customConfig = {}) {
     justifyContent: "center",
     boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
   });
-  closeBtn.addEventListener("click", () =>
-    removeWrapper(wrapper, finalConfig.side)
-  );
+  closeBtn.addEventListener("click", async (e) => {
+    e.stopPropagation();
+    prepareEventBody("closed", wrapper);
+    removeWrapper(wrapper, finalConfig.side);
+  });
   wrapper.appendChild(closeBtn);
 
   // Branding
@@ -107,10 +112,11 @@ export function createWrapper(dynamicElements = [], customConfig = {}) {
   // Auto-close
   let closeTimeout;
   function startCloseTimer() {
-    closeTimeout = setTimeout(
-      () => removeWrapper(wrapper, finalConfig.side),
-      finalConfig.autoCloseDelay
-    );
+    closeTimeout = setTimeout(() => {
+      removeWrapper(wrapper, finalConfig.side);
+
+      return;
+    }, finalConfig.autoCloseDelay);
   }
   function stopCloseTimer() {
     clearTimeout(closeTimeout);

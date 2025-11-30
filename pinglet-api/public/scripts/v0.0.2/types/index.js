@@ -32,6 +32,8 @@
  * @property {NotificationDataBody} [body]
  * @property {Object} [overrides]
  * @property {Object} [data]
+ * @property {Object} [custom_template]
+ * 
 
  */
 
@@ -54,6 +56,7 @@
  * @property {1|0|-1} type // -1, 0, 1 default is 0 
  * @property {Object} [overrides]
  * @property {Object} [data]
+ * @property {Object} 
 
  */
 

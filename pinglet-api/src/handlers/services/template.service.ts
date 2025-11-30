@@ -1,6 +1,6 @@
 import { TemplatesEntity } from "@/factory/entities/templates.entity";
 import { InjectRepository } from "@/factory/typeorm";
-import type {  FindManyOptions, Repository } from "typeorm";
+import type { FindManyOptions, Repository } from "typeorm";
 class TemplateService {
     constructor(
         private readonly templateRepo: Repository<TemplatesEntity>,
@@ -18,7 +18,7 @@ class TemplateService {
     getTemplateById(id: number) {
         return this.templateRepo.findOne({ where: { id } });
     }
-     
+
 }
 export const templateService = new TemplateService(
     InjectRepository(TemplatesEntity),

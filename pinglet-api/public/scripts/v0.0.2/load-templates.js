@@ -13,10 +13,11 @@ export async function loadAllTemplates(
   projectId,
   pingletId,
   checksum,
-  version
+  version,
+  templatesIds
 ) {
   const response = await fetch(
-    `${endpoint}/load/templates?projectId=${projectId}`,
+    `${endpoint}/load/templates?projectId=${projectId}&templatesIds=${templatesIds}`,
     {
       headers: {
         "X-Project-ID": projectId,
