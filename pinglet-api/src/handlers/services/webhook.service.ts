@@ -5,7 +5,7 @@ class WebhookService {
 	constructor(private readonly webhookRepo: Repository<WebhookEntity>) {
 		this.webhookRepo = webhookRepo;
 	}
-	createNewWebhook(webhook: DeepPartial<WebhookEntity>) {
+	createNewWebhook(webhook: Partial<WebhookEntity>) {
 		const newWebhook = this.webhookRepo.create(webhook);
 		return this.webhookRepo.save(newWebhook);
 	}
@@ -15,8 +15,8 @@ class WebhookService {
 	getWebhookById(id: number) {
 		return this.webhookRepo.findOneBy({ id });
 	}
-	getWebhooksByProjectId(id: string) {
-		return this.webhookRepo.find({ where: { project_id: id } });
+	getWebhooksByUserId(id: number) {
+		return this.webhookRepo.find({ where: { user_id: id } });
 	}
 	updateWebhook(id: number, data: DeepPartial<WebhookEntity>) {
 		return this.webhookRepo.update(id, data);

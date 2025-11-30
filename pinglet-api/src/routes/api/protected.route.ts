@@ -50,7 +50,11 @@ router.get("/my-notification/logs/:id", NotificationController.default.getRawNot
 
 
 // Webhook
-// router.use("/webhook", WebhookController.default);
+router.get("/webhooks", WebhookController.default.getAllWebhooks);
+router.get("/webhook/:id", WebhookController.default.getWebhook);
+router.post("/webhook", WebhookController.default.createNewWebhook);
+router.put("/webhook/:id", WebhookController.default.updateWebhook);
+router.delete("/webhook/:id", WebhookController.default.deleteWebhook);
 // Template
 // router.use("/template", TemplateController.default);
 // Template Category

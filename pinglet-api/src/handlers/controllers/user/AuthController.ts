@@ -2,20 +2,124 @@ import { __CONFIG__ } from "@/app/config";
 import { AuthProviderFactory } from "@/app/modules/oauth2/oauth2factory";
 import { userService } from "@/handlers/services/users.service";
 import utils from "@/utils";
+import helpers from "@/utils/helpers";
 import type {
 	GoogleAuthProviderResponse,
 	ID_TOKEN,
 } from "@/utils/interfaces/provider.interface";
+import { MailService } from "@/utils/services/mail/mailService";
 import type { Request, Response } from "express";
-
+const emailSvc = MailService.createInstance()
 const provider = AuthProviderFactory.createProvider(
 	"google",
 	"dd",
 	"ss",
 	"http://localhost",
 );
-
+const tokenStore = new Map()
 class AuthController {
+	async ResetPassword(req: Request, res: Response) {
+		try {
+			const { password, confirmPassword } = req.body;
+			const { token, email } = req.query;
+
+			if (!password || !confirmPassword || password !== confirmPassword) {
+				throw new Error("Passwords do not match or are invalid.");
+			}
+
+			if (!token || !email) {
+				throw new Error("Invalid reset link.");
+			}
+
+			if (!tokenStore.has(email as string) || tokenStore.get(email as string) !== token) {
+				throw new Error("Invalid or expired token.");
+			}
+
+			const user = await userService.findUser(email as string);
+			if (!user) {
+				throw new Error("User not found.");
+			}
+
+			await userService.updateUserPassword(email as string, await utils.HashPassword(req.body.password));
+			tokenStore.delete(email as string); // Invalidate the token after use
+
+			res.json({
+				result: null,
+				success: true, message: "Password reset successfully."
+			});
+		} catch (error: any) {
+
+			if (error instanceof Error) {
+				res
+					.json({ message: error.message, result: null, success: false })
+					.end();
+				return;
+			}
+			res
+				.json({
+					message: "Something went wrong",
+					result: null,
+					success: false,
+				})
+				.end();
+
+		}
+	}
+	async ForgotPassword(req: Request, res: Response) {
+		try {
+			const email = req.query?.email as string
+			if (!email) {
+				throw new Error("Email not found");
+			}
+			const is_user = await userService.findUser(email);
+			if (!is_user) {
+				throw new Error("Invalid Credentials");
+
+			}
+			if (tokenStore.has(email)) {
+				tokenStore.delete(email);
+			}
+			const token = helpers.GenerateToken();
+
+			tokenStore.set(email, token);
+
+			await emailSvc.SendMail({
+				to: email,
+				subject: "Forgot Password",
+				html: `
+					<p>Hello,</p>
+					<p>You have requested to reset your password. Please click on the following link to reset your password:</p>
+					<p><a href="https://pinglet.enjoys.in/reset-password?token=${token}&email=${email}">Reset Password</a></p>
+					<p>If you did not request a password reset, please ignore this email.</p>
+					<p>Thank you,</p>
+					<p>The Pinglet Team - Powered by ENJOYS</p>
+				`,
+			})
+			res
+				.json({
+					message: "An Email has been sent to your email address",
+					result: null,
+					success: true,
+				})
+				.end();
+		}
+		catch (error: any) {
+			if (error instanceof Error) {
+				res
+					.json({ message: error.message, result: null, success: false })
+					.end();
+				return;
+			}
+			res
+				.json({
+					message: "Something went wrong",
+					result: null,
+					success: false,
+				})
+				.end();
+		}
+	}
+
 	async Login(req: Request, res: Response) {
 		try {
 			const is_user = await userService.findUser(req.body.email);
@@ -39,7 +143,7 @@ class AuthController {
 			res.cookie("access_token", signJWT, {
 				httpOnly: true,
 				maxAge: exp, // 30 day
-				secure: __CONFIG__.APP.APP_ENV === "DEV"?false:true,
+				secure: __CONFIG__.APP.APP_ENV === "DEV" ? false : true,
 				sameSite: __CONFIG__.APP.APP_ENV === "DEV" ? "lax" : "strict",
 				expires: new Date(Date.now() + exp),
 			});

@@ -11,6 +11,7 @@ import { websiteService } from '@/handlers/services/website.service';
 
 import { KafkaNotificationProducer } from "../kafka/producer";
 import { KafkaNotificationLogger } from "../kafka/notificationLogger";
+import { WebhookEvent, WebhookType } from "@/factory/entities/webhook.entity";
 const kafkaProducer = new KafkaNotificationProducer([`${__CONFIG__.KAFKA.KAFKA_HOST}:${__CONFIG__.KAFKA.KAFKA_PORT}`]);
 const logger = new KafkaNotificationLogger(kafkaProducer, "notification-events");
 
@@ -21,6 +22,7 @@ export class ListenWorkers extends QueueService {
 
         ListenWorkers.ProcessSendtoSocketNotification();
         ListenWorkers.ProcessSendtoKafka();
+        ListenWorkers.ProcessTriggerWebhook();
     }
     private static ProcessSendtoKafka() {
         const worker = new Worker(
@@ -202,14 +204,49 @@ export class ListenWorkers extends QueueService {
         worker.on("failed", async (job, err) => {
             console.log(`${job} has failed with ${err.message}`);
             const p = JSON.parse(job?.data);
+            const timestamp = Date.now()
             await logger.log({
                 event: "failed",
-                timestamp: Date.now(),
+                timestamp,
                 type: p.type || "-1",
                 projectId: p.projectId,
                 notificationId: job?.id!,
                 metadata: job?.data
             });
+            this.addJob("TRIGGER_WEBHOOK", "TRIGGER_WEBHOOK", JSON.stringify({
+                webhookType: WebhookType.API,
+                event: WebhookEvent.NOTIFICATION_FAILED,
+                projectId: p.projectId,
+                notificationType: p.type || "-1",
+                notificationData: job?.data,
+                timestamp
+            }))
         });
+    }
+    private static ProcessTriggerWebhook() {
+        const worker = new Worker(
+            QUEUE_NAME.TRIGGER_WEBHOOK,
+            async (job) => {
+                const { webhookType, event, projectId, notificationType, notificationData, timestamp } = job.data as {
+                    webhookType: WebhookType.API,
+                    event: WebhookEvent,
+                    projectId: string,
+                    notificationType: "1" | "0" | "-1",
+                    notificationData: Record<string, any>,
+                    timestamp: number
+                }
+
+            }, {
+            connection: ListenWorkers.connection,
+            useWorkerThreads: true,
+            concurrency: os.cpus().length,
+        }
+        )
+        worker.on("completed", async (job) => {
+            console.log("Completed", job);
+        });
+        worker.on("error", async (error: Error) => {
+            console.log("error", error);
+        })
     }
 }

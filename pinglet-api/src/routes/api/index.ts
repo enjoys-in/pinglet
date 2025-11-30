@@ -13,6 +13,8 @@ router.post("/auth/google", UserAuthController.default.GoogleLogin);
 router.post("/auth/register", UserAuthController.default.Register);
 router.get("/auth/callback", UserAuthController.default.Callback);
 router.post("/auth/logout", UserAuthController.default.Logout);
+router.get("/auth/forget-password", UserAuthController.default.ForgotPassword);
+router.post("/auth/reset-password", UserAuthController.default.ResetPassword);
 router.get("/auth/profile", JwtAuth.Me);
 // SSE endpoint
 router.get("/notifications/load/templates", pushNtfyController.loadTemplates);
@@ -30,6 +32,6 @@ router.post("/notifications/send", Limiter.forRoute("/notifications/subscribe", 
     max: 30,
     standardHeaders: "draft-7",
     legacyHeaders: false,
-}),  pushNtfyController.triggerNotification);
+}), pushNtfyController.triggerNotification);
 router.get("/pinglet-sound.mp3", pushNtfyController.sound);
 export default router;

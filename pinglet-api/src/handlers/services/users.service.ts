@@ -39,6 +39,18 @@ class UserService {
 		const newUser = this.userRepo.create(user);
 		return this.userRepo.save(newUser);
 	}
+	async updateUserPassword(
+		email: string,
+		newPassword: string,
+	): Promise<UserEntity | null> {
+		const user = await this.findUser(email);
+		if (!user) {
+			return null;
+		}
+		user.password = newPassword;
+		return this.userRepo.save(user);
+	}
+
 }
 
 export const userService = new UserService(InjectRepository(UserEntity));

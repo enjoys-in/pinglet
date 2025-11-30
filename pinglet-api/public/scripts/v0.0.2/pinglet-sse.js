@@ -196,14 +196,14 @@ const testimonials = currentScript?.dataset.testimonials;
           const elementWithData = interPolateTemplateWithData(
             template.compiled_text(),
             parsed?.data
-          );
+          
           const run = new Function(elementWithData + "\nreturn element;");
           const element = run();
-          if (Array.isArray(element)) {
-            createWrapper(element, { side: "left" });
-          } else {
-            createWrapper([element], { side: "left" });
-          }
+         i (Array.isArray(element)) {
+          createWrapper(element, { side: "left" });
+          else {
+           ceateWrapper([element], { side: "left" });
+        }
 
           // return document.body.appendChild(element);
           return;

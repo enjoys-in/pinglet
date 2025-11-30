@@ -12,12 +12,15 @@ import { QueueService } from "@/utils/services/queue";
 import { QUEUE_JOBS } from "@/utils/services/queue/name";
 import { DEFAULT_SW_FILE_CONTENT } from "../services/default/swFileContent";
 import { KafkaAnalyticsConsumer } from "../services/kafka/notificationConsumer";
-import { ListenWorkers } from "@/utils/services/queue/worker";
+import { AppEvents } from "@/utils/services/Events";
+import { WebhookEvent, WebhookType } from "@/factory/entities/webhook.entity";
+
 const clients = new Map<string, Set<Response>>();
 
 const sendPushQueue = QueueService.createQueue("SEND_BROWSER_NOTIFICATION")
 const sendToKafkaQueue = QueueService.createQueue("SEND_KAFKA_NOTIFICATION")
-ListenWorkers.listen()
+
+
 new KafkaAnalyticsConsumer().start()
 let base64Mp3: string | null = null;
 
@@ -29,6 +32,14 @@ class PushNtfyController {
 		sendToKafkaQueue.add(QUEUE_JOBS.SEND_KAFKA_NOTIFICATION, body, {
 			removeOnComplete: true,
 			jobId: `${body.project_id}-${body.timestamp}-${body.event}`
+		})
+		AppEvents.emit("triggerWebhook", {
+			webhookType: WebhookType.API,
+			event: body?.event,
+			projectId: body?.project_id,
+			notificationType: body?.type,
+			notificationData: body,
+			timestamp: body?.timestamp
 		})
 		res.end();
 	}
@@ -194,7 +205,14 @@ class PushNtfyController {
 				project_id: projectId,
 				...req.body
 			})
-
+			AppEvents.emit("triggerWebhook", JSON.stringify({
+				webhookType: WebhookType.API,
+				event: WebhookEvent.USER_SUBSCRIBED,
+				projectId: projectId,
+				notificationType: "-1",
+				notificationData: null,
+				timestamp: Date.now()
+			}));
 			res
 				.json({
 					message: "OK",
@@ -225,6 +243,14 @@ class PushNtfyController {
 		try {
 			const body = req.body
 			await pushSubscriptionService.deleteSubscription(body.endpoint, body.projectId);
+			AppEvents.emit("triggerWebhook", JSON.stringify({
+				webhookType: WebhookType.API,
+				event: WebhookEvent.USER_UNSUBSCRIBED,
+				projectId: body.projectId,
+				notificationType: "-1",
+				notificationData: null,
+				timestamp: Date.now()
+			}));
 			res
 				.json({
 					message: "OK",
@@ -299,6 +325,14 @@ class PushNtfyController {
 					result: "Notification Sent",
 					success: true
 				}).end();
+				AppEvents.emit("triggerWebhook", JSON.stringify({
+					webhookType: WebhookType.API,
+					event: WebhookEvent.NOTIFICATION_SENT,
+					projectId: projectId,
+					notificationType: rest.type,
+					notificationData: rest,
+					timestamp: Date.now()
+				}));
 				return
 			}
 			res.setHeader("X-Notification-Type", "custom");
@@ -308,7 +342,14 @@ class PushNtfyController {
 			clients.get(projectId)?.forEach((client) => {
 				client.write(`data: ${payload}\n\n`);
 			});
-
+			AppEvents.emit("triggerWebhook", JSON.stringify({
+				webhookType: WebhookType.API,
+				event: WebhookEvent.NOTIFICATION_SENT,
+				projectId: projectId,
+				notificationType: rest.type,
+				notificationData: rest,
+				timestamp: Date.now()
+			}));
 			res.json({
 				message: "OK",
 				result: "Notification Sent",

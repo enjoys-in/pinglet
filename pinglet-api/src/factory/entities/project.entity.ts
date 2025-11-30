@@ -99,12 +99,7 @@ export class ProjectEntity {
 	@OneToMany(() => PushSubscriptionEntity, sub => sub.project)
 	subscriptions!: PushSubscriptionEntity[];
 
-	@OneToMany(
-		() => WebhookEntity,
-		(notif) => notif.project,
-		{ nullable: true }
-	)
-	webhooks!: WebhookEntity[];
+
 
 	@BeforeInsert()
 	setProjectId() {

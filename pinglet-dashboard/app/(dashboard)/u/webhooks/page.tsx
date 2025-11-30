@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -17,9 +17,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -51,56 +49,30 @@ import {
 } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useToast } from "@/hooks/use-toast"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import Link from "next/link"
+import { eventTriggers } from "./data"
+import { API } from "@/lib/api/handler"
+import { WebhookResponse } from "@/lib/interfaces/webhook.interface"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
-const webhookSchema = z.object({
-  name: z.string().min(1, "Name is required").max(100, "Name must be less than 100 characters"),
-  eventTrigger: z.string().min(1, "Event trigger is required"),
-  triggerType: z.enum(["rest", "telegram", "discord"]),
-  url: z.string().url("Please enter a valid URL").optional(),
-  telegramBotId: z.string().optional(),
-  discordWebhookUrl: z.string().url("Please enter a valid Discord webhook URL").optional(),
-  description: z.string().optional(),
-})
 
-type WebhookForm = z.infer<typeof webhookSchema>
-
-// Mock data
-const webhooks:any[] = []
-
-const eventTriggers = [
-  { value: "notification.sent", label: "Notification Sent" },
-  { value: "notification.failed", label: "Notification Failed" },
-  { value: "notification.clicked", label: "Notification Clicked" },
-  { value: "user.subscribed", label: "User Subscribed" },
-  { value: "user.unsubscribed", label: "User Unsubscribed" },
-  { value: "project.created", label: "Project Created" },
-  { value: "domain.verified", label: "Domain Verified" },
-]
-
-const getStatusBadge = (status: string) => {
+const getStatusBadge = (status: boolean) => {
   switch (status) {
-    case "active":
+    case true:
       return (
         <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
           <CheckCircle className="w-3 h-3 mr-1" />
           Active
         </Badge>
       )
-    case "paused":
+    case false:
       return (
         <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">
           <AlertTriangle className="w-3 h-3 mr-1" />
           Paused
         </Badge>
       )
-    case "failed":
-      return (
-        <Badge className="bg-red-100 text-red-800 hover:bg-red-100">
-          <XCircle className="w-3 h-3 mr-1" />
-          Failed
-        </Badge>
-      )
+
     default:
       return <Badge variant="secondary">{status}</Badge>
   }
@@ -119,54 +91,26 @@ const getTriggerTypeIcon = (type: string) => {
 
 export default function WebhooksPage() {
   const [searchQuery, setSearchQuery] = useState("")
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
-  const [selectedWebhook, setSelectedWebhook] = useState<any>(null)
+  const [webhooks, setWebhooks] = useState<Array<WebhookResponse>>([])
+
   const [isTestingWebhook, setIsTestingWebhook] = useState(false)
   const { toast } = useToast()
 
-  const form = useForm<WebhookForm>({
-    resolver: zodResolver(webhookSchema),
-    defaultValues: {
-      name: "",
-      eventTrigger: "",
-      triggerType: "rest",
-      url: "",
-      telegramBotId: "",
-      discordWebhookUrl: "",
-      description: "",
-    },
-  })
 
-  const watchedTriggerType = form.watch("triggerType")
 
   const filteredWebhooks = webhooks.filter(
     (webhook) =>
-      webhook.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      webhook.description.toLowerCase().includes(searchQuery.toLowerCase()),
+      webhook?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      webhook?.description?.toLowerCase().includes(searchQuery.toLowerCase()),
   )
 
-  const onSubmit = async (data: WebhookForm) => {
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      toast({
-        title: "Webhook created",
-        description: `${data.name} has been created successfully.`,
-      })
-      setIsAddDialogOpen(false)
-      form.reset()
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to create webhook. Please try again.",
-        variant: "destructive",
-      })
-    }
-  }
 
-  const handleDelete = async (webhookId: string) => {
+  const handleDelete = async (webhookId: number) => {
     try {
-      await new Promise((resolve) => setTimeout(resolve, 500))
+      const { data } = await API.deleteWebhook(webhookId)
+      if (!data.success) {
+        throw new Error(data.message)
+      }
       toast({
         title: "Webhook deleted",
         description: "The webhook has been removed successfully.",
@@ -206,6 +150,29 @@ export default function WebhooksPage() {
       description: "Webhook URL copied to clipboard.",
     })
   }
+  const fetchAllWebhooks = useCallback(async () => {
+    try {
+      const { data } = await API.getAllWebhooks()
+      if (!data.success) {
+        toast({
+          title: "Error",
+          description: "Failed to fetch webhooks. Please try again.",
+          variant: "destructive",
+        })
+        return
+      }
+      setWebhooks(data.result)
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to fetch webhooks. Please try again.",
+        variant: "destructive",
+      })
+    }
+  }, [])
+  useEffect(() => {
+    fetchAllWebhooks()
+  }, [])
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -215,157 +182,13 @@ export default function WebhooksPage() {
           <p className="text-muted-foreground">Integrate with external services using webhooks</p>
         </div>
         <div className="flex items-center space-x-2">
-          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Add Webhook
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px]">
-              <DialogHeader>
-                <DialogTitle>Add New Webhook</DialogTitle>
-                <DialogDescription>Create a new webhook to integrate with external services.</DialogDescription>
-              </DialogHeader>
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Enter webhook name" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+          <Link href="/u/webhooks/create">
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Webhook
+            </Button>
+          </Link>
 
-                  <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Description</FormLabel>
-                        <FormControl>
-                          <Textarea placeholder="Describe what this webhook does" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="eventTrigger"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Event Trigger</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select event trigger" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {eventTriggers.map((trigger) => (
-                              <SelectItem key={trigger.value} value={trigger.value}>
-                                {trigger.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="triggerType"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Trigger Type</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="rest">REST URL</SelectItem>
-                            <SelectItem value="telegram">Telegram Bot</SelectItem>
-                            <SelectItem value="discord">Discord Webhook</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  {watchedTriggerType === "rest" && (
-                    <FormField
-                      control={form.control}
-                      name="url"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Webhook URL</FormLabel>
-                          <FormControl>
-                            <Input placeholder="https://example.com/webhook" {...field} />
-                          </FormControl>
-                          <FormDescription>The URL where POST requests will be sent</FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  )}
-
-                  {watchedTriggerType === "telegram" && (
-                    <FormField
-                      control={form.control}
-                      name="telegramBotId"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Telegram Bot Token</FormLabel>
-                          <FormControl>
-                            <Input placeholder="123456789:AAHdqTcvCH1vGWJxfSeofSAs0K5PALDsaw" {...field} />
-                          </FormControl>
-                          <FormDescription>Your Telegram bot token from @BotFather</FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  )}
-
-                  {watchedTriggerType === "discord" && (
-                    <FormField
-                      control={form.control}
-                      name="discordWebhookUrl"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Discord Webhook URL</FormLabel>
-                          <FormControl>
-                            <Input placeholder="https://discord.com/api/webhooks/..." {...field} />
-                          </FormControl>
-                          <FormDescription>Discord webhook URL from your server settings</FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  )}
-
-                  <div className="flex justify-end space-x-2">
-                    <Button type="button" variant="outline" onClick={() => setIsAddDialogOpen(false)}>
-                      Cancel
-                    </Button>
-                    <Button type="submit">Create Webhook</Button>
-                  </div>
-                </form>
-              </Form>
-            </DialogContent>
-          </Dialog>
         </div>
       </div>
 
@@ -379,7 +202,7 @@ export default function WebhooksPage() {
           <CardContent>
             <div className="text-2xl font-bold">{webhooks.length}</div>
             <p className="text-xs text-muted-foreground">
-              {webhooks.filter((w) => w.status === "active").length} active
+              {webhooks.filter((w) => w.is_active).length} active
             </p>
           </CardContent>
         </Card>
@@ -391,7 +214,7 @@ export default function WebhooksPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {webhooks.reduce((sum, w) => sum + w.totalTriggers, 0).toLocaleString()}
+              {/* {webhooks.reduce((sum, w) => sum + w.totalTriggers, 0).toLocaleString()} */}
             </div>
             <p className="text-xs text-muted-foreground">This month</p>
           </CardContent>
@@ -404,7 +227,7 @@ export default function WebhooksPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {(webhooks.reduce((sum, w) => sum + w.successRate, 0) / webhooks.length).toFixed(1)}%
+              {/* {(webhooks.reduce((sum, w) => sum + w.successRate, 0) / webhooks.length).toFixed(1)}% */}
             </div>
             <p className="text-xs text-muted-foreground">Across all webhooks</p>
           </CardContent>
@@ -416,7 +239,7 @@ export default function WebhooksPage() {
             <XCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{webhooks.filter((w) => w.status === "failed").length}</div>
+            {/* <div className="text-2xl font-bold">{webhooks.filter((w) => w.is === "failed").length}</div> */}
             <p className="text-xs text-muted-foreground">Need attention</p>
           </CardContent>
         </Card>
@@ -464,25 +287,39 @@ export default function WebhooksPage() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline">
-                      {eventTriggers.find((t) => t.value === webhook.eventTrigger)?.label || webhook.eventTrigger}
+                    <Badge variant="outline" className="cursor-pointer">
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span>
+                              {webhook.triggers_on.length} event{webhook.triggers_on.length !== 1 ? "s" : ""}
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent className="w-64">
+                            {eventTriggers
+                              .filter((trigger) => webhook.triggers_on.includes(trigger.value as any))
+                              .map((trigger) => trigger.label)
+                              .join(", ")}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </Badge>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      {getTriggerTypeIcon(webhook.triggerType)}
-                      <span className="capitalize">{webhook.triggerType}</span>
+                      {getTriggerTypeIcon(webhook.type)}
+                      <span className="capitalize">{webhook.type}</span>
                     </div>
                   </TableCell>
-                  <TableCell>{getStatusBadge(webhook.status)}</TableCell>
+                  <TableCell>{getStatusBadge(webhook.is_active)}</TableCell>
                   <TableCell>
-                    <span className="font-medium">{webhook.totalTriggers.toLocaleString()}</span>
+                    {/* <span className="font-medium">{webhook.totalTriggers.toLocaleString()}</span> */}
                   </TableCell>
                   <TableCell>
-                    <span className="font-medium">{webhook.successRate}%</span>
+                    {/* <span className="font-medium">{webhook.successRate}%</span> */}
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
-                    {webhook.lastTriggered ? new Date(webhook.lastTriggered).toLocaleDateString() : "Never"}
+                    {/* {webhook.lastTriggered ? new Date(webhook.lastTriggered).toLocaleDateString() : "Never"} */}
                   </TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>
@@ -492,22 +329,21 @@ export default function WebhooksPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => setSelectedWebhook(webhook)}>
-                          <Eye className="mr-2 h-4 w-4" />
-                          View Details
-                        </DropdownMenuItem>
+                        <Link href={`/u/webhooks/${webhook.id}`}>
+                          <DropdownMenuItem >
+                            <Eye className="mr-2 h-4 w-4" />
+                            View Details
+                          </DropdownMenuItem></Link>
                         <DropdownMenuItem onClick={() => handleTest(webhook)} disabled={isTestingWebhook}>
                           <TestTube className="mr-2 h-4 w-4" />
                           {isTestingWebhook ? "Testing..." : "Test Webhook"}
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => copyWebhookUrl(webhook.url || webhook.telegramBotId || "")}>
-                          <Copy className="mr-2 h-4 w-4" />
-                          Copy URL
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Edit className="mr-2 h-4 w-4" />
-                          Edit
-                        </DropdownMenuItem>
+                        <Link href={`/u/webhooks/${webhook.id}`}>
+                          <DropdownMenuItem>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit
+                          </DropdownMenuItem>
+                        </Link>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive">
@@ -544,117 +380,6 @@ export default function WebhooksPage() {
         </CardContent>
       </Card>
 
-      {/* Webhook Details Dialog */}
-      <Dialog open={!!selectedWebhook} onOpenChange={() => setSelectedWebhook(null)}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>{selectedWebhook?.name}</DialogTitle>
-            <DialogDescription>{selectedWebhook?.description}</DialogDescription>
-          </DialogHeader>
-
-          {selectedWebhook && (
-            <Tabs defaultValue="overview" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="configuration">Configuration</TabsTrigger>
-                <TabsTrigger value="logs">Logs</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="overview" className="space-y-4">
-                <div className="grid gap-4 md:grid-cols-2">
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm">Status</CardTitle>
-                    </CardHeader>
-                    <CardContent>{getStatusBadge(selectedWebhook.status)}</CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm">Total Triggers</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">{selectedWebhook.totalTriggers.toLocaleString()}</div>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm">Success Rate</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">{selectedWebhook.successRate}%</div>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm">Last Triggered</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-sm">
-                        {selectedWebhook.lastTriggered
-                          ? new Date(selectedWebhook.lastTriggered).toLocaleString()
-                          : "Never triggered"}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="configuration" className="space-y-4">
-                <div className="space-y-4">
-                  <div>
-                    <h4 className="text-sm font-medium mb-2">Event Trigger</h4>
-                    <Badge variant="outline">
-                      {eventTriggers.find((t) => t.value === selectedWebhook.eventTrigger)?.label ||
-                        selectedWebhook.eventTrigger}
-                    </Badge>
-                  </div>
-
-                  <div>
-                    <h4 className="text-sm font-medium mb-2">Trigger Type</h4>
-                    <div className="flex items-center gap-2">
-                      {getTriggerTypeIcon(selectedWebhook.triggerType)}
-                      <span className="capitalize">{selectedWebhook.triggerType}</span>
-                    </div>
-                  </div>
-
-                  {selectedWebhook.url && (
-                    <div>
-                      <h4 className="text-sm font-medium mb-2">Webhook URL</h4>
-                      <div className="flex items-center gap-2">
-                        <code className="text-xs bg-muted p-2 rounded flex-1 truncate">{selectedWebhook.url}</code>
-                        <Button size="sm" variant="outline" onClick={() => copyWebhookUrl(selectedWebhook.url)}>
-                          <Copy className="h-3 w-3" />
-                        </Button>
-                        <Button size="sm" variant="outline" onClick={() => window.open(selectedWebhook.url, "_blank")}>
-                          <ExternalLink className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-
-                  {selectedWebhook.telegramBotId && (
-                    <div>
-                      <h4 className="text-sm font-medium mb-2">Telegram Bot Token</h4>
-                      <code className="text-xs bg-muted p-2 rounded block">{selectedWebhook.telegramBotId}</code>
-                    </div>
-                  )}
-                </div>
-              </TabsContent>
-
-              <TabsContent value="logs" className="space-y-4">
-                <div className="text-center py-8 text-muted-foreground">
-                  <Webhook className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>Webhook execution logs will appear here.</p>
-                  <p className="text-xs mt-2">Recent triggers and their responses will be displayed.</p>
-                </div>
-              </TabsContent>
-            </Tabs>
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }

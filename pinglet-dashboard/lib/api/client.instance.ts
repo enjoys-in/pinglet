@@ -35,7 +35,9 @@ instance.interceptors.request.use(async (config) => {
 instance.interceptors.response.use(
     async (response: AxiosResponse<ApiResponse<any>>) => {
         if (response.status === 401) {
-            window.location.href = '/login';
+            if (typeof window !== 'undefined') {
+                window.location.href = '/login';
+            }
         }
         return response;
     },

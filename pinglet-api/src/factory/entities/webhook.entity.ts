@@ -8,7 +8,8 @@ import {
 	PrimaryGeneratedColumn,
 	type Relation,
 } from "typeorm";
-import { ProjectEntity } from "./project.entity";
+
+import { UserEntity } from "./users.entity";
 
 export enum WebhookType {
 	API = "api",
@@ -17,48 +18,63 @@ export enum WebhookType {
 	SLACK = "slack",
 	DISCORD = "discord",
 }
+type WebhookPlatforms = `${WebhookType}`;
+type TelegramConfigPayload = {
+	botToken: string;
+	chatId: string;
+}
+type WebhookConfigPayload = { url: string }
+
+
+export type WebhookConfig = Partial<Record<WebhookPlatforms, WebhookConfigPayload>> & { telegram: TelegramConfigPayload };
 
 export enum WebhookEvent {
-	SENT = "sent",
-	CLICKED = "clicked",
-	FAILED = "failed",
-	DROPPED = "dropped",
+	NOTIFICATION_SENT = "notification.sent",
+	NOTIFICATION_DROPPED = "notification.dropped",
+	NOTIFICATION_CLOSED = "notification.closed",
+	NOTIFICATION_FAILED = "notification.failed",
+	NOTIFICATION_CLICKED = "notification.clicked",
+	USER_SUBSCRIBED = "user.subscribed",
+	USER_UNSUBSCRIBED = "user.unsubscribed",
+	PROJECT_CREATED = "project.created",
+	DOMAIN_VERIFIED = "domain.verified",
 }
+
 
 @Entity("webhooks")
 export class WebhookEntity {
 	@PrimaryGeneratedColumn()
 	id!: number;
 
+	@Column({ nullable: true })
+	name!: string;
+
+	@Column({ nullable: true })
+	description!: string;
+
 	@ManyToOne(
-		() => ProjectEntity,
-		(project) => project.webhooks,
+		() => UserEntity,
+		(user) => user.webhooks,
 		{ onDelete: "CASCADE" },
 	)
-	@JoinColumn({ name: "project_id" })
-	project!: Relation<ProjectEntity>;
+	@JoinColumn({ name: "user_id" })
+	user!: Relation<UserEntity>;
 
 	@Column()
-	project_id!: string;
+	user_id!: number;
 
 	@Column({ type: "enum", enum: WebhookType })
 	type!: WebhookType;
 
 	@Column({ type: "jsonb", default: {} })
-	config!: Record<string, any>;
-	/*
-    config examples:
-    API:      { url: string }
-    TELEGRAM: { botToken: string, chatId: string }
-    TEAMS:    { webhookUrl: string }
-    SLACK:    { webhookUrl: string }
-  */
+	config!: Partial<WebhookConfig>;
+
 
 	@Column({
 		type: "enum",
 		enum: WebhookEvent,
 		array: true,
-		default: [WebhookEvent.SENT],
+		default: [],
 	})
 	triggers_on!: WebhookEvent[];
 
@@ -75,6 +91,6 @@ export class WebhookEntity {
 	})
 	updated_at!: Date;
 
-	@DeleteDateColumn({nullable: true})
-	deleted_at!: Date|null;
+	@DeleteDateColumn({ nullable: true })
+	deleted_at!: Date | null;
 }

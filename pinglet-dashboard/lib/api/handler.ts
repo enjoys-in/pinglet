@@ -9,6 +9,7 @@ import { TemplateCategoryResponse } from "../interfaces/template-category.interf
 import { TemplateCategoryWithTemplate, TemplateResponse } from "../interfaces/templates.interface";
 import { AllProjectsResponse } from "../interfaces/project.interface";
 import { GetAllNotificationsResponse } from "../interfaces/notifications.interface";
+import { WebhookResponse } from "../interfaces/webhook.interface";
 
 const adminRoutes = (url: string) => `/api/v1/admin${url}`
 const apiRoutes = (url: string) => `/api/v1/${url}`
@@ -21,14 +22,15 @@ export class API {
                 'X-App-Version': '1.0.0',
                 'X-App-Name': 'Pinglet',
                 'x-api-key': __config.APP.API_KEY,
+
                 'Accept': 'application/json',
                 // 'Access-Control-Allow-Origin': __config.APP.APP_URL,
             },
             // withCredentials: true
         })
     }
-    static resetPassword(data: any) {
-        return axios.get<ApiResponse<LoginResponse>>(__config.APP.BASE_URL + '/api/v1/auth/forget-password?email=' + data, {
+    static resetPassword(token: string, email: string, data: any) {
+        return axios.post<ApiResponse<LoginResponse>>(__config.APP.BASE_URL + '/api/v1/auth/reset-password?token=' + token + '&email=' + email, data, {
             headers: {
                 'X-App-Version': '1.0.0',
                 'X-App-Name': 'Pinglet',
@@ -38,16 +40,15 @@ export class API {
 
         })
     }
-    static handleRegister(data: any) {
-        return axios.post<ApiResponse<LoginResponse>>(__config.APP.BASE_URL + '/api/v1/auth/register', data, {
+    static forgetPassword(data: any) {
+        return axios.get<ApiResponse<LoginResponse>>(__config.APP.BASE_URL + '/api/v1/auth/forget-password?email=' + data, {
             headers: {
                 'X-App-Version': '1.0.0',
                 'X-App-Name': 'Pinglet',
                 'x-api-key': __config.APP.API_KEY,
                 'Accept': 'application/json',
-                // 'Access-Control-Allow-Origin': __config.APP.APP_URL,
             },
-            // withCredentials: true
+
         })
     }
     static handleSignup(data: any) {
@@ -155,5 +156,25 @@ export class API {
     }
     static getWidgetById(widget_id: string) {
         return instance.get<ApiResponse<any>>('/api/v1/widget/' + widget_id)
+    }
+
+    // Webhooks
+    static getAllWebhooks() {
+        return instance.get<ApiResponse<WebhookResponse[]>>('/api/v1/webhooks')
+    }
+    static getWebhookById(webhook_id: string | number) {
+        return instance.get<ApiResponse<any>>('/api/v1/webhook/' + webhook_id)
+    }
+    static getWebhooksByProjectId(project_id: string | number) {
+        return instance.get<ApiResponse<any>>('/api/v1/webhooks/project/' + project_id)
+    }
+    static createWebhook(data: any) {
+        return instance.post<ApiResponse<{ id: number }>>('/api/v1/webhook', data)
+    }
+    static updateWebhook(webhook_id: string | number, data: any) {
+        return instance.put<ApiResponse<{ id: number }>>('/api/v1/webhook/' + webhook_id, data)
+    }
+    static deleteWebhook(webhook_id: string | number) {
+        return instance.delete<ApiResponse<any>>('/api/v1/webhook/' + webhook_id)
     }
 }

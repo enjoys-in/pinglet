@@ -11,6 +11,7 @@ import {
 } from "typeorm";
 import { UserSettingsEntity } from "./user-settings.entity";
 import { WebsiteEntity } from "./website.entity";
+import { WebhookEntity } from "./webhook.entity";
 
 @Entity("users")
 export class UserEntity {
@@ -40,7 +41,7 @@ export class UserEntity {
 	updated_at!: Date;
 
 	@DeleteDateColumn()
-	deleted_at!: Date|null;
+	deleted_at!: Date | null;
 
 	@Column({ type: "boolean", default: true })
 	is_active!: boolean;
@@ -55,4 +56,11 @@ export class UserEntity {
 	)
 	@JoinColumn({ name: "website_id" })
 	websites!: WebsiteEntity[];
+
+	@OneToMany(
+		() => WebhookEntity,
+		(webhook) => webhook.user,
+	)
+	@JoinColumn({ name: "webhook_id" })
+	webhooks!: WebhookEntity[];
 }
