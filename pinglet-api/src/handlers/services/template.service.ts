@@ -18,6 +18,15 @@ class TemplateService {
     getTemplateById(id: number) {
         return this.templateRepo.findOne({ where: { id } });
     }
+    createTemplate(data: Partial<TemplatesEntity>) {
+        return this.templateRepo.save(data);
+    }
+    updateTemplate(id: number, data: Partial<TemplatesEntity>) {
+        return this.templateRepo.update(id, data);
+    }
+    deleteTemplate(id: number) {
+        return this.templateRepo.delete(id);
+    }
 
 }
 export const templateService = new TemplateService(

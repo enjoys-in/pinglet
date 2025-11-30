@@ -22,6 +22,8 @@ const PingletWidget = () => {
             data-endpoint={URL}
             data-configured-domain="localhost"
             data-project-id={PID}
+            // data-testimonials="false"
+            data-templates="1"
             data-pinglet-id="94b00f277a7a8c12a233e39d3e4f5a6b7"
             data-checksum="sha384-bt2+37hfBbS8dxEUfbyk7QYPqeaSU/22+ZdVPh3xC1lMUeTKGl1UPg6wjiW0EkkN"
             data-load-templates="true"

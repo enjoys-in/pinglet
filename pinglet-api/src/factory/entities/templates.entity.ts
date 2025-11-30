@@ -21,8 +21,8 @@ export class TemplatesEntity {
     @Column("varchar")
     compiled_text!: string;
 
-    @Column({ type: "jsonb", default: {} })
-    variables!: Record<string, string>;
+    @Column({ type: "text", default: [], array: true })
+    variables!: string[];
 
     @Column({ type: "jsonb", default: DEFAULT_STYLES })
     config!: TemplateConfig;
@@ -73,7 +73,7 @@ export class TemplatesEntity {
     @UpdateDateColumn()
     updated_at!: Date;
 
-   @DeleteDateColumn()
-   deleted_at!: Date|null;
+    @DeleteDateColumn()
+    deleted_at!: Date | null;
 
 }

@@ -177,4 +177,17 @@ export class API {
     static deleteWebhook(webhook_id: string | number) {
         return instance.delete<ApiResponse<any>>('/api/v1/webhook/' + webhook_id)
     }
+
+    static createTemplate(data: any) {
+        return instance.post<ApiResponse<{ id: number }>>('/api/v1/template', data)
+    }
+    static updateTemplate(template_id: string | number, data: any) {
+        return instance.put<ApiResponse<{ id: number }>>('/api/v1/template/' + template_id, data)
+    }
+    static deleteTemplate(template_id: string | number) {
+        return instance.delete<ApiResponse<any>>('/api/v1/template/' + template_id)
+    }
+    static getTemplateById(template_id: string | number) {
+        return instance.get<ApiResponse<any>>('/api/v1/template/' + template_id)
+    }
 }

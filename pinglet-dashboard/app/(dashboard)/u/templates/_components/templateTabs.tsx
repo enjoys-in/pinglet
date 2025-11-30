@@ -9,6 +9,9 @@ import { db } from "@/lib/db"
 import { TemplateResponse } from "@/lib/interfaces/templates.interface"
 import { API } from "@/lib/api/handler"
 import { toast } from "@/hooks/use-toast"
+import { Folder, Palette, Code, Sparkles, Loader2, Plus } from "lucide-react"
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
 
 interface TemplateTabsProps {
   templateGroups: TemplateCategoryResponse[]
@@ -17,6 +20,7 @@ interface TemplateTabsProps {
 export function TemplateTabs({ templateGroups }: TemplateTabsProps) {
   const { selectedCategoryId, activeTab, selectedTemplateId } = useTemplateStore()
   const [templates, setTemplates] = useState<Record<string, TemplateResponse[]>>({})
+  const [isLoading, setIsLoading] = useState(false)
   const refreshTemplates = () => API.getTemplatesByCategory(String(selectedCategoryId))
 
   useEffect(() => {
@@ -24,6 +28,7 @@ export function TemplateTabs({ templateGroups }: TemplateTabsProps) {
 
     const fetchTemplates = async () => {
       try {
+        setIsLoading(true)
         const selectedId = String(selectedCategoryId);
 
         const stored = await db.getRawDb().templates
@@ -83,15 +88,25 @@ export function TemplateTabs({ templateGroups }: TemplateTabsProps) {
 
       } catch (error) {
         console.error("Template fetch error:", error);
+      } finally {
+        setIsLoading(false)
       }
     };
-
 
     fetchTemplates()
   }, [selectedCategoryId])
 
   if (!selectedCategoryId) {
-    return null
+    return (
+      <div className="flex-1 flex items-center justify-center p-8">
+        <EmptyState
+          icon={Folder}
+          title="Select a Category"
+          message="Choose a template category from the sidebar to get started."
+          gradient="from-blue-500/20 to-cyan-500/20"
+        />
+      </div>
+    )
   }
 
   const selectedCategory = templateGroups.find(group => group.id === selectedCategoryId)
@@ -99,14 +114,13 @@ export function TemplateTabs({ templateGroups }: TemplateTabsProps) {
 
   if (!selectedCategory) {
     return (
-      <div className="flex-1 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-            <span className="text-2xl">📁</span>
-          </div>
-          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-200 mb-2">Select a Category</h3>
-          <p className="text-gray-500 dark:text-gray-200">Choose a template category from the sidebar to get started.</p>
-        </div>
+      <div className="flex-1 flex items-center justify-center p-8">
+        <EmptyState
+          icon={Folder}
+          title="Category Not Found"
+          message="The selected category could not be loaded."
+          gradient="from-red-500/20 to-orange-500/20"
+        />
       </div>
     )
   }
@@ -115,52 +129,104 @@ export function TemplateTabs({ templateGroups }: TemplateTabsProps) {
     switch (activeTab) {
       case "default":
         return (
-          <div className="space-y-6">
-            <div className="text-center py-8">
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">{selectedCategory.name}</h1>
-              <p className="text-gray-600 max-w-2xl mx-auto dark:text-gray-200">{selectedCategory.description}</p>
+          <div className="space-y-8 p-8">
+            {/* Category Header */}
+            <div className="text-center max-w-3xl mx-auto">
+              <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/10 mb-4">
+                <Sparkles className="w-8 h-8 text-primary" />
+              </div>
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent mb-3">
+                {selectedCategory.name}
+              </h1>
+              <p className="text-lg text-muted-foreground leading-relaxed">
+                {selectedCategory.description}
+              </p>
             </div>
 
-            {templates[selectedCategoryId]?.length > 0 ? templates[selectedCategoryId]?.map(template => (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                <TemplateCard key={template.id} template={template} />
+            {/* Templates Grid */}
+            {isLoading ? (
+              <div className="flex items-center justify-center py-20">
+                <div className="text-center">
+                  <Loader2 className="w-12 h-12 text-primary animate-spin mx-auto mb-4" />
+                  <p className="text-sm text-muted-foreground">Loading templates...</p>
+                </div>
               </div>
-
-            ))
-              :
-              <div className="flex-1 flex items-center justify-center dark:text-gray-200">
-                <EmptyState icon="🥲" title={`${selectedCategory.name} has no templates`} />
+            ) : templates[selectedCategoryId]?.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {templates[selectedCategoryId]?.map(template => (
+                  <TemplateCard key={template.id} template={template} />
+                ))}
               </div>
-            }
+            ) : (
+              <div className="flex items-center justify-center py-20">
+                <EmptyState
+                  icon={Palette}
+                  title={`No templates in ${selectedCategory.name}`}
+                  message="Check back later for new templates."
+                  gradient="from-purple-500/20 to-pink-500/20"
+                />
+              </div>
+            )}
           </div>
         )
 
       case "variants":
         return selectedTemplate ? (
-          <div className="space-y-6">
-            <div className="text-center py-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-2 dark:text-gray-200">{selectedTemplate.name} Variants</h2>
-              <p className="text-gray-600 dark:text-gray-200">Explore different variations of this template</p>
+          <div className="space-y-8 p-8">
+            {/* Variants Header */}
+            <div className="text-center max-w-3xl mx-auto">
+              <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-gradient-to-br from-purple-500/20 to-pink-500/10 mb-4">
+                <Palette className="w-8 h-8 text-purple-600 dark:text-purple-400" />
+              </div>
+              <h2 className="text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent mb-3">
+                {selectedTemplate.name} Variants
+              </h2>
+              <p className="text-lg text-muted-foreground">
+                Explore different variations of this template
+              </p>
             </div>
-            {selectedTemplate.variants.length > 0 ? selectedTemplate.variants.map(variant => (
-              <div key={variant.id} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                <TemplateCard template={variant} variant="compact" />
+
+            {/* Variants Grid */}
+            {selectedTemplate.variants.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {selectedTemplate.variants.map(variant => (
+                  <TemplateCard key={variant.id} template={variant as any} variant="compact" />
+                ))}
               </div>
-            )) :
-              <div className="flex-1 flex items-center justify-center">
-                <EmptyState icon="🥲" title={`${selectedTemplate.name} has no variants`} />
+            ) : (
+              <div className="flex items-center justify-center py-20">
+                <EmptyState
+                  icon={Palette}
+                  title={`No variants for ${selectedTemplate.name}`}
+                  message="This template doesn't have any variations yet."
+                  gradient="from-purple-500/20 to-pink-500/20"
+                />
               </div>
-            }
+            )}
           </div>
         ) : (
-          <EmptyState icon="🎨" title="Select a Template" message="Choose a template to view its variants." />
+          <div className="flex-1 flex items-center justify-center p-8">
+            <EmptyState
+              icon={Palette}
+              title="Select a Template"
+              message="Choose a template from the gallery to view its variants."
+              gradient="from-purple-500/20 to-pink-500/20"
+            />
+          </div>
         )
 
       case "custom":
         return selectedTemplate ? (
           <CustomCodeRenderer template={selectedTemplate} />
         ) : (
-          <EmptyState icon="💻" title="Select a Template" message="Choose a template to view its custom code." />
+          <div className="flex-1 flex items-center justify-center p-8">
+            <EmptyState
+              icon={Code}
+              title="Select a Template"
+              message="Choose a template from the gallery to view its custom code."
+              gradient="from-green-500/20 to-emerald-500/20"
+            />
+          </div>
         )
 
       default:
@@ -169,22 +235,50 @@ export function TemplateTabs({ templateGroups }: TemplateTabsProps) {
   }
 
   return (
-    <div className="flex-1 p-6 overflow-y-auto">
+    <div className="flex-1 overflow-y-auto">
       {renderTabContent()}
     </div>
   )
 }
 
-function EmptyState({ icon, title, message }: { icon: string; title: string; message?: string }) {
+function EmptyState({
+  icon: Icon,
+  title,
+  message,
+  gradient = "from-primary/20 to-primary/10"
+}: {
+  icon: any;
+  title: string;
+  message?: string;
+  gradient?: string;
+}) {
   return (
-    <div className="flex-1 flex items-center justify-center">
-      <div className="text-center">
-        <div className="w-16 h-16 mx-auto mb-4   rounded-full flex items-center justify-center">
-          <span className="text-2xl">{icon}</span>
-        </div>
-        <h3 className="text-lg font-medium text-gray-900 mb-2 dark:text-gray-200">{title}</h3>
-        {message && <p className="text-gray-500 dark:text-gray-200">{message}</p>}
+    <div className="text-center max-w-md mx-auto">
+      <div className={cn(
+        "inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br mb-6 shadow-lg",
+        gradient
+      )}>
+        <Icon className="w-10 h-10 text-foreground/70" />
       </div>
+      <h3 className="text-2xl font-bold text-foreground mb-3">{title}</h3>
+      {message && (
+        <p className="text-muted-foreground text-lg leading-relaxed">{message}</p>
+      )}
+
+      <Link href="/u/templates/create">
+        <Button
+          variant="default"
+          size="sm"
+
+          className="gap-2 rounded-xl bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 transition-all duration-300"
+        >
+          <Plus className="w-4 h-4" />
+          Create Template
+        </Button></Link>
     </div>
   )
+}
+
+function cn(...classes: any[]) {
+  return classes.filter(Boolean).join(' ')
 }

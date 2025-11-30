@@ -56,7 +56,11 @@ router.post("/webhook", WebhookController.default.createNewWebhook);
 router.put("/webhook/:id", WebhookController.default.updateWebhook);
 router.delete("/webhook/:id", WebhookController.default.deleteWebhook);
 // Template
-// router.use("/template", TemplateController.default);
+router.get("/template", TemplateController.default.getTemplates);
+router.get("/template/:id", TemplateController.default.getTemplateById);
+router.post("/template", TemplateController.default.createTemplate);
+router.put("/template/:id", TemplateController.default.updateTemplate);
+router.delete("/template/:id", TemplateController.default.deleteTemplate);
 // Template Category
 router.get("/template-categories", TemplateCategoryController.default.getTemplateCategories);
 router.get("/template-categories/:id/templates", TemplateCategoryController.default.getTemplatesByCategory);

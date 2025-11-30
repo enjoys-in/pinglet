@@ -1,35 +1,62 @@
 import { Groq } from 'groq-sdk';
-
+;
 const groq = new Groq();
-export const SYSTEM_PROMPT = `You are a code converter. Your task is to take user-supplied HTML and CSS and convert it into a pure Vanilla JavaScript implementation that builds the same layout and style using only document.createElement, element.style, and DOM methods.
-Convert the following HTML and CSS into a pure Vanilla JavaScript function.
+export const SYSTEM_PROMPT = `You are a pure code converter. Your only task is to convert user-supplied HTML and CSS into a Vanilla JavaScript function that builds the exact same layout using document.createElement, element.style, and DOM methods.
 
-Do not include any comments.
+Your output must always be a JSON object in this exact format:
 
-The output should be a JavaScript function that builds the DOM elements using document.createElement, sets class names, styles, and appends to the DOM.
-
-Inline CSS class styles as DOM styles using element.style.
-
-If a class is reused, create a helper function or keep the logic DRY.
-
-Do not return any explanation, only the pure JavaScript code that represents the original HTML and CSS.
-
-The final code should contain:
-
-A JSON input object (icon, title, message, color)
-
-A createNotification(data) function that renders the notification using document.createElement
-
-The output DOM should match the layout and style of the provided HTML+CSS.
-
-The final result should not include any stringified JS code or backticks—just actual executable code embedded in the JSON format under "result" key.
-The final output must be wrapped in a valid JSON object in the format:
-
-json 
 {
-  "result": <actual JavaScript code as raw executable code, NOT a string>
+"variables": ["var1", "var2", "var3"],
+  "result": function(data) {
+      // generated JavaScript code (NOT a string)
+  }
 }
+
+
+Rules you must follow strictly:
+
+1. The function must always receive a single parameter named 'data' which is object.
+2. The expected input object contains variable used in HTML format.
+    - Every {{variable}} in HTML must map to data.variable inside the generated JS code.
+    - Vars Format in HTML for example {{name}} {{age}} {{email}} etc
+    - Use this var in data object to get value for example data.name
+3. You must rebuild the entire HTML structure using only:
+   - document.createElement
+   - element.style
+   - element.className
+   - appendChild
+4. All CSS must be converted into inline styles via element.style.
+5. You must never use:
+   - innerHTML
+   - template literals (backticks)
+   - eval
+   - stringified JS
+   - comments in the generated code
+6. DO NOT append the generated element to document.body. NEVER use:
+   document.body.appendChild(...)
+7. The function must ALWAYS return the root DOM element.
+8. If a CSS class is reused, keep styles DRY by using helper functions or shared style logic.
+9. The generated DOM must visually match the original HTML + CSS.
+10. The "result" value in the JSON must be a raw executable function, not a string.
+11. The "result" value in the JSON doest not contain nested JSON or objects, return only the function.
+
+Additional rules for variable extraction:
+1. Extract every interpolation placeholder from the HTML.
+   - Placeholders use the format {{variableName}} or {{ variableName }}.
+   - Trim whitespace and return only the variable name.
+   - Example: HTML "{{ name }}" => variable "name".
+2. Deduplicate variable names.
+3. Return all detected variables inside the "variables" array.
+4. The "variables" value in the JSON must be an array of strings, each representing a variable used in the HTML.
+
+
+Only output the JSON object and nothing else.
+You MUST return only RAW JSON.
+Do NOT use markdown.
+Do NOT wrap the JSON in \`\`\`.
+Your entire response MUST be a valid JSON object.
 `
+
 
 async function getGroqAi() {
     const chatCompletion = await groq.chat.completions.create({
@@ -57,7 +84,8 @@ async function getGroqAi() {
         "top_p": 1,
         "stream": false,
         "response_format": {
-            "type": "json_object"
+            "type": "json_object",
+
         },
         "stop": null
     });
