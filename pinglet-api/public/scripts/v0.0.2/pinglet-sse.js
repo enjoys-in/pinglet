@@ -12,6 +12,7 @@ import { createVariant } from "./variants.js";
 import {
   createBrandingElement,
   initWidget,
+  playSound,
   prepareEventBody,
   renderToast,
 } from "./widget.js";
@@ -265,6 +266,7 @@ const templatesIds = currentScript?.dataset.templates;
           /** @type {HTMLElement} */
           const element = func(parsed?.custom_template);
           let wrapper;
+          if (globalConfig.config.sound) playSound();
           if (Array.isArray(element)) {
             wrapper = createWrapper(element, { side: "left" });
           } else {
@@ -280,6 +282,7 @@ const templatesIds = currentScript?.dataset.templates;
             parsed.custom_template.url &&
               window.open(parsed.custom_template.url, "_blank");
           });
+
           return;
         }
 

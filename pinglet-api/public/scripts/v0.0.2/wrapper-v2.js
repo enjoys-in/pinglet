@@ -1,7 +1,7 @@
 import { prepareEventBody } from "./widget.js";
 
 const config = {
-  autoCloseDelay: 2000,
+  autoCloseDelay: 10000,
   brandingText: "Powered by Enjoys",
   brandingPosition: "right",
   defaultClass: "pinglet-wigdet-wrapper",
@@ -92,6 +92,7 @@ export function createWrapper(dynamicElements = [], customConfig = {}) {
   });
   closeBtn.addEventListener("click", async (e) => {
     e.stopPropagation();
+    stopCloseTimer();
     prepareEventBody("closed", wrapper);
     removeWrapper(wrapper, finalConfig.side);
   });
@@ -113,8 +114,10 @@ export function createWrapper(dynamicElements = [], customConfig = {}) {
   let closeTimeout;
   function startCloseTimer() {
     closeTimeout = setTimeout(() => {
+      if (containerLeft.contains(wrapper) || containerRight.contains(wrapper)) {
+        prepareEventBody("dropped", wrapper, "user doesn't interact");
+      }
       removeWrapper(wrapper, finalConfig.side);
-
       return;
     }, finalConfig.autoCloseDelay);
   }

@@ -143,17 +143,25 @@ export function renderToast(contentEl, globalConfig) {
   contentEl.style.pointerEvents = "auto";
 
   toastStack.appendChild(contentEl);
-
-  if (config?.auto_dismiss) {
-    setTimeout(() => {
-      // Check if the content element is still in the stack
-      if (toastStack.contains(contentEl)) {
-        prepareEventBody("dropped", contentEl, "user doesn't engaged");
-        removeToast(contentEl, config?.transition || "fade");
-      }
-    }, config.duration || 5000);
+  let closeTimeout;
+  function startCloseTimer() {
+    if (config?.auto_dismiss) {
+      closeTimeout = setTimeout(() => {
+        // Check if the content element is still in the stack
+        if (toastStack.contains(contentEl)) {
+          prepareEventBody("dropped", contentEl, "user doesn't engaged");
+          removeToast(contentEl, config?.transition || "fade");
+        }
+      }, config.duration || 5000);
+    }
   }
 
+  function stopCloseTimer() {
+    clearTimeout(closeTimeout);
+  }
+  toastContainer.addEventListener("mouseenter", stopCloseTimer);
+  toastContainer.addEventListener("mouseleave", startCloseTimer);
+  startCloseTimer();
   return { toastContainer, toastStack };
 }
 
