@@ -12,11 +12,13 @@ interface TemplateCardProps {
 }
 
 export function TemplateCard({ template, variant = "default" }: TemplateCardProps) {
-  const { selectedTemplateId, setSelectedTemplate } = useTemplateStore()
+  const { selectedTemplateId, setSelectedTemplate, setCategoryTemplates } = useTemplateStore()
   const isSelected = selectedTemplateId === String(template.id)
 
   const handleClick = () => {
     setSelectedTemplate(isSelected ? null : String(template.id))
+    setCategoryTemplates(template)
+
   }
 
   const media = template?.config?.media

@@ -1,4 +1,4 @@
-import { TabType } from "@/lib/interfaces/templates.interface"
+import { TabType, TemplateResponse } from "@/lib/interfaces/templates.interface"
 import { create } from "zustand"
 
 type TemplateStore = {
@@ -11,6 +11,8 @@ type TemplateStore = {
   setSelectedTemplate: (id: string | null) => void
   setSidebarOpen: (open: boolean) => void
   resetSelection: () => void
+  categoryTemplates: TemplateResponse | null
+  setCategoryTemplates: (templates: TemplateResponse) => void
 }
 
 export const useTemplateStore = create<TemplateStore>((set) => ({
@@ -33,4 +35,7 @@ export const useTemplateStore = create<TemplateStore>((set) => ({
       activeTab: "default",
       selectedTemplateId: null,
     }),
+  categoryTemplates: null,
+  setCategoryTemplates: (templates) => set({ categoryTemplates: templates }),
+
 }))

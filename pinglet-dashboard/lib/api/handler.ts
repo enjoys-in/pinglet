@@ -188,6 +188,6 @@ export class API {
         return instance.delete<ApiResponse<any>>('/api/v1/template/' + template_id)
     }
     static getTemplateById(template_id: string | number) {
-        return instance.get<ApiResponse<any>>('/api/v1/template/' + template_id)
+        return instance.get<ApiResponse<TemplateResponse>>('/api/v1/template/' + template_id)
     }
 }

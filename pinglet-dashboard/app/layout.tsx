@@ -6,7 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/toaster"
 import PingletWidget from "@/components/pinglet"
 
-
+import NextTopLoader from 'nextjs-toploader';
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
@@ -23,9 +23,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
+        <NextTopLoader />
         <PingletWidget />
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>        
-            {children}
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+          {children}
           <Toaster />
         </ThemeProvider>
       </body>

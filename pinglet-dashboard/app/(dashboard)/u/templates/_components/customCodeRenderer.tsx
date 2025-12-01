@@ -21,7 +21,7 @@ import {
   rectangularSelection
 } from "@codemirror/view";
 import { indentWithTab, defaultKeymap } from "@codemirror/commands";
-import SyncCode from "./syncCode";
+import FormatCode from "./formatCode";
 import { Code2, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -98,19 +98,7 @@ export function CustomCodeRenderer({ template }: CustomCodeRendererProps) {
         entry: "/index.html",
       }}
     >
-      <div className="space-y-6 p-8">
-        {/* Header */}
-        <div className="text-center max-w-3xl mx-auto">
-          <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-gradient-to-br from-green-500/20 to-emerald-500/10 mb-4">
-            <Code2 className="w-8 h-8 text-green-600 dark:text-green-400" />
-          </div>
-          <h2 className="text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent mb-3">
-            {template.name} - Custom Code
-          </h2>
-          <p className="text-lg text-muted-foreground">
-            View and edit the source code for this template
-          </p>
-        </div>
+      <div className="space-y-6">
 
         {/* Code Editor */}
         <div className="bg-card border-2 border-border/50 rounded-2xl overflow-hidden shadow-xl">
@@ -165,7 +153,7 @@ export function CustomCodeRenderer({ template }: CustomCodeRendererProps) {
                 )}
               </Button>
 
-              <SyncCode />
+              <FormatCode />
             </div>
           </div>
 

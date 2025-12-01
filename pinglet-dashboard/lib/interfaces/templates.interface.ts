@@ -1,10 +1,5 @@
-export type TemplateCategory = {
-  name: string
-  slug: string
-  description: string
-  icon: string
-  templates: TemplateResponse[]
-}
+import { TemplateCategory } from "./template-category.interface"
+
 
 
 export type TemplateVariant = {
@@ -34,9 +29,16 @@ export interface TemplateResponse {
   is_active: boolean;
   created_at: string;
   updated_at: string;
-  deleted_at: null;
+  deleted_at: null | string;
+  type: "u" | "a"
   variants: TemplateResponse[] | Variants
   config: TemplateConfigs
+  category: TemplateCategory
+  user: {
+    id: number,
+    email: string,
+
+  }
 }
 type Variants = Omit<TemplateResponse, 'variants'>[]
 
@@ -73,9 +75,10 @@ type TemplateConfigs = {
 }
 type Position = "top-left" | "top-right" | "bottom-left" | "bottom-right"
 type Transition = "fade" | "slide" | "zoom"
-type Variables = Record<string, string>
+type Variables = Array<string>
 
 interface Rawtext {
   css: string;
   html: string;
+  js?: string;
 }

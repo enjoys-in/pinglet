@@ -12,6 +12,7 @@ import { toast } from "@/hooks/use-toast"
 import { Folder, Palette, Code, Sparkles, Loader2, Plus } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 
 interface TemplateTabsProps {
   templateGroups: TemplateCategoryResponse[]
@@ -26,7 +27,7 @@ export function TemplateTabs({ templateGroups }: TemplateTabsProps) {
   useEffect(() => {
     if (!selectedCategoryId) return
 
-    const fetchTemplates = async () => {
+    const fetchTemplates = async (is_refetch = false) => {
       try {
         setIsLoading(true)
         const selectedId = String(selectedCategoryId);
@@ -94,6 +95,7 @@ export function TemplateTabs({ templateGroups }: TemplateTabsProps) {
     };
 
     fetchTemplates()
+
   }, [selectedCategoryId])
 
   if (!selectedCategoryId) {
@@ -274,11 +276,9 @@ function EmptyState({
         >
           <Plus className="w-4 h-4" />
           Create Template
-        </Button></Link>
+        </Button>
+      </Link>
     </div>
   )
 }
 
-function cn(...classes: any[]) {
-  return classes.filter(Boolean).join(' ')
-}

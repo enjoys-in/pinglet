@@ -35,11 +35,7 @@ export default function TemplateManagementSystem() {
                 setTemplateGroup(r as TemplateCategoryResponse[])
                 return
             }
-            const { data } = await API.getTemplateCategories()
-            if (data.success) {
-                setTemplateGroup(data.result)
-                db.bulkPutItems("template_categories", data.result as any)
-            }
+            await refreshTemplateGroups()
         })
     }
 

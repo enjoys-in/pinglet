@@ -1,10 +1,15 @@
 "use client"
 
 import { Button } from "@/components/ui/button";
+import { API } from "@/lib/api/handler";
+import { db } from "@/lib/db";
 import { TabType } from "@/lib/interfaces/templates.interface";
 import { cn } from "@/lib/utils"
+import { useAuthStore } from "@/store/auth.store";
 import { useTemplateStore } from "@/store/template.store";
-import { Eye, Code2, Sparkles } from "lucide-react";
+import { Eye, Code2, Sparkles, RefreshCcw } from "lucide-react";
+import Link from "next/link";
+import { toast } from "sonner";
 
 const tabs: { id: TabType; label: string; description: string; icon: any }[] = [
     { id: "default", label: "Gallery", description: "View template details", icon: Eye },
@@ -13,12 +18,28 @@ const tabs: { id: TabType; label: string; description: string; icon: any }[] = [
 ]
 
 export function TabHeader() {
-    const { activeTab, setTab, selectedCategoryId } = useTemplateStore()
+    const { user } = useAuthStore()
+    const { activeTab, setTab, selectedCategoryId, selectedTemplateId, categoryTemplates } = useTemplateStore()
 
     if (!selectedCategoryId) {
         return null
     }
 
+    const refreshTemplates = async () => {
+        try {
+            const { data: fetchedTemplates } = await API.getTemplatesByCategory(String(selectedCategoryId))
+            if (!fetchedTemplates.success) {
+                throw new Error("Failed to fetch templates")
+            }
+            await db.putItem("templates", {
+                catgory_id: selectedCategoryId,
+                templates: fetchedTemplates,
+            } as any);
+        } catch (error) {
+            toast.error("Failed to fetch templates")
+        }
+
+    }
     return (
         <div className="px-6 py-4">
             <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
@@ -61,6 +82,35 @@ export function TabHeader() {
                             </Button>
                         )
                     })}
+                    <Button
+                        onClick={refreshTemplates}
+                        variant="ghost"
+                        size="icon"
+                        className={cn(
+                            "relative px-5 py-2.5 rounded-xl font-medium transition-all duration-300 group",
+                            "hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-background",
+                            "bg-gradient-to-br from-primary/15 via-primary/10 to-primary/5 text-primary shadow-lg shadow-primary/10"
+                        )}
+                    >
+
+                        <RefreshCcw className="w-4 h-4" />
+                    </Button>
+                    {
+                        categoryTemplates?.user?.id === user?.id && selectedTemplateId && <Link href={`/u/templates/${selectedTemplateId}`}>
+                            <Button
+
+
+                                variant="ghost"
+                                className={cn(
+                                    "relative px-5 py-2.5 rounded-xl font-medium transition-all duration-300 group",
+                                    "hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-background",
+                                    "bg-gradient-to-br from-primary/15 via-primary/10 to-primary/5 text-primary shadow-lg shadow-primary/10"
+                                )}
+
+                            >Edit This Template</Button>
+                        </Link>
+                    }
+
                 </div>
             </div>
         </div>
