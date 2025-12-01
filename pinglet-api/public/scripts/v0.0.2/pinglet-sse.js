@@ -51,7 +51,7 @@ const templatesIds = currentScript?.dataset.templates;
   testimonials && ShowTestimonials();
 
   const PingletWidget = {
-    version: "1.1.3",
+    version: "1.1.4",
     checksum: checksum.replace("sha384-", ""),
     /**
      * Initialize the PingletWidget.

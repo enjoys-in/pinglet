@@ -36,7 +36,20 @@ class AuthController {
 				throw new Error("Invalid or expired token.");
 			}
 
-			const user = await userService.findUser(email as string);
+			const user = await userService.getUserBy(
+				{
+					where: {
+						email: email as string
+					},
+					select: {
+						id: true,
+						email: true,
+						first_name: true,
+						last_name: true,
+						password: true,
+					}
+				}
+			);
 			if (!user) {
 				throw new Error("User not found.");
 			}
@@ -77,7 +90,7 @@ class AuthController {
 			if (!email) {
 				throw new Error("Email not found");
 			}
-			const is_user = await userService.findUser(email);
+			const is_user = await userService.exists(email);
 			if (!is_user) {
 				throw new Error("Invalid Credentials");
 
@@ -128,7 +141,18 @@ class AuthController {
 
 	async Login(req: Request, res: Response) {
 		try {
-			const is_user = await userService.findUser(req.body.email);
+			const is_user = await userService.getUserBy({
+				where: {
+					email: req.body.email
+				},
+				select: {
+					id: true,
+					email: true,
+					first_name: true,
+					last_name: true,
+					password: true,
+				}
+			});
 			if (!is_user) {
 				throw new Error("Invalid Credentials");
 
@@ -184,7 +208,7 @@ class AuthController {
 	}
 	async Register(req: Request, res: Response) {
 		try {
-			const is_user = await userService.findUser(req.body.email);
+			const is_user = await userService.exists(req.body.email);
 			if (is_user) {
 				throw new Error("Email already exists");
 
@@ -237,7 +261,18 @@ class AuthController {
 	}
 	async GoogleLogin(req: Request, res: Response) {
 		try {
-			const is_user = await userService.findUser(req.body.email);
+			const is_user = await userService.getUserBy({
+				where: {
+					email: req.body.email
+				},
+				select: {
+					id: true,
+					email: true,
+					first_name: true,
+					last_name: true,
+					password: true,
+				}
+			});
 			if (!is_user) {
 				res
 					.json({

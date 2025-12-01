@@ -33,12 +33,12 @@ export class TemplateCategoryEntity {
     @JoinColumn({ name: "user_id" })
     user!: Relation<UserEntity> | null;
 
-     @OneToMany(
+    @OneToMany(
         () => ProjectEntity,
         (u) => u.category
     )
     @JoinColumn()
-    project!:ProjectEntity[];
+    project!: ProjectEntity[];
 
     @CreateDateColumn()
     created_at!: Date;
@@ -47,6 +47,6 @@ export class TemplateCategoryEntity {
     updated_at!: Date;
 
     @DeleteDateColumn()
-    deleted_at!: Date|null;
+    deleted_at!: Date | null;
 
 }

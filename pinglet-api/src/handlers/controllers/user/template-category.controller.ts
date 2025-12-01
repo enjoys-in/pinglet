@@ -44,10 +44,27 @@ class TemplateCategoryController {
                     id: true,
                     name: true,
                     description: true,
-                    templates: true
+                    templates: {
+                        id: true,
+                        name: true,
+                        description: true,
+                        variants: true,
+                        parent: true,
+                        compiled_text: true,
+                        config: true,
+                        raw_text: true,
+                        is_active: true,
+                        is_default: true,
+                        type: true,
+                        variables: true,
+                        user: {
+                            id: true,
+                        }
+                    },
                 },
                 relations: {
                     templates: {
+                        user: true,
                         variants: true
                     }
                 }

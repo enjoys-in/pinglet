@@ -135,8 +135,10 @@ class PushNtfyController {
 			if (!query.projectId || !query.templatesIds) {
 				throw new Error("Missing projectIds or templatesIds");
 			}
-			const cacheKey = `${query.projectId}-templates`
-			const cache = await Cache.cache.get(cacheKey)
+			const duplicationKey = Buffer.from(`${query.projectId}-${query.templatesIds}`).toString("base64")
+
+
+			const cache = await Cache.cache.get(duplicationKey)
 			if (cache) {
 				res
 					.json({ message: "OK", result: JSON.parse(cache), success: true })
@@ -181,7 +183,7 @@ class PushNtfyController {
 				loadConfig.category.templates.map(t => [String(t.id), t])
 			);
 
-			await Cache.cache.set(String(cacheKey), JSON.stringify(templates), {
+			await Cache.cache.set(String(duplicationKey), JSON.stringify(templates), {
 				EX: 60 * 60 * 24
 			})
 			res

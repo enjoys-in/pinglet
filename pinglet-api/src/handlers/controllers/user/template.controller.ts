@@ -40,7 +40,7 @@ class TemplateController {
             const parsedResult = JSON.parse(result) as { result: string | { function: string }, variables: string[] }
             const category = new TemplateCategoryEntity()
             const userEntity = new UserEntity()
-            userEntity.id = req.body.user_id
+            userEntity.id = req.user!.id
             category.id = req.body.category_id
             let finalResult = typeof parsedResult.result === "object" && parsedResult.result !== null ? parsedResult.result.function : parsedResult.result;
             const newTemplate = await templateService.createTemplate({
@@ -58,20 +58,20 @@ class TemplateController {
                 .status(201)
                 .json({
                     message: "Template created successfully",
-                    result: finalResult,
+                    result: newTemplate.id,
                     success: true,
                 })
                 .end();
         } catch (error) {
             if (error instanceof Error) {
                 res
-                    .status(400)
+                    .status(200)
                     .json({ message: error.message, result: null, success: false })
                     .end();
                 return;
             }
             res
-                .status(500)
+                .status(200)
                 .json({
                     message: "Something went wrong",
                     result: null,
@@ -84,13 +84,38 @@ class TemplateController {
     async getTemplateById(req: Request, res: Response) {
         try {
             const { id } = req.params;
-            const template = await templateService.getTemplateById(+id);
+            const template = await templateService.getTemplateByOpts({
+                where: { id: +id, user: { id: req.user!.id } },
+                select: {
+                    id: true,
+                    name: true,
+                    description: true,
+                    category: {
+                        id: true,
+                        name: true,
+                        description: true,
+                        created_at: true,
+                        updated_at: true
+                    },
+                    user: {
+                        id: true,
+                        email: true,
+                    },
+                    parent: true,
+                    variables: true,
+                    raw_text: true,
+                    compiled_text: true,
+                    created_at: true,
+                    updated_at: true
+
+                },
+                relations: {
+                    category: true,
+                    user: true
+                }
+            });
             if (!template) {
-                res
-                    .status(404)
-                    .json({ message: "Template not found", result: null, success: false })
-                    .end();
-                return;
+                throw new Error("Template not found");
             }
             res
                 .json({
@@ -102,13 +127,13 @@ class TemplateController {
         } catch (error) {
             if (error instanceof Error) {
                 res
-                    .status(400)
+                    .status(200)
                     .json({ message: error.message, result: null, success: false })
                     .end();
                 return;
             }
             res
-                .status(500)
+                .status(200)
                 .json({
                     message: "Something went wrong",
                     result: null,
@@ -121,31 +146,46 @@ class TemplateController {
     async updateTemplate(req: Request, res: Response) {
         try {
             const { id } = req.params;
-            const updatedTemplate = await templateService.updateTemplate(+id, req.body);
-            if (!updatedTemplate) {
-                res
-                    .status(404)
-                    .json({ message: "Template not found", result: null, success: false })
-                    .end();
-                return;
+            const result = await getMistralCompletion(JSON.stringify(req.body.raw_text))
+
+            const parsedResult = JSON.parse(result) as { result: string | { function: string }, variables: string[] }
+            const category = new TemplateCategoryEntity()
+            const userEntity = new UserEntity()
+            userEntity.id = req.user!.id
+            category.id = req.body.category_id
+            let finalResult = typeof parsedResult.result === "object" && parsedResult.result !== null ? parsedResult.result.function : parsedResult.result;
+
+            const updatedTemplate = await templateService.updateTemplate(+id, {
+                name: req.body.name,
+                description: req.body.description,
+                category: category,
+                user: userEntity,
+                parent: req.body?.parent || null,
+                variables: parsedResult.variables,
+                raw_text: req.body.raw_text,
+                compiled_text: finalResult,
+            });
+            if (updatedTemplate.affected === 0) {
+                throw new Error("Template not found");
             }
+
             res
                 .json({
                     message: "Template updated successfully",
-                    result: updatedTemplate,
+                    result: updatedTemplate.affected,
                     success: true,
                 })
                 .end();
         } catch (error) {
             if (error instanceof Error) {
                 res
-                    .status(400)
+                    .status(200)
                     .json({ message: error.message, result: null, success: false })
                     .end();
                 return;
             }
             res
-                .status(500)
+                .status(200)
                 .json({
                     message: "Something went wrong",
                     result: null,
@@ -161,7 +201,7 @@ class TemplateController {
             const deleted = await templateService.deleteTemplate(+id);
             if (!deleted) {
                 res
-                    .status(404)
+                    .status(200)
                     .json({ message: "Template not found", result: null, success: false })
                     .end();
                 return;
@@ -177,13 +217,13 @@ class TemplateController {
         } catch (error) {
             if (error instanceof Error) {
                 res
-                    .status(400)
+                    .status(200)
                     .json({ message: error.message, result: null, success: false })
                     .end();
                 return;
             }
             res
-                .status(500)
+                .status(200)
                 .json({
                     message: "Something went wrong",
                     result: null,

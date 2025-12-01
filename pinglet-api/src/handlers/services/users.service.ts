@@ -21,6 +21,9 @@ class UserService {
 		}
 		return this.userRepo.findOneBy({ email: payload });
 	}
+	getUserBy(opts: FindManyOptions<UserEntity>) {
+		return this.userRepo.findOne(opts);
+	}
 	getAllUsers() {
 		return this.userRepo.find();
 	}
@@ -38,6 +41,9 @@ class UserService {
 	createUser(user: DeepPartial<UserEntity>) {
 		const newUser = this.userRepo.create(user);
 		return this.userRepo.save(newUser);
+	}
+	exists(email: string): Promise<boolean> {
+		return this.userRepo.exists({ where: { email } });
 	}
 	async updateUserPassword(
 		email: string,

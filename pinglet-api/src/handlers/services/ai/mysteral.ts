@@ -2,20 +2,8 @@ import { Mistral } from "@mistralai/mistralai";
 import { ConversationInputs } from "@mistralai/mistralai/models/components";
 import { SYSTEM_PROMPT } from "./groq-ai.service";
 
-import ZodToJsonSchema from 'zod-to-json-schema'
-import { z } from 'zod'
-
-const schema = z.object({
-    variables: z.array(z.string()),
-    result: z.string()
-});
-
-// const jsonSchema = ZodToJsonSchema(schema,{
-
-// })
 const client = new Mistral({
     apiKey: process.env.MISTRAL_API_KEY,
-
 });
 
 
@@ -32,12 +20,13 @@ export async function getMistralCompletion(text: string): Promise<string> {
             topP: 1,
             responseFormat: {
                 type: "json_object",
-                // jsonSchema
+
             },
         },
 
     }
     )
+
     return response.outputs[0]?.content;
 
 }
