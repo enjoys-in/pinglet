@@ -1,0 +1,97 @@
+name: PR Events Webhook
+
+on:
+  pull_request:
+    types:
+      - opened
+      - closed
+      - reopened
+      - edited
+      - ready_for_review
+      - converted_to_draft
+  pull_request_review:
+    types:
+      - submitted
+  pull_request_review_comment:
+    types:
+      - created
+  issue_comment:
+    types:
+      - created
+
+jobs:
+  notify-webhook:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send PR Event to Webhook
+        run: |
+          # Extract event data
+          ACTION="${{ github.event.action }}"
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          AUTHOR="${{ github.event.pull_request.user.login }}"
+          MERGED="${{ github.event.pull_request.merged }}"
+          MERGED_BY="${{ github.event.pull_request.merged_by.login }}"
+          BASE_REF="${{ github.event.pull_request.base.ref }}"
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          PR_URL="${{ github.event.pull_request.html_url }}"
+          REPO="${{ github.repository }}"
+
+          # Build message based on action
+          case "$ACTION" in
+            "opened")
+              MESSAGE="PR #${PR_NUMBER} opened by ${AUTHOR}"
+              ;;
+            "closed")
+              if [ "$MERGED" = "true" ]; then
+                MESSAGE="PR #${PR_NUMBER} has been merged to ${BASE_REF} by ${MERGED_BY}"
+              else
+                MESSAGE="PR #${PR_NUMBER} closed (not merged) by ${AUTHOR}"
+              fi
+              ;;
+            "converted_to_draft")
+              MESSAGE="PR #${PR_NUMBER} marked as Draft by ${AUTHOR}"
+              ;;
+            "ready_for_review")
+              MESSAGE="PR #${PR_NUMBER} is ready for review"
+              ;;
+            "edited")
+              MESSAGE="PR #${PR_NUMBER} title/description updated"
+              ;;
+            "reopened")
+              MESSAGE="PR #${PR_NUMBER} reopened by ${AUTHOR}"
+              ;;
+            "submitted")
+              REVIEWER="${{ github.event.review.user.login }}"
+              REVIEW_STATE="${{ github.event.review.state }}"
+              MESSAGE="PR #${PR_NUMBER} review ${REVIEW_STATE} by ${REVIEWER}"
+              ;;
+            "created")
+              if [ "${{ github.event_name }}" = "pull_request_review_comment" ]; then
+                COMMENTER="${{ github.event.comment.user.login }}"
+                MESSAGE="New review comment on PR #${PR_NUMBER} by ${COMMENTER}"
+              elif [ "${{ github.event_name }}" = "issue_comment" ] && [ -n "$PR_NUMBER" ]; then
+                COMMENTER="${{ github.event.comment.user.login }}"
+                MESSAGE="New comment on PR #${PR_NUMBER} by ${COMMENTER}"
+              fi
+              ;;
+            *)
+              MESSAGE="PR #${PR_NUMBER} - ${ACTION}"
+              ;;
+          esac
+
+          # Prepare JSON payload
+          PAYLOAD=$(cat <<EOF
+          {
+            "text": "${MESSAGE}"
+          }
+          EOF
+          )
+
+          # Send to webhook
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD" \
+            "https://defaultf82105c5abda4de495f8f3540368fa.aa.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/f082e1e59482449a95d5651d87ccfab5/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=joaAclN1qhXDIyVlwzkL19vzFgqMpWJZ41WW7TgQ7aw"
+
+          echo "Webhook notification sent: $MESSAGE"
