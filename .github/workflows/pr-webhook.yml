@@ -28,55 +28,68 @@ jobs:
         run: |
           # Extract event data
           ACTION="${{ github.event.action }}"
-          PR_NUMBER="${{ github.event.pull_request.number }}"
-          AUTHOR="${{ github.event.pull_request.user.login }}"
+
+          # For issue_comment events, PR number is in issue.number
+          if [ "${{ github.event_name }}" = "issue_comment" ]; then
+            PR_NUMBER="${{ github.event.issue.number }}"
+            AUTHOR="${{ github.event.issue.user.login }}"
+            PR_TITLE="${{ github.event.issue.title }}"
+            PR_URL="${{ github.event.issue.html_url }}"
+          else
+            PR_NUMBER="${{ github.event.pull_request.number }}"
+            AUTHOR="${{ github.event.pull_request.user.login }}"
+            PR_TITLE="${{ github.event.pull_request.title }}"
+            PR_URL="${{ github.event.pull_request.html_url }}"
+          fi
+
           MERGED="${{ github.event.pull_request.merged }}"
           MERGED_BY="${{ github.event.pull_request.merged_by.login }}"
           BASE_REF="${{ github.event.pull_request.base.ref }}"
-          PR_TITLE="${{ github.event.pull_request.title }}"
-          PR_URL="${{ github.event.pull_request.html_url }}"
           REPO="${{ github.repository }}"
+
+          # Get current timestamp
+          TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
 
           # Build message based on action
           case "$ACTION" in
             "opened")
-              MESSAGE="PR #${PR_NUMBER} opened by ${AUTHOR}"
+              MESSAGE="PR #${PR_NUMBER} opened by ${AUTHOR} [${TIMESTAMP}]"
               ;;
             "closed")
               if [ "$MERGED" = "true" ]; then
-                MESSAGE="PR #${PR_NUMBER} has been merged to ${BASE_REF} by ${MERGED_BY}"
+                MESSAGE="PR #${PR_NUMBER} has been merged to ${BASE_REF} by ${MERGED_BY} [${TIMESTAMP}]"
               else
-                MESSAGE="PR #${PR_NUMBER} closed (not merged) by ${AUTHOR}"
+                MESSAGE="PR #${PR_NUMBER} closed (not merged) by ${AUTHOR} [${TIMESTAMP}]"
               fi
               ;;
             "converted_to_draft")
-              MESSAGE="PR #${PR_NUMBER} marked as Draft by ${AUTHOR}"
+              MESSAGE="PR #${PR_NUMBER} marked as Draft by ${AUTHOR} [${TIMESTAMP}]"
               ;;
             "ready_for_review")
-              MESSAGE="PR #${PR_NUMBER} is ready for review"
+              MESSAGE="PR #${PR_NUMBER} is ready for review [${TIMESTAMP}]"
               ;;
             "edited")
-              MESSAGE="PR #${PR_NUMBER} title/description updated"
+              MESSAGE="PR #${PR_NUMBER} title/description updated [${TIMESTAMP}]"
               ;;
             "reopened")
-              MESSAGE="PR #${PR_NUMBER} reopened by ${AUTHOR}"
+              MESSAGE="PR #${PR_NUMBER} reopened by ${AUTHOR} [${TIMESTAMP}]"
               ;;
             "submitted")
               REVIEWER="${{ github.event.review.user.login }}"
               REVIEW_STATE="${{ github.event.review.state }}"
-              MESSAGE="PR #${PR_NUMBER} review ${REVIEW_STATE} by ${REVIEWER}"
+              MESSAGE="PR #${PR_NUMBER} review ${REVIEW_STATE} by ${REVIEWER} [${TIMESTAMP}]"
               ;;
             "created")
               if [ "${{ github.event_name }}" = "pull_request_review_comment" ]; then
                 COMMENTER="${{ github.event.comment.user.login }}"
-                MESSAGE="New review comment on PR #${PR_NUMBER} by ${COMMENTER}"
+                MESSAGE="New review comment on PR #${PR_NUMBER} by ${COMMENTER} [${TIMESTAMP}]"
               elif [ "${{ github.event_name }}" = "issue_comment" ] && [ -n "$PR_NUMBER" ]; then
                 COMMENTER="${{ github.event.comment.user.login }}"
-                MESSAGE="New comment on PR #${PR_NUMBER} by ${COMMENTER}"
+                MESSAGE="New comment on PR #${PR_NUMBER} by ${COMMENTER} [${TIMESTAMP}]"
               fi
               ;;
             *)
-              MESSAGE="PR #${PR_NUMBER} - ${ACTION}"
+              MESSAGE="PR #${PR_NUMBER} - ${ACTION} [${TIMESTAMP}]"
               ;;
           esac
 
