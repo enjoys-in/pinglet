@@ -47,56 +47,195 @@ jobs:
           BASE_REF="${{ github.event.pull_request.base.ref }}"
           REPO="${{ github.repository }}"
 
-          # Get current timestamp
-          TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          # Function to map GitHub username to Teams name
+          map_username() {
+            local github_user="$1"
+            case "$github_user" in
+              "KomalSrinivasan") echo "Komal Vardhan Lolugu" ;;
+              "piyushgarg-dev") echo "Piyush Garg (DevOps)" ;;
+              "rbadisa24") echo "Rajendra Badisa (Dev Ops)" ;;
+              "raghavendracs") echo "Raghavendra Prasad" ;;
+              "ruru-m07") echo "Ruru (Frontend Dev)" ;;
+              "Sima-Bharti") echo "Sima-Bharti (Frontend Dev)" ;;
+              "x64nik") echo "HrushiKesh (Dev Ops)" ;;
+              "vishnumallela") echo "Vishnu (Frontend Dev)" ;;
+              "Tharun-Goud1") echo "Tharun (Frontend Dev)" ;;
+              *) echo "$github_user" ;;
+            esac
+          }
 
-          # Build message based on action
+          # Map usernames to Teams names
+          AUTHOR_TEAMS=$(map_username "$AUTHOR")
+          MERGED_BY_TEAMS=$(map_username "$MERGED_BY")
+
+          # Get current timestamp in IST
+          TIMESTAMP=$(TZ='Asia/Kolkata' date +"%Y-%m-%d %I:%M:%S %p IST")
+
+          # Build title and description based on action
           case "$ACTION" in
             "opened")
-              MESSAGE="PR #${PR_NUMBER} opened by ${AUTHOR} [${TIMESTAMP}]"
+              TITLE="PR #${PR_NUMBER} opened by ${AUTHOR_TEAMS}"
+              DESCRIPTION="A new update is available for this pull request. Please review on this PR."
+              STATUS="Opened"
               ;;
             "closed")
               if [ "$MERGED" = "true" ]; then
-                MESSAGE="PR #${PR_NUMBER} has been merged to ${BASE_REF} by ${MERGED_BY} [${TIMESTAMP}]"
+                TITLE="PR #${PR_NUMBER} merged by ${MERGED_BY_TEAMS}"
+                DESCRIPTION="This pull request has been merged successfully."
+                STATUS="Merged"
               else
-                MESSAGE="PR #${PR_NUMBER} closed (not merged) by ${AUTHOR} [${TIMESTAMP}]"
+                TITLE="PR #${PR_NUMBER} closed by ${AUTHOR_TEAMS}"
+                DESCRIPTION="This pull request has been closed without merging."
+                STATUS="Closed"
               fi
               ;;
             "converted_to_draft")
-              MESSAGE="PR #${PR_NUMBER} marked as Draft by ${AUTHOR} [${TIMESTAMP}]"
+              TITLE="PR #${PR_NUMBER} marked as Draft by ${AUTHOR_TEAMS}"
+              DESCRIPTION="This pull request has been converted to draft status."
+              STATUS="Draft"
               ;;
             "ready_for_review")
-              MESSAGE="PR #${PR_NUMBER} is ready for review [${TIMESTAMP}]"
+              TITLE="PR #${PR_NUMBER} is ready for review"
+              DESCRIPTION="A new update is available for this pull request. Please review on this PR."
+              STATUS="Ready for Review"
               ;;
             "edited")
-              MESSAGE="PR #${PR_NUMBER} title/description updated [${TIMESTAMP}]"
+              TITLE="PR #${PR_NUMBER} title/description updated"
+              DESCRIPTION="The pull request details have been updated."
+              STATUS="Edited"
               ;;
             "reopened")
-              MESSAGE="PR #${PR_NUMBER} reopened by ${AUTHOR} [${TIMESTAMP}]"
+              TITLE="PR #${PR_NUMBER} reopened by ${AUTHOR_TEAMS}"
+              DESCRIPTION="A new update is available for this pull request. Please review on this PR."
+              STATUS="Reopened"
               ;;
             "submitted")
               REVIEWER="${{ github.event.review.user.login }}"
+              REVIEWER_TEAMS=$(map_username "$REVIEWER")
               REVIEW_STATE="${{ github.event.review.state }}"
-              MESSAGE="PR #${PR_NUMBER} review ${REVIEW_STATE} by ${REVIEWER} [${TIMESTAMP}]"
+              TITLE="PR #${PR_NUMBER} review ${REVIEW_STATE} by ${REVIEWER_TEAMS}"
+              DESCRIPTION="A review has been submitted for this pull request."
+              STATUS="Review ${REVIEW_STATE}"
               ;;
             "created")
               if [ "${{ github.event_name }}" = "pull_request_review_comment" ]; then
                 COMMENTER="${{ github.event.comment.user.login }}"
-                MESSAGE="New review comment on PR #${PR_NUMBER} by ${COMMENTER} [${TIMESTAMP}]"
+                COMMENTER_TEAMS=$(map_username "$COMMENTER")
+                TITLE="New review comment on PR #${PR_NUMBER} by ${COMMENTER_TEAMS}"
+                DESCRIPTION="A new review comment has been added to this pull request."
+                STATUS="Review Comment"
               elif [ "${{ github.event_name }}" = "issue_comment" ] && [ -n "$PR_NUMBER" ]; then
                 COMMENTER="${{ github.event.comment.user.login }}"
-                MESSAGE="New comment on PR #${PR_NUMBER} by ${COMMENTER} [${TIMESTAMP}]"
+                COMMENTER_TEAMS=$(map_username "$COMMENTER")
+                TITLE="New comment on PR #${PR_NUMBER} by ${COMMENTER_TEAMS}"
+                DESCRIPTION="A new comment has been added to this pull request."
+                STATUS="Comment Added"
               fi
               ;;
             *)
-              MESSAGE="PR #${PR_NUMBER} - ${ACTION} [${TIMESTAMP}]"
+              TITLE="PR #${PR_NUMBER} - ${ACTION}"
+              DESCRIPTION="A new update is available for this pull request."
+              STATUS="${ACTION}"
               ;;
           esac
 
-          # Prepare JSON payload
+          # Prepare Teams Adaptive Card JSON payload
           PAYLOAD=$(cat <<EOF
           {
-            "text": "${MESSAGE}"
+            "type": "message",
+            "summary": "New Activity on GitHub Pull Request Notification",
+            "attachments": [
+              {
+                "contentType": "application/vnd.microsoft.card.adaptive",
+                "contentUrl": "",
+                "content": {
+                  "type": "AdaptiveCard",
+                  "body": [
+                    {
+                      "type": "Container",
+                      "verticalContentAlignment": "Center",
+                      "items": [
+                        {
+                          "type": "ColumnSet",
+                          "style": "default",
+                          "columns": [
+                            {
+                              "type": "Column",
+                              "width": "auto",
+                              "verticalContentAlignment": "Center",
+                              "items": [
+                                {
+                                  "type": "Image",
+                                  "width": "32px",
+                                  "style": "Person",
+                                  "url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSEbeZfwVwamVRTBSj8PYNZtzyD5Mb7FHyX9w&s",
+                                  "altText": "GitHub Logo"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "Column",
+                              "width": "stretch",
+                              "items": [
+                                {
+                                  "type": "TextBlock",
+                                  "size": "Medium",
+                                  "weight": "Bolder",
+                                  "text": "**${TITLE}**"
+                                },
+                                {
+                                  "type": "TextBlock",
+                                  "size": "Small",
+                                  "weight": "Default",
+                                  "text": "${DESCRIPTION}",
+                                  "isSubtle": false,
+                                  "spacing": "None",
+                                  "wrap": true
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "FactSet",
+                      "separator": false,
+                      "facts": [
+                        {
+                          "title": "Event:",
+                          "value": "Pull Request"
+                        },
+                        {
+                          "title": "Status:",
+                          "value": "${STATUS}"
+                        },
+                        {
+                          "title": "Repository:",
+                          "value": "${REPO}"
+                        },
+                        {
+                          "title": "Triggered At:",
+                          "value": "${TIMESTAMP}"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "ActionSet",
+                      "actions": [
+                        {
+                          "type": "Action.OpenUrl",
+                          "title": "View PR #${PR_NUMBER}",
+                          "url": "${PR_URL}"
+                        }
+                      ]
+                    }
+                  ],
+                  "\$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                  "version": "1.5"
+                }
+              }
+            ]
           }
           EOF
           )
@@ -105,6 +244,6 @@ jobs:
           curl -X POST \
             -H "Content-Type: application/json" \
             -d "$PAYLOAD" \
-            "https://defaultf82105c5abda4de495f8f3540368fa.aa.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/f082e1e59482449a95d5651d87ccfab5/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=joaAclN1qhXDIyVlwzkL19vzFgqMpWJZ41WW7TgQ7aw"
+            "${{ secrets.TEAMS_WEBHOOK_URL }}"
 
-          echo "Webhook notification sent: $MESSAGE"
+          echo "Teams notification sent: $TITLE"
