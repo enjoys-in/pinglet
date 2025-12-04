@@ -51,7 +51,7 @@ const templatesIds = currentScript?.dataset.templates;
   testimonials && ShowTestimonials();
 
   const PingletWidget = {
-    version: "1.1.4",
+    version: "1.2.0",
     checksum: checksum.replace("sha384-", ""),
     /**
      * Initialize the PingletWidget.
@@ -262,7 +262,9 @@ const templatesIds = currentScript?.dataset.templates;
           if (!template || template.compiled_text.length === 0) {
             return console.log("Template not found");
           }
-          const func = new Function("return " + template.compiled_text)();
+          const func = new Function(
+            "return " + template.compiled_text?.trim()
+          )();
           /** @type {HTMLElement} */
           const element = func(parsed?.custom_template);
           let wrapper;
