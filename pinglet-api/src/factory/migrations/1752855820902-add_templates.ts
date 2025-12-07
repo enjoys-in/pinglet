@@ -1,8 +1,8 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+import type { MigrationInterface, QueryRunner } from "typeorm";
 
 export class AddTemplates1752855820902 implements MigrationInterface {
-    public async up(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`
+	public async up(queryRunner: QueryRunner): Promise<void> {
+		await queryRunner.query(`
       INSERT INTO template_category (name, slug, description) VALUES
         ('🛒 E-commerce', 'e-commerce', 'Templates for online stores and shopping'),
         ('💳 Payment', 'payment', 'Payment and billing notifications'),
@@ -21,10 +21,10 @@ export class AddTemplates1752855820902 implements MigrationInterface {
         ('🌍 Travel', 'travel', 'Flight updates, hotel bookings, and itineraries'),
         ('📦 Order Updates', 'order-updates', 'Order confirmations, shipping, and tracking');
     `);
-    }
+	}
 
-    public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`
+	public async down(queryRunner: QueryRunner): Promise<void> {
+		await queryRunner.query(`
       DELETE FROM template_category WHERE slug IN (
         'e-commerce',
         'payment',
@@ -44,5 +44,5 @@ export class AddTemplates1752855820902 implements MigrationInterface {
         'order-updates'
       );
     `);
-    }
+	}
 }

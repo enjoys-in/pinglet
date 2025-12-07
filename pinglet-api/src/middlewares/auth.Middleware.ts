@@ -17,7 +17,6 @@ export class JwtAuth {
 	 */
 	static validateUser(req: Request, res: Response, next: NextFunction) {
 		try {
-			 
 			const authHeader =
 				req.cookies?.access_token ||
 				(req.headers.authorization as string) ||
@@ -61,9 +60,9 @@ export class JwtAuth {
 			// 		.end();
 			// 	return;
 			// }
-		 
+
 			req.user = decodedToken;
-		 
+
 			next();
 		} catch (error: any) {
 			res

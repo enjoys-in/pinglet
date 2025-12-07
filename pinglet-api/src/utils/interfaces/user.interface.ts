@@ -5,7 +5,6 @@ export interface IUser {
 	last_name: string;
 	role: AppRoles;
 	status: USER_STATUS;
-	 
 }
 export enum USER_STATUS {
 	ACTIVE = "ACTIVE",

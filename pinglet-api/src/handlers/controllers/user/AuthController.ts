@@ -10,14 +10,14 @@ import type {
 import { AppEvents } from "@/utils/services/Events";
 import { MailService } from "@/utils/services/mail/mailService";
 import type { Request, Response } from "express";
-const emailSvc = MailService.createInstance()
+const emailSvc = MailService.createInstance();
 const provider = AuthProviderFactory.createProvider(
 	"google",
 	"dd",
 	"ss",
 	"http://localhost",
 );
-const tokenStore = new Map()
+const tokenStore = new Map();
 class AuthController {
 	async ResetPassword(req: Request, res: Response) {
 		try {
@@ -32,42 +32,45 @@ class AuthController {
 				throw new Error("Invalid reset link.");
 			}
 
-			if (!tokenStore.has(email as string) || tokenStore.get(email as string) !== token) {
+			if (
+				!tokenStore.has(email as string) ||
+				tokenStore.get(email as string) !== token
+			) {
 				throw new Error("Invalid or expired token.");
 			}
 
-			const user = await userService.getUserBy(
-				{
-					where: {
-						email: email as string
-					},
-					select: {
-						id: true,
-						email: true,
-						first_name: true,
-						last_name: true,
-						password: true,
-					}
-				}
-			);
+			const user = await userService.getUserBy({
+				where: {
+					email: email as string,
+				},
+				select: {
+					id: true,
+					email: true,
+					first_name: true,
+					last_name: true,
+					password: true,
+				},
+			});
 			if (!user) {
 				throw new Error("User not found.");
 			}
 			AppEvents.emit("resetPassword", {
-
 				email: user.email,
 				name: user?.first_name ? user?.first_name : "User",
 				password: req.body.password,
 			});
-			await userService.updateUserPassword(email as string, await utils.HashPassword(req.body.password));
+			await userService.updateUserPassword(
+				email as string,
+				await utils.HashPassword(req.body.password),
+			);
 			tokenStore.delete(email as string); // Invalidate the token after use
 
 			res.json({
 				result: null,
-				success: true, message: "Password reset successfully."
+				success: true,
+				message: "Password reset successfully.",
 			});
 		} catch (error: any) {
-
 			if (error instanceof Error) {
 				res
 					.json({ message: error.message, result: null, success: false })
@@ -81,19 +84,17 @@ class AuthController {
 					success: false,
 				})
 				.end();
-
 		}
 	}
 	async ForgotPassword(req: Request, res: Response) {
 		try {
-			const email = req.query?.email as string
+			const email = req.query?.email as string;
 			if (!email) {
 				throw new Error("Email not found");
 			}
 			const is_user = await userService.exists(email);
 			if (!is_user) {
 				throw new Error("Invalid Credentials");
-
 			}
 			if (tokenStore.has(email)) {
 				tokenStore.delete(email);
@@ -113,7 +114,7 @@ class AuthController {
 					<p>Thank you,</p>
 					<p>The Pinglet Team - Powered by ENJOYS</p>
 				`,
-			})
+			});
 			res
 				.json({
 					message: "An Email has been sent to your email address",
@@ -121,8 +122,7 @@ class AuthController {
 					success: true,
 				})
 				.end();
-		}
-		catch (error: any) {
+		} catch (error: any) {
 			if (error instanceof Error) {
 				res
 					.json({ message: error.message, result: null, success: false })
@@ -143,7 +143,7 @@ class AuthController {
 		try {
 			const is_user = await userService.getUserBy({
 				where: {
-					email: req.body.email
+					email: req.body.email,
 				},
 				select: {
 					id: true,
@@ -151,16 +151,15 @@ class AuthController {
 					first_name: true,
 					last_name: true,
 					password: true,
-				}
+				},
 			});
 			if (!is_user) {
 				throw new Error("Invalid Credentials");
-
 			}
 			const isMatch = await utils.ComparePassword(
 				is_user.password,
-				req.body.password
-			)
+				req.body.password,
+			);
 			if (!isMatch) {
 				throw new Error("Invalid Credentials");
 			}
@@ -173,7 +172,7 @@ class AuthController {
 			res.cookie("access_token", signJWT, {
 				httpOnly: true,
 				maxAge: exp, // 30 day
-				secure: __CONFIG__.APP.APP_ENV === "DEV" ? false : true,
+				secure: __CONFIG__.APP.APP_ENV !== "DEV",
 				sameSite: __CONFIG__.APP.APP_ENV === "DEV" ? "lax" : "strict",
 				expires: new Date(Date.now() + exp),
 			});
@@ -211,12 +210,11 @@ class AuthController {
 			const is_user = await userService.exists(req.body.email);
 			if (is_user) {
 				throw new Error("Email already exists");
-
 			}
 			const createUser = await userService.createUser({
 				email: req.body.email,
 				password: await utils.HashPassword(req.body.password),
-			})
+			});
 			const tokenBody = {
 				id: createUser.id,
 				email: req.body.email,
@@ -263,7 +261,7 @@ class AuthController {
 		try {
 			const is_user = await userService.getUserBy({
 				where: {
-					email: req.body.email
+					email: req.body.email,
 				},
 				select: {
 					id: true,
@@ -271,7 +269,7 @@ class AuthController {
 					first_name: true,
 					last_name: true,
 					password: true,
-				}
+				},
 			});
 			if (!is_user) {
 				res

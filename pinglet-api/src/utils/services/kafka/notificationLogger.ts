@@ -1,17 +1,17 @@
-
-import { KafkaNotificationProducer } from "./producer";
-import { NotificationEvent } from ".";
+import type { NotificationEvent } from ".";
+import type { KafkaNotificationProducer } from "./producer";
 
 export interface NotificationLogger {
-  log(event: NotificationEvent): Promise<void>;
+	log(event: NotificationEvent): Promise<void>;
 }
 
 export class KafkaNotificationLogger implements NotificationLogger {
-  constructor(private producer: KafkaNotificationProducer, private topic: string) { }
+	constructor(
+		private producer: KafkaNotificationProducer,
+		private topic: string,
+	) {}
 
-  async log(event: NotificationEvent): Promise<void> {
-    return this.producer.sendEvent(this.topic, event);
-  }
+	async log(event: NotificationEvent): Promise<void> {
+		return this.producer.sendEvent(this.topic, event);
+	}
 }
-
-

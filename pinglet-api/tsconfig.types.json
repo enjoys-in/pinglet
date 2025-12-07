@@ -1,19 +1,17 @@
 {
-  "compilerOptions": {
-    "allowJs": true, // allow .js files
-    "declaration": true, // generate .d.ts files
-    "emitDeclarationOnly": true, // only output .d.ts, no JS
-    "outDir": "./public/libs/v0.0.2/", // or wherever you want your .d.ts files
-    "target": "ES2020",
-    "module": "ESNext",
-    "checkJs": true, // type-check JS with JSDoc
-    "strict": true,
-    "moduleResolution": "node",
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true
-  },
-  "include": [
-    "public/scripts/v0.0.2/**/*.js"
-  ]
+	"compilerOptions": {
+		"allowJs": true,
+		"declaration": true,
+		"emitDeclarationOnly": true,
+		"outDir": "./public/libs/v0.0.2/",
+		"target": "ES2020",
+		"module": "ESNext",
+		"checkJs": true,
+		"strict": true,
+		"moduleResolution": "node",
+		"esModuleInterop": true,
+		"forceConsistentCasingInFileNames": true,
+		"skipLibCheck": true
+	},
+	"include": ["public/scripts/v0.0.2/**/*.js"]
 }

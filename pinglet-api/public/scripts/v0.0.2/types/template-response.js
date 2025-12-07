@@ -142,20 +142,20 @@
  * @property {string} lineHeight
  */
 export {
-    TemplateRespons,
-    Config,
-    Btn1,
-    Btn2,
-    Media,
-    Icon,
-    Logo,
-    Audio,
-    Image,
-    Video,
-    Iframe,
-    Title,
-    Controls,
-    Audio2,
-    Video2,
-    Description
-}
+	TemplateRespons,
+	Config,
+	Btn1,
+	Btn2,
+	Media,
+	Icon,
+	Logo,
+	Audio,
+	Image,
+	Video,
+	Iframe,
+	Title,
+	Controls,
+	Audio2,
+	Video2,
+	Description,
+};

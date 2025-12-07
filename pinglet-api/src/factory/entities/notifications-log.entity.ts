@@ -12,8 +12,6 @@ import {
 import { ANALYTICS_EVENTS } from "@/utils/services/kafka/topics";
 import { ProjectEntity } from "./project.entity";
 
-
-
 @Entity("notification_logs")
 export class NotificationLogEntity {
 	@PrimaryGeneratedColumn("uuid")
@@ -48,5 +46,5 @@ export class NotificationLogEntity {
 	metadata!: Record<string, any>;
 
 	@DeleteDateColumn({ nullable: true })
-	deleted_at!: Date|null;
+	deleted_at!: Date | null;
 }

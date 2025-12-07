@@ -1,11 +1,11 @@
+import crypto from "node:crypto";
 import type { NextFunction, Request, RequestHandler, Response } from "express";
-import crypto from "crypto";
 
 class AllMiddlewares {
 	public customMiddlewareFunction(
 		req: Request,
 		res: Response,
-		next: NextFunction
+		next: NextFunction,
 	) {
 		// Your custom middleware logic goes here
 		console.log("Custom Middleware executed");
@@ -21,7 +21,7 @@ class AllMiddlewares {
 				req.method,
 				req.path,
 				req.statusCode,
-				elapsedTimeInMs.toFixed(4)
+				elapsedTimeInMs.toFixed(4),
 			);
 		});
 		next();
@@ -29,7 +29,7 @@ class AllMiddlewares {
 	public validatePingletWidget(
 		req: Request,
 		res: Response,
-		next: NextFunction
+		next: NextFunction,
 	) {
 		try {
 			const projectId = req.header("X-Project-ID");
@@ -84,7 +84,7 @@ class AllMiddlewares {
 }
 
 export function ApplyMiddleware(
-	middlewareFunction: keyof AllMiddlewares
+	middlewareFunction: keyof AllMiddlewares,
 ): RequestHandler {
 	const instance = new AllMiddlewares();
 	return (req: Request, res: Response, next: NextFunction) =>

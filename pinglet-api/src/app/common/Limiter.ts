@@ -66,7 +66,7 @@ export class Limiter {
 		LimiterOptions: Omit<Partial<Options>, "handler">,
 	): RateLimitRequestHandler {
 		Limiter.AllLimiters.push(LimiterName);
-		Logging.dev(`Rate Limiting is Enabled, Name ${LimiterName}`,"alert");
+		Logging.dev(`Rate Limiting is Enabled, Name ${LimiterName}`, "alert");
 
 		return rateLimit({ ...LimiterOptions, handler: LIMITER_HANDLER });
 	}

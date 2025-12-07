@@ -1,40 +1,38 @@
 {
-  "name": "@enjoys/pinglet",
-  "version": "1.2.0",
-  "description": "Lightweight Customizable Web & CustomPush Notification SDK for modern web apps. Supports customizable layouts, secure delivery, and real-time updates via SSE.",
-  "main": "./pinglet-sse.js",
-  "types": "./pinglet-sse.d.ts",
-  "exports": {
-    ".": {
-      "import": "./pinglet-sse.js",
-      "require": "./pinglet-sse.js"
-    }
-  },
-  "files": [
-    "*"
-  ],
-  "keywords": [
-    "push",
-    "notifications",
-    "sse",
-    "widget",
-    "browser-sdk",
-    "realtime",
-    "toast",
-    "customizable",
-    "pinglet",
-    "webpush",
-    "web notification",
-    "eventstream"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/enjoys-in"
-  },
-  "bugs": {
-    "url": "https://github.com/enjoys-in"
-  },
-  "homepage": "https://github.com/enjoys-in",
-  "author": "Enjoys <su@enjoys.in>",
-  "license": "MIT"
+	"name": "@enjoys/pinglet",
+	"version": "1.2.0",
+	"description": "Lightweight Customizable Web & CustomPush Notification SDK for modern web apps. Supports customizable layouts, secure delivery, and real-time updates via SSE.",
+	"main": "./pinglet-sse.js",
+	"types": "./pinglet-sse.d.ts",
+	"exports": {
+		".": {
+			"import": "./pinglet-sse.js",
+			"require": "./pinglet-sse.js"
+		}
+	},
+	"files": ["*"],
+	"keywords": [
+		"push",
+		"notifications",
+		"sse",
+		"widget",
+		"browser-sdk",
+		"realtime",
+		"toast",
+		"customizable",
+		"pinglet",
+		"webpush",
+		"web notification",
+		"eventstream"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/enjoys-in"
+	},
+	"bugs": {
+		"url": "https://github.com/enjoys-in"
+	},
+	"homepage": "https://github.com/enjoys-in",
+	"author": "Enjoys <su@enjoys.in>",
+	"license": "MIT"
 }

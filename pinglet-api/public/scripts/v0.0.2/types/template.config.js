@@ -76,12 +76,12 @@
  * @property {{ audio?: MediaControls, video?: MediaControls }} [controls]
  */
 export {
-  MediaType,
-  ButtonStyle,
-  TextStyle,
-  MediaStyle,
-  MediaStyleMap,
-  MediaStyleMapStrict,
-  MediaControls,
-  TemplateStyleConfig,
+	MediaType,
+	ButtonStyle,
+	TextStyle,
+	MediaStyle,
+	MediaStyleMap,
+	MediaStyleMapStrict,
+	MediaControls,
+	TemplateStyleConfig,
 };

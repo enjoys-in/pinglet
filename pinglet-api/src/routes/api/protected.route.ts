@@ -1,18 +1,17 @@
 import {
-	WidgetController,
+	NotificationController,
 	ProjectController,
+	SubscriptionController,
+	TemplateCategoryController,
 	TemplateController,
 	UserAuthController,
 	WebhookController,
-	SubscriptionController,
 	WebsiteController,
-	TemplateCategoryController,
-	NotificationController,
+	WidgetController,
 } from "@handlers/controllers/user";
 import { Router } from "express";
 
 const router: Router = Router();
-
 
 // Project
 router.get("/projects", ProjectController.default.getAllProjects);
@@ -31,8 +30,14 @@ router.delete("/website/:id", WebsiteController.default.deleteWebsite);
 router.put("/website/:id", WebsiteController.default.updateWebsite);
 
 // Subscriptions
-router.get("/get-subscriptions", SubscriptionController.default.getSubscriptionsOfUser);
-router.get("/get-my-subscriptions", SubscriptionController.default.getSubscriptionsByProjectId);
+router.get(
+	"/get-subscriptions",
+	SubscriptionController.default.getSubscriptionsOfUser,
+);
+router.get(
+	"/get-my-subscriptions",
+	SubscriptionController.default.getSubscriptionsByProjectId,
+);
 
 // Widgets
 router.get("/widgets", WidgetController.default.getWidgets);
@@ -42,12 +47,26 @@ router.put("/widget/:id", WidgetController.default.updateWidget);
 router.delete("/widget/:id", WidgetController.default.deleteWidget);
 
 // Notification
-router.get("/my-notifications", NotificationController.default.getAllNotifications);
-router.get("/my-notification/:id", NotificationController.default.getNotification);
-router.get("/my-notifications/:project_id", NotificationController.default.getNotificationsByProjectId);
-router.get("/my-notifications/logs", NotificationController.default.getRawNotificationsByProjectId);
-router.get("/my-notification/logs/:id", NotificationController.default.getRawNotificationsByProjectId);
-
+router.get(
+	"/my-notifications",
+	NotificationController.default.getAllNotifications,
+);
+router.get(
+	"/my-notification/:id",
+	NotificationController.default.getNotification,
+);
+router.get(
+	"/my-notifications/:project_id",
+	NotificationController.default.getNotificationsByProjectId,
+);
+router.get(
+	"/my-notifications/logs",
+	NotificationController.default.getRawNotificationsByProjectId,
+);
+router.get(
+	"/my-notification/logs/:id",
+	NotificationController.default.getRawNotificationsByProjectId,
+);
 
 // Webhook
 router.get("/webhooks", WebhookController.default.getAllWebhooks);
@@ -62,9 +81,13 @@ router.post("/template", TemplateController.default.createTemplate);
 router.put("/template/:id", TemplateController.default.updateTemplate);
 router.delete("/template/:id", TemplateController.default.deleteTemplate);
 // Template Category
-router.get("/template-categories", TemplateCategoryController.default.getTemplateCategories);
-router.get("/template-categories/:id/templates", TemplateCategoryController.default.getTemplatesByCategory);
-
-
+router.get(
+	"/template-categories",
+	TemplateCategoryController.default.getTemplateCategories,
+);
+router.get(
+	"/template-categories/:id/templates",
+	TemplateCategoryController.default.getTemplatesByCategory,
+);
 
 export default router;

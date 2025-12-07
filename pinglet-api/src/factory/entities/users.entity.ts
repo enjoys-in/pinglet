@@ -10,8 +10,8 @@ import {
 	UpdateDateColumn,
 } from "typeorm";
 import { UserSettingsEntity } from "./user-settings.entity";
-import { WebsiteEntity } from "./website.entity";
 import { WebhookEntity } from "./webhook.entity";
+import { WebsiteEntity } from "./website.entity";
 
 @Entity("users")
 export class UserEntity {

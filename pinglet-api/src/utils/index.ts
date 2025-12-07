@@ -1,4 +1,4 @@
-import bcrypt from "bcryptjs";
+import bcrypt from "bcrypt";
 const saltRounds = 10;
 const salt = bcrypt.genSaltSync(saltRounds);
 import { __CONFIG__ } from "@/app/config";

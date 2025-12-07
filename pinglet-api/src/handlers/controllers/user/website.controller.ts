@@ -1,10 +1,10 @@
-import type { Request, Response } from "express";
-import { websiteService } from "@/handlers/services/website.service";
 import { projectService } from "@/handlers/services/project.service";
+import { websiteService } from "@/handlers/services/website.service";
+import type { Request, Response } from "express";
 class WebsiteController {
 	async getWebsites(req: Request, res: Response) {
 		try {
-			const userId = req.user!.id
+			const userId = req.user?.id;
 
 			const websites = await websiteService.getAllWebsites({
 				where: { user: { id: userId } },
@@ -65,21 +65,21 @@ class WebsiteController {
 	async createWebsite(req: Request, res: Response) {
 		try {
 			const body = req.body;
-			const userID = req.user?.id
+			const userID = req.user?.id;
 			const getOldWebsite = await websiteService.getWebsiteWithOptions({
 				where: {
-					domain: body.domain
+					domain: body.domain,
 				},
-				withDeleted: true
+				withDeleted: true,
 			});
 
 			if (getOldWebsite) {
-				await websiteService.restoreWebsite(body.domain)
+				await websiteService.restoreWebsite(body.domain);
 				await projectService.restoreProject({
 					website: {
-						domain: body.domain
-					}
-				})
+						domain: body.domain,
+					},
+				});
 
 				res
 					.json({
@@ -88,13 +88,13 @@ class WebsiteController {
 						success: true,
 					})
 					.end();
-				return
+				return;
 			}
 			const createWebsite = await websiteService.createNewWebsite({
 				...body,
 				user: {
-					id: userID
-				}
+					id: userID,
+				},
 			});
 			res
 				.json({
@@ -103,7 +103,7 @@ class WebsiteController {
 					success: true,
 				})
 				.end();
-			return
+			return;
 		} catch (error) {
 			if (error instanceof Error) {
 				res
@@ -118,7 +118,6 @@ class WebsiteController {
 					success: false,
 				})
 				.end();
-
 		}
 	}
 	async updateWebsite(req: Request, res: Response) {
@@ -143,7 +142,6 @@ class WebsiteController {
 				})
 				.end();
 			return;
-
 		} catch (error) {
 			if (error instanceof Error) {
 				res
@@ -158,14 +156,12 @@ class WebsiteController {
 					success: false,
 				})
 				.end();
-
 		}
 	}
 	async deleteWebsite(req: Request, res: Response) {
 		try {
 			const id = +req.params.id;
 			const result = await websiteService.deleteWebsite(id);
-
 
 			if (result?.affected && result?.affected > 0) {
 				await projectService.deleteProjectByWebsiteId(id);
@@ -192,8 +188,6 @@ class WebsiteController {
 					success: false,
 				})
 				.end();
-
-
 		}
 	}
 }

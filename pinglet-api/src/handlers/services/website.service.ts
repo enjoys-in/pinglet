@@ -1,12 +1,18 @@
 import { WebsiteEntity } from "@/factory/entities/website.entity";
 import { InjectRepository } from "@/factory/typeorm";
-import type { DeepPartial, FindManyOptions, FindOneOptions, FindOptionsWhere, Repository } from "typeorm";
+import type {
+	DeepPartial,
+	FindManyOptions,
+	FindOneOptions,
+	FindOptionsWhere,
+	Repository,
+} from "typeorm";
 class WebsiteService {
 	constructor(private readonly websiteRepo: Repository<WebsiteEntity>) {
 		this.websiteRepo = websiteRepo;
 	}
 	createNewWebsite(website: DeepPartial<WebsiteEntity>) {
-		const newWebsite = this.websiteRepo.create(website);		 
+		const newWebsite = this.websiteRepo.create(website);
 		return this.websiteRepo.save(newWebsite);
 	}
 	getAllWebsites(opts?: FindManyOptions<WebsiteEntity>) {
@@ -37,8 +43,8 @@ class WebsiteService {
 	deleteWebsite(id: number) {
 		return this.websiteRepo.softDelete(id);
 	}
-	restoreWebsite(domain: string) {		 
-		return  this.websiteRepo.restore({ domain });
+	restoreWebsite(domain: string) {
+		return this.websiteRepo.restore({ domain });
 	}
 }
 

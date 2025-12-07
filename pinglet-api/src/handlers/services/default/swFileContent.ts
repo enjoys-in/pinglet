@@ -1,8 +1,9 @@
-import { __CONFIG__ } from "@/app/config"
+import { __CONFIG__ } from "@/app/config";
 
-const URL = __CONFIG__.APP.APP_ENV == "DEV" ?
-    "http://localhost:8888/api/v1" :
-    "https://pinglet.enjoys.in/api/v1";
+const URL =
+	__CONFIG__.APP.APP_ENV === "DEV"
+		? "http://localhost:8888/api/v1"
+		: "https://pinglet.enjoys.in/api/v1";
 export const DEFAULT_SW_FILE_CONTENT = `let isTabOpen = false;
 self.addEventListener("install", (event) => {
   self.skipWaiting();
@@ -197,4 +198,4 @@ self.addEventListener("notificationclick", (event) => {
 self.addEventListener("notificationclose", (event) => {
   console.log("Notification closed:", event.notification.tag);
 });
-`
+`;

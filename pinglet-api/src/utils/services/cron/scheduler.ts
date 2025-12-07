@@ -1,4 +1,4 @@
-import { CronExpression } from "@/utils/interfaces/cron-expression.interface";
+import type { CronExpression } from "@/utils/interfaces/cron-expression.interface";
 import { METADATA_KEYS } from "@utils/helpers/constants";
 
 import cron from "node-cron";

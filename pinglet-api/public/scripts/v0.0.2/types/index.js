@@ -86,10 +86,10 @@
  */
 
 export {
-  GlobalConfig,
-  NotificationData,
-  PingletWidget,
-  TemplateData,
-  Templates,
-  MediaData,
+	GlobalConfig,
+	NotificationData,
+	PingletWidget,
+	TemplateData,
+	Templates,
+	MediaData,
 };

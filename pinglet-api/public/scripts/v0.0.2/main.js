@@ -3,12 +3,12 @@
 window.notificationEventHandlers = {};
 // Listen for custom events from service worker
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.addEventListener("message", (event) => {
-    const { type, eventName, payload } = event.data;
-    if (type === "CUSTOM_NOTIFICATION_EVENT") {
-      triggerCustomNotificationEvent(eventName, payload);
-    }
-  });
+	navigator.serviceWorker.addEventListener("message", (event) => {
+		const { type, eventName, payload } = event.data;
+		if (type === "CUSTOM_NOTIFICATION_EVENT") {
+			triggerCustomNotificationEvent(eventName, payload);
+		}
+	});
 }
 
 /**
@@ -17,11 +17,11 @@ if ("serviceWorker" in navigator) {
  * @param {NotificationPayloadOptions} payload - Event payload
  */
 function triggerCustomNotificationEvent(eventName, payload) {
-  // Method 1: Custom DOM event
-  const customEvent = new CustomEvent(`notification:${eventName}`, {
-    detail: payload,
-  });
-  document.dispatchEvent(customEvent);
+	// Method 1: Custom DOM event
+	const customEvent = new CustomEvent(`notification:${eventName}`, {
+		detail: payload,
+	});
+	document.dispatchEvent(customEvent);
 }
 
 // ===== NOTIFICATION EVENT HANDLER SYSTEM =====
@@ -32,10 +32,10 @@ function triggerCustomNotificationEvent(eventName, payload) {
  * @param {(payload:NotificationPayloadOptions)=>void} handler - Event handler function
  */
 function onNotificationEvent(eventName, handler) {
-  // Also listen for DOM events
-  document.addEventListener(`notification:${eventName}`, (event) => {
-    handler(event.detail);
-  });
+	// Also listen for DOM events
+	document.addEventListener(`notification:${eventName}`, (event) => {
+		handler(event.detail);
+	});
 }
 // Declare and assign to window
 /**
@@ -57,13 +57,13 @@ onNotificationEvent("closed", (payload) => sentEvent("closed", payload));
  * @param {NotificationPayloadOptions|import("./types").NotificationData} data - Notification payload
  */
 async function sentEvent(event, data) {
-  if (!("project_id" in data)) return;
-  await fetch(`https://pinglet.enjoys.in/api/v1/log/track`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ ...data, event }),
-    credentials: "omit",
-  });
+	if (!("project_id" in data)) return;
+	await fetch("https://pinglet.enjoys.in/api/v1/log/track", {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify({ ...data, event }),
+		credentials: "omit",
+	});
 }

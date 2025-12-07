@@ -44,6 +44,6 @@ export class Plan {
 	})
 	updated_at!: Date;
 
-	@DeleteDateColumn({nullable: true})
-	deleted_at!: Date|null;
+	@DeleteDateColumn({ nullable: true })
+	deleted_at!: Date | null;
 }

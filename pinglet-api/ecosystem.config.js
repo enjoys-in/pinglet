@@ -1,38 +1,32 @@
 module.exports = {
   apps: [
     {
-      name: "pinglet-api",
+      name: "Pinglet API",
       script: "npm run start",
       instances: 1,
       autorestart: true,
       watch: true,
-      max_memory_restart: '512M',
-      env: {
-        NODE_ENV: 'production',
-      },
-      exec_mode: 'cluster',
+      max_memory_restart: "512M",
+      env_filepath: ".env",
+      exec_mode: "cluster",
     },
     {
-      name: "pinglet-worker",
+      name: "Pinglet Worker",
       script: "npm run worker",
       instances: 1,
       autorestart: true,
       watch: true,
-      max_memory_restart: '512M',
-      env: {
-        NODE_ENV: 'production',
-      },
+      max_memory_restart: "512M",
+      env_filepath: ".env",
     },
     {
-      name: "pinglet-consumer",
+      name: "Pinglet Consumer",
       script: "npm run consumer",
       instances: 1,
       autorestart: true,
       watch: true,
-      max_memory_restart: '512M',
-      env: {
-        NODE_ENV: 'production',
-      },
+      max_memory_restart: "512M",
+      env_filepath: ".env",
     },
   ],
-}
+};

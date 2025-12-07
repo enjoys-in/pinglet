@@ -1,7 +1,12 @@
 import { NotificationLogEntity } from "@/factory/entities/notifications-log.entity";
 import { NotificationEntity } from "@/factory/entities/notifications.entity";
 import { InjectRepository } from "@/factory/typeorm";
-import type { DeepPartial, FindManyOptions, FindOneOptions, Repository } from "typeorm";
+import type {
+	DeepPartial,
+	FindManyOptions,
+	FindOneOptions,
+	Repository,
+} from "typeorm";
 class NotificationService {
 	constructor(
 		private readonly notificationRepo: Repository<NotificationEntity>,
@@ -32,7 +37,6 @@ class NotificationService {
 	}
 	getRawNotificationsLog(id: string) {
 		return this.notificationLogRepo.findOne({ where: { id } });
-
 	}
 }
 export const notificationService = new NotificationService(

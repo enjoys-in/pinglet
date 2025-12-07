@@ -7,7 +7,7 @@ import {
 	JoinColumn,
 	ManyToOne,
 	PrimaryGeneratedColumn,
-	Relation,
+	type Relation,
 	UpdateDateColumn,
 } from "typeorm";
 
@@ -60,7 +60,4 @@ export class NotificationEntity {
 		onUpdate: "CURRENT_TIMESTAMP",
 	})
 	updated_at!: Date;
-
-
-
 }

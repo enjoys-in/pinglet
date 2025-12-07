@@ -7,10 +7,10 @@
 
 import { audioPlayerElement } from "./audio-player.js";
 import {
-  _btnActions,
-  defaultConfig,
-  defaultStyles,
-  fireCustomEvent,
+	_btnActions,
+	defaultConfig,
+	defaultStyles,
+	fireCustomEvent,
 } from "./default.js";
 import { brandingElement, playSound, toastStack } from "./widget.js";
 /**
@@ -21,107 +21,107 @@ import { brandingElement, playSound, toastStack } from "./widget.js";
  * @returns {HTMLDivElement} The notification header element.
  */
 function createNotificationHeader(
-  globalConfig = defaultConfig,
-  domain = window.location.hostname,
-  time = "just now",
-  isDark = false
+	globalConfig = defaultConfig,
+	domain = window.location.hostname,
+	time = "just now",
+	isDark = false,
 ) {
-  const row = document.createElement("div");
-  row.className = "pinglet-row";
-  Object.assign(row.style, {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    background: isDark ? "#1a1a1a" : "transparent",
-    fontFamily: "system-ui, sans-serif",
-    fontSize: "10px",
-    padding: "6px 10px",
-    borderBottom: isDark
-      ? "1px solid rgba(255, 255, 255, 0.1)"
-      : "1px solid rgba(0, 0, 0, 0.05)",
-    color: isDark ? "#f0f0f0" : "#000",
-  });
+	const row = document.createElement("div");
+	row.className = "pinglet-row";
+	Object.assign(row.style, {
+		display: "flex",
+		justifyContent: "space-between",
+		alignItems: "center",
+		background: isDark ? "#1a1a1a" : "transparent",
+		fontFamily: "system-ui, sans-serif",
+		fontSize: "10px",
+		padding: "6px 10px",
+		borderBottom: isDark
+			? "1px solid rgba(255, 255, 255, 0.1)"
+			: "1px solid rgba(0, 0, 0, 0.05)",
+		color: isDark ? "#f0f0f0" : "#000",
+	});
 
-  const left = document.createElement("div");
-  left.className = "pinglet-left";
-  Object.assign(left.style, {
-    display: "flex",
-    alignItems: "center",
-    gap: "6px",
-    flexGrow: "1",
-  });
+	const left = document.createElement("div");
+	left.className = "pinglet-left";
+	Object.assign(left.style, {
+		display: "flex",
+		alignItems: "center",
+		gap: "6px",
+		flexGrow: "1",
+	});
 
-  const icon = document.createElement("span");
-  icon.className = "pinglet-icon";
-  icon.textContent = "- Pinglet";
-  icon.onclick = () => {
-    window.open("https://pinglet.enjoys.in", "_blank");
-  };
-  Object.assign(icon.style, {
-    alignItems: "center",
-    color: "dodgerblue",
-    flexShrink: "0",
-    fontWeight: "bold",
-    cursor: "pointer",
-  });
+	const icon = document.createElement("span");
+	icon.className = "pinglet-icon";
+	icon.textContent = "- Pinglet";
+	icon.onclick = () => {
+		window.open("https://pinglet.enjoys.in", "_blank");
+	};
+	Object.assign(icon.style, {
+		alignItems: "center",
+		color: "dodgerblue",
+		flexShrink: "0",
+		fontWeight: "bold",
+		cursor: "pointer",
+	});
 
-  const domainText = document.createElement("span");
-  domainText.className = "pinglet-domain";
-  domainText.textContent = domain;
-  domainText.style.color = isDark ? "#bbb" : "#808080";
+	const domainText = document.createElement("span");
+	domainText.className = "pinglet-domain";
+	domainText.textContent = domain;
+	domainText.style.color = isDark ? "#bbb" : "#808080";
 
-  const timeText = document.createElement("span");
-  timeText.className = "pinglet-time";
-  timeText.textContent = `- ${time}`;
-  timeText.style.color = isDark ? "#ccc" : "#aaa";
+	const timeText = document.createElement("span");
+	timeText.className = "pinglet-time";
+	timeText.textContent = `- ${time}`;
+	timeText.style.color = isDark ? "#ccc" : "#aaa";
 
-  const closeBtn = document.createElement("button");
-  closeBtn.className = "pinglet-close";
-  closeBtn.textContent = "✕";
-  Object.assign(closeBtn.style, {
-    background: "none",
-    border: "none",
-    fontSize: "12px",
-    cursor: "pointer",
-    color: isDark ? "#aaa" : "#888",
-    padding: "0 4px",
-  });
+	const closeBtn = document.createElement("button");
+	closeBtn.className = "pinglet-close";
+	closeBtn.textContent = "✕";
+	Object.assign(closeBtn.style, {
+		background: "none",
+		border: "none",
+		fontSize: "12px",
+		cursor: "pointer",
+		color: isDark ? "#aaa" : "#888",
+		padding: "0 4px",
+	});
 
-  closeBtn.addEventListener("mouseenter", () => {
-    closeBtn.style.color = "#f44";
-  });
-  closeBtn.addEventListener("mouseleave", () => {
-    closeBtn.style.color = isDark ? "#aaa" : "#888";
-  });
+	closeBtn.addEventListener("mouseenter", () => {
+		closeBtn.style.color = "#f44";
+	});
+	closeBtn.addEventListener("mouseleave", () => {
+		closeBtn.style.color = isDark ? "#aaa" : "#888";
+	});
 
-  if (globalConfig?.website) {
-    left.appendChild(domainText);
-  }
-  if (globalConfig?.time) {
-    left.appendChild(timeText);
-  }
-  if (globalConfig?.favicon) {
-    left.appendChild(icon);
-  }
+	if (globalConfig?.website) {
+		left.appendChild(domainText);
+	}
+	if (globalConfig?.time) {
+		left.appendChild(timeText);
+	}
+	if (globalConfig?.favicon) {
+		left.appendChild(icon);
+	}
 
-  row.appendChild(left);
+	row.appendChild(left);
 
-  if (globalConfig?.dismissible) {
-    row.appendChild(closeBtn);
-  }
-  closeBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    fireCustomEvent("pinglet:notificationClosed", {
-      contentEl: closeBtn.parentElement?.parentElement,
-      reason: "user-dismiss",
-    });
+	if (globalConfig?.dismissible) {
+		row.appendChild(closeBtn);
+	}
+	closeBtn.addEventListener("click", (e) => {
+		e.stopPropagation();
+		fireCustomEvent("pinglet:notificationClosed", {
+			contentEl: closeBtn.parentElement?.parentElement,
+			reason: "user-dismiss",
+		});
 
-    if (toastStack && toastStack.children.length === 0) {
-      brandingElement?.remove();
-    }
-  });
+		if (toastStack && toastStack.children.length === 0) {
+			brandingElement?.remove();
+		}
+	});
 
-  return row;
+	return row;
 }
 
 /**
@@ -131,188 +131,188 @@ function createNotificationHeader(
  * @returns {HTMLElement} - A notification wrapper element
  */
 export function createVariant(data, config) {
-  const globalStyle = config.style;
-  const globalConfig = config.config;
-  const themeMode = globalConfig.theme.mode || {};
-  const isDark =
-    themeMode && window.matchMedia("(prefers-color-scheme: dark)").matches;
+	const globalStyle = config.style;
+	const globalConfig = config.config;
+	const themeMode = globalConfig.theme.mode || {};
+	const isDark =
+		themeMode && window.matchMedia("(prefers-color-scheme: dark)").matches;
 
-  const wrapper = document.createElement("div");
-  wrapper.id = "pinglet-variant";
-  wrapper.setAttribute(
-    "data-key",
-    `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
-  );
-  wrapper.className = `pinglet-variant pinglet-${data.variant || "default"}`;
-  Object.assign(wrapper.style, {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "stretch",
-    width: "320px",
-    maxHeight: "calc(100vh - 40px)",
-    borderRadius: "8px",
-    overflowY: "auto",
-    padding: "4px",
-    gap: "4px",
-    pointerEvents: "none",
-    overflow: "visible",
-    flexShrink: "0",
-    boxShadow: isDark
-      ? "0 2px 8px rgba(0,0,0,0.6)"
-      : "0 2px 8px rgba(0,0,0,0.1)",
-    backgroundColor: isDark ? "#1e1e1e" : "whitesmoke",
-    color: isDark ? "#f0f0f0" : "#000",
-  });
+	const wrapper = document.createElement("div");
+	wrapper.id = "pinglet-variant";
+	wrapper.setAttribute(
+		"data-key",
+		`${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+	);
+	wrapper.className = `pinglet-variant pinglet-${data.variant || "default"}`;
+	Object.assign(wrapper.style, {
+		display: "flex",
+		flexDirection: "column",
+		alignItems: "stretch",
+		width: "320px",
+		maxHeight: "calc(100vh - 40px)",
+		borderRadius: "8px",
+		overflowY: "auto",
+		padding: "4px",
+		gap: "4px",
+		pointerEvents: "none",
+		overflow: "visible",
+		flexShrink: "0",
+		boxShadow: isDark
+			? "0 2px 8px rgba(0,0,0,0.6)"
+			: "0 2px 8px rgba(0,0,0,0.1)",
+		backgroundColor: isDark ? "#1e1e1e" : "whitesmoke",
+		color: isDark ? "#f0f0f0" : "#000",
+	});
 
-  wrapper.appendChild(
-    createNotificationHeader(
-      globalConfig,
-      window.location.hostname,
-      "just now",
-      isDark
-    )
-  );
+	wrapper.appendChild(
+		createNotificationHeader(
+			globalConfig,
+			window.location.hostname,
+			"just now",
+			isDark,
+		),
+	);
 
-  let mediaEl = null;
-  const isInlineMedia = "icon" in data || "logo" in data;
+	let mediaEl = null;
+	const isInlineMedia = "icon" in data || "logo" in data;
 
-  if (data.media?.type) {
-    mediaEl = createMediaElement(
-      data.media,
-      globalStyle.media,
-      globalStyle.controls
-    );
-    mediaEl.style.marginBottom = "12px";
-  }
-  if (mediaEl) wrapper.appendChild(mediaEl);
-  if (isInlineMedia) {
-    const flexWrapper = document.createElement("div");
-    Object.assign(flexWrapper.style, {
-      display: "flex",
-      flexDirection: "row",
-      alignItems: "flex-start",
-      gap: "6px",
-    });
+	if (data.media?.type) {
+		mediaEl = createMediaElement(
+			data.media,
+			globalStyle.media,
+			globalStyle.controls,
+		);
+		mediaEl.style.marginBottom = "12px";
+	}
+	if (mediaEl) wrapper.appendChild(mediaEl);
+	if (isInlineMedia) {
+		const flexWrapper = document.createElement("div");
+		Object.assign(flexWrapper.style, {
+			display: "flex",
+			flexDirection: "row",
+			alignItems: "flex-start",
+			gap: "6px",
+		});
 
-    const iconDiv = document.createElement("div");
-    Object.assign(iconDiv.style, {
-      flex: "0 0 auto",
-    });
-    const icon = createLogoOrIconElement(
-      "icon" in data ? "icon" : "logo",
-      data?.icon || data?.logo,
-      config.style.media
-    );
+		const iconDiv = document.createElement("div");
+		Object.assign(iconDiv.style, {
+			flex: "0 0 auto",
+		});
+		const icon = createLogoOrIconElement(
+			"icon" in data ? "icon" : "logo",
+			data?.icon || data?.logo,
+			config.style.media,
+		);
 
-    icon && iconDiv.appendChild(icon);
-    flexWrapper.appendChild(iconDiv);
+		icon && iconDiv.appendChild(icon);
+		flexWrapper.appendChild(iconDiv);
 
-    const textDiv = document.createElement("div");
-    Object.assign(textDiv.style, {
-      display: "flex",
-      flexDirection: "column",
-      flex: "1",
-    });
+		const textDiv = document.createElement("div");
+		Object.assign(textDiv.style, {
+			display: "flex",
+			flexDirection: "column",
+			flex: "1",
+		});
 
-    if (data.title) {
-      const title = document.createElement("div");
-      title.className = "pinglet-title";
-      title.innerText = data.title;
-      Object.assign(title.style, {
-        ...(globalStyle.title || defaultStyles.title),
-        color: isDark ? "#ffffff" : "#000000",
-      });
-      textDiv.appendChild(title);
-    }
+		if (data.title) {
+			const title = document.createElement("div");
+			title.className = "pinglet-title";
+			title.innerText = data.title;
+			Object.assign(title.style, {
+				...(globalStyle.title || defaultStyles.title),
+				color: isDark ? "#ffffff" : "#000000",
+			});
+			textDiv.appendChild(title);
+		}
 
-    if (data.description) {
-      const desc = document.createElement("p");
-      desc.className = "pinglet-desc";
-      desc.innerText = data.description;
-      Object.assign(desc.style, {
-        ...(globalStyle.description || defaultStyles.description),
-        color: isDark ? "#dddddd" : "#333333",
-      });
-      textDiv.appendChild(desc);
-    }
+		if (data.description) {
+			const desc = document.createElement("p");
+			desc.className = "pinglet-desc";
+			desc.innerText = data.description;
+			Object.assign(desc.style, {
+				...(globalStyle.description || defaultStyles.description),
+				color: isDark ? "#dddddd" : "#333333",
+			});
+			textDiv.appendChild(desc);
+		}
 
-    flexWrapper.appendChild(textDiv);
-    wrapper.appendChild(flexWrapper);
-  } else {
-    if (data.title) {
-      const title = document.createElement("div");
-      title.className = "pinglet-title";
-      title.innerText = data.title;
-      Object.assign(title.style, {
-        ...(globalStyle.title || defaultStyles.title),
-        color: isDark ? "#ffffff" : "#000000",
-      });
-      wrapper.appendChild(title);
-    }
+		flexWrapper.appendChild(textDiv);
+		wrapper.appendChild(flexWrapper);
+	} else {
+		if (data.title) {
+			const title = document.createElement("div");
+			title.className = "pinglet-title";
+			title.innerText = data.title;
+			Object.assign(title.style, {
+				...(globalStyle.title || defaultStyles.title),
+				color: isDark ? "#ffffff" : "#000000",
+			});
+			wrapper.appendChild(title);
+		}
 
-    if (data.description) {
-      const desc = document.createElement("p");
-      desc.className = "pinglet-desc";
-      desc.innerText = data.description;
-      Object.assign(desc.style, {
-        ...(globalStyle.description || defaultStyles.description),
-        color: isDark ? "#dddddd" : "#333333",
-      });
-      wrapper.appendChild(desc);
-    }
-  }
+		if (data.description) {
+			const desc = document.createElement("p");
+			desc.className = "pinglet-desc";
+			desc.innerText = data.description;
+			Object.assign(desc.style, {
+				...(globalStyle.description || defaultStyles.description),
+				color: isDark ? "#dddddd" : "#333333",
+			});
+			wrapper.appendChild(desc);
+		}
+	}
 
-  if (data.buttons) {
-    const btnWrap = document.createElement("div");
-    btnWrap.className = "pinglet-buttons";
-    btnWrap.style.fontFamily = "Manrope";
-    data.buttons.forEach((btn, i) => {
-      const btnEl = document.createElement("button");
-      btnEl.innerText = btn.text;
-      btnEl.className = "pinglet-btn";
-      Object.assign(btnEl.style, {
-        cursor: "pointer",
-        padding: "6px 10px",
-        fontFamily: "Manrope, sans-serif",
-        margin: "1px 4px",
-        color: isDark ? "#f0f0f0" : "#000",
-        backgroundColor: isDark ? "#333" : "#f0f0f0",
-        border: "none",
-        borderRadius: "4px",
-      });
+	if (data.buttons) {
+		const btnWrap = document.createElement("div");
+		btnWrap.className = "pinglet-buttons";
+		btnWrap.style.fontFamily = "Manrope";
+		data.buttons.forEach((btn, i) => {
+			const btnEl = document.createElement("button");
+			btnEl.innerText = btn.text;
+			btnEl.className = "pinglet-btn";
+			Object.assign(btnEl.style, {
+				cursor: "pointer",
+				padding: "6px 10px",
+				fontFamily: "Manrope, sans-serif",
+				margin: "1px 4px",
+				color: isDark ? "#f0f0f0" : "#000",
+				backgroundColor: isDark ? "#333" : "#f0f0f0",
+				border: "none",
+				borderRadius: "4px",
+			});
 
-      Object.assign(btnEl.style, i === 0 ? globalStyle.btn1 : globalStyle.btn2);
+			Object.assign(btnEl.style, i === 0 ? globalStyle.btn1 : globalStyle.btn2);
 
-      if (btn?.onClick) {
-        const func = new Function(`return ${btn.onClick}`)();
-        if (typeof func === "function") {
-          btnEl.addEventListener("click", func);
-        }
-      } else {
-        btnEl.addEventListener("click", (e) => {
-          e.stopPropagation();
-          return _btnActions(btn, wrapper);
-        });
-      }
+			if (btn?.onClick) {
+				const func = new Function(`return ${btn.onClick}`)();
+				if (typeof func === "function") {
+					btnEl.addEventListener("click", func);
+				}
+			} else {
+				btnEl.addEventListener("click", (e) => {
+					e.stopPropagation();
+					return _btnActions(btn, wrapper);
+				});
+			}
 
-      btnWrap.appendChild(btnEl);
-    });
-    wrapper.appendChild(btnWrap);
-  }
+			btnWrap.appendChild(btnEl);
+		});
+		wrapper.appendChild(btnWrap);
+	}
 
-  if (globalConfig.sound?.play) {
-    playSound();
-  }
+	if (globalConfig.sound?.play) {
+		playSound();
+	}
 
-  if (
-    brandingElement &&
-    !wrapper.contains(brandingElement) &&
-    !globalConfig.branding?.once
-  ) {
-    wrapper.appendChild(brandingElement);
-  }
+	if (
+		brandingElement &&
+		!wrapper.contains(brandingElement) &&
+		!globalConfig.branding?.once
+	) {
+		wrapper.appendChild(brandingElement);
+	}
 
-  return wrapper;
+	return wrapper;
 }
 
 /**
@@ -323,47 +323,47 @@ export function createVariant(data, config) {
  * @returns {HTMLElement | null} - Media element
  */
 function createMediaElement(media, style, controls) {
-  switch (media.type) {
-    case "image": {
-      const img = document.createElement("img");
-      img.src = media.src;
-      Object.assign(img.style, style?.image || defaultStyles.media.image);
-      return img;
-    }
-    case "video": {
-      const video = document.createElement("video");
-      video.src = media.src;
-      video.autoplay =
-        controls?.video?.autoplay ||
-        defaultStyles.controls.video.autoplay ||
-        false;
-      video.muted =
-        controls?.video?.muted || defaultStyles.controls.video.muted || false;
-      video.loop =
-        controls?.video?.loop || defaultStyles.controls.video.loop || false;
-      video.controls =
-        controls?.video?.controls ||
-        defaultStyles.controls.video.controls ||
-        false;
-      video.style = style?.video || defaultStyles.media.video;
-      Object.assign(video.style, style?.video || defaultStyles.media.video);
+	switch (media.type) {
+		case "image": {
+			const img = document.createElement("img");
+			img.src = media.src;
+			Object.assign(img.style, style?.image || defaultStyles.media.image);
+			return img;
+		}
+		case "video": {
+			const video = document.createElement("video");
+			video.src = media.src;
+			video.autoplay =
+				controls?.video?.autoplay ||
+				defaultStyles.controls.video.autoplay ||
+				false;
+			video.muted =
+				controls?.video?.muted || defaultStyles.controls.video.muted || false;
+			video.loop =
+				controls?.video?.loop || defaultStyles.controls.video.loop || false;
+			video.controls =
+				controls?.video?.controls ||
+				defaultStyles.controls.video.controls ||
+				false;
+			video.style = style?.video || defaultStyles.media.video;
+			Object.assign(video.style, style?.video || defaultStyles.media.video);
 
-      return video;
-    }
-    case "audio": {
-      return audioPlayerElement(
-        media.src,
-        controls?.audio?.muted || defaultStyles.controls?.audio.muted || false,
-        controls?.audio?.loop || defaultStyles.controls?.audio?.loop || false,
-        controls?.audio?.controls ||
-          defaultStyles.controls?.audio?.controls ||
-          false
-      );
-    }
+			return video;
+		}
+		case "audio": {
+			return audioPlayerElement(
+				media.src,
+				controls?.audio?.muted || defaultStyles.controls?.audio.muted || false,
+				controls?.audio?.loop || defaultStyles.controls?.audio?.loop || false,
+				controls?.audio?.controls ||
+					defaultStyles.controls?.audio?.controls ||
+					false,
+			);
+		}
 
-    default:
-      return null;
-  }
+		default:
+			return null;
+	}
 }
 /**
  * Creates a logo or icon element based on the provided type and src.
@@ -380,47 +380,47 @@ function createMediaElement(media, style, controls) {
  * @returns {HTMLElement} The created element.
  */
 function createLogoOrIconElement(type, src, style) {
-  if (type === "logo") {
-    {
-      const logo = document.createElement("img");
-      logo.src = src;
-      Object.assign(logo.style, style?.logo || defaultStyles.media.logo);
-      return logo;
-    }
-  }
-  if (type === "icon") {
-    const iconSpan = document.createElement("span");
+	if (type === "logo") {
+		{
+			const logo = document.createElement("img");
+			logo.src = src;
+			Object.assign(logo.style, style?.logo || defaultStyles.media.logo);
+			return logo;
+		}
+	}
+	if (type === "icon") {
+		const iconSpan = document.createElement("span");
 
-    if (typeof src === "string") {
-      const isBase64Image = /^data:image\/(png|jpeg|gif|webp);base64,/.test(
-        src
-      );
-      const isSvg = /^<svg[\s\S]*<\/svg>$/.test(src.trim());
+		if (typeof src === "string") {
+			const isBase64Image = /^data:image\/(png|jpeg|gif|webp);base64,/.test(
+				src,
+			);
+			const isSvg = /^<svg[\s\S]*<\/svg>$/.test(src.trim());
 
-      if (isBase64Image) {
-        iconSpan.style.backgroundImage = `url('${src}')`;
-        iconSpan.style.backgroundSize = "cover";
-        iconSpan.textContent = "";
-      } else if (isSvg) {
-        iconSpan.innerHTML = src;
-      } else {
-        iconSpan.textContent = src; // emoji or text
-      }
-    }
+			if (isBase64Image) {
+				iconSpan.style.backgroundImage = `url('${src}')`;
+				iconSpan.style.backgroundSize = "cover";
+				iconSpan.textContent = "";
+			} else if (isSvg) {
+				iconSpan.innerHTML = src;
+			} else {
+				iconSpan.textContent = src; // emoji or text
+			}
+		}
 
-    iconSpan.className = "pinglet-icon";
-    Object.assign(iconSpan.style, {
-      width: "40px",
-      height: "40px",
-      display: "inline-flex",
-      alignItems: "center",
-      justifyContent: "center",
-      backgroundPosition: "center",
-      borderRadius: "8px",
-      fontSize: "24px",
-      overflow: "hidden",
-    });
-    return iconSpan;
-  }
-  return null;
+		iconSpan.className = "pinglet-icon";
+		Object.assign(iconSpan.style, {
+			width: "40px",
+			height: "40px",
+			display: "inline-flex",
+			alignItems: "center",
+			justifyContent: "center",
+			backgroundPosition: "center",
+			borderRadius: "8px",
+			fontSize: "24px",
+			overflow: "hidden",
+		});
+		return iconSpan;
+	}
+	return null;
 }

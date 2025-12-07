@@ -9,32 +9,32 @@
  * @returns {Promise<Object|null>} - A promise that resolves to the templates result if successful, or null if unsuccessful.
  */
 export async function loadAllTemplates(
-  endpoint,
-  projectId,
-  pingletId,
-  checksum,
-  version,
-  templatesIds
+	endpoint,
+	projectId,
+	pingletId,
+	checksum,
+	version,
+	templatesIds,
 ) {
-  const response = await fetch(
-    `${endpoint}/load/templates?projectId=${projectId}&templatesIds=${templatesIds}`,
-    {
-      headers: {
-        "X-Project-ID": projectId,
-        "X-Timestamp": Date.now(),
-        "X-Pinglet-Signature": pingletId,
-        "X-Pinglet-Checksum": checksum,
-        "X-Pinglet-Version": version,
-      },
+	const response = await fetch(
+		`${endpoint}/load/templates?projectId=${projectId}&templatesIds=${templatesIds}`,
+		{
+			headers: {
+				"X-Project-ID": projectId,
+				"X-Timestamp": Date.now(),
+				"X-Pinglet-Signature": pingletId,
+				"X-Pinglet-Checksum": checksum,
+				"X-Pinglet-Version": version,
+			},
 
-      credentials: "omit",
-    }
-  );
+			credentials: "omit",
+		},
+	);
 
-  const data = await response.json();
+	const data = await response.json();
 
-  if (!data || !data.success) {
-    return null;
-  }
-  return data.result;
+	if (!data || !data.success) {
+		return null;
+	}
+	return data.result;
 }

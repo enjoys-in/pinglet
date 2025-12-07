@@ -1,17 +1,26 @@
 import { ProjectEntity } from "@/factory/entities/project.entity";
 import { InjectRepository } from "@/factory/typeorm";
-import type { DeepPartial, FindManyOptions, FindOneOptions, Repository } from "typeorm";
-type RestorePayload = { unique_id: string } | { id: number } | {
-	website: {
-		domain: string
-	}
-} | {
-	website: {
-		id: number
-	}
-}
+import type {
+	DeepPartial,
+	FindManyOptions,
+	FindOneOptions,
+	Repository,
+} from "typeorm";
+type RestorePayload =
+	| { unique_id: string }
+	| { id: number }
+	| {
+			website: {
+				domain: string;
+			};
+	  }
+	| {
+			website: {
+				id: number;
+			};
+	  };
 class ProjectService {
-	constructor(private readonly projectRepository: Repository<ProjectEntity>) { }
+	constructor(private readonly projectRepository: Repository<ProjectEntity>) {}
 	createNewProject(project: DeepPartial<ProjectEntity>) {
 		const newProject = this.projectRepository.create(project);
 		return this.projectRepository.save(newProject);
@@ -28,7 +37,7 @@ class ProjectService {
 			relations: {
 				website: true,
 				webhooks: true,
-				category: true
+				category: true,
 			},
 		});
 	}
@@ -68,12 +77,9 @@ class ProjectService {
 			.createQueryBuilder("project")
 			.leftJoinAndSelect("project.website", "website")
 			.leftJoinAndSelect("project.category", "category")
-			.leftJoin(
-				"notifications",
-				"n",
-				"n.project_id = project.unique_id"
-			)
-			.select(["project.id as id",
+			.leftJoin("notifications", "n", "n.project_id = project.unique_id")
+			.select([
+				"project.id as id",
 				"project.unique_id as unique_id",
 				"project.name as name",
 				"project.created_at as created_at",
@@ -84,7 +90,7 @@ class ProjectService {
 				"category.name as category_name",
 				"category.slug as category_slug",
 			])
-			.addSelect(subQuery => {
+			.addSelect((subQuery) => {
 				return subQuery
 					.select("COUNT(*)", "count")
 					.from("push_subscriptions", "ps")

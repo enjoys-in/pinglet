@@ -1,14 +1,18 @@
 import { __CONFIG__ } from "@/app/config";
 import { HttpException } from "@enjoys/exception";
 import { type Request, type Response, Router } from "express";
+import { JwtAuth } from "../middlewares/auth.Middleware";
 import ApiRoutes from "./api";
 import ProtectedRoutes from "./api/protected.route";
-import { JwtAuth } from '../middlewares/auth.Middleware';
 
 const router = Router();
 
 router.use(`/api/${__CONFIG__.APP.API_VERSION}`, ApiRoutes);
-router.use(`/api/${__CONFIG__.APP.API_VERSION}`, JwtAuth.validateUser, ProtectedRoutes);
+router.use(
+	`/api/${__CONFIG__.APP.API_VERSION}`,
+	JwtAuth.validateUser,
+	ProtectedRoutes,
+);
 
 router.use("*", (req: Request, res: Response) => {
 	throw new HttpException({

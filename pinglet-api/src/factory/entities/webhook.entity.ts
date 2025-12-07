@@ -22,11 +22,12 @@ type WebhookPlatforms = `${WebhookType}`;
 type TelegramConfigPayload = {
 	botToken: string;
 	chatId: string;
-}
-type WebhookConfigPayload = { url: string }
+};
+type WebhookConfigPayload = { url: string };
 
-
-export type WebhookConfig = Partial<Record<WebhookPlatforms, WebhookConfigPayload>> & { telegram: TelegramConfigPayload };
+export type WebhookConfig = Partial<
+	Record<WebhookPlatforms, WebhookConfigPayload>
+> & { telegram: TelegramConfigPayload };
 
 export enum WebhookEvent {
 	NOTIFICATION_SENT = "notification.sent",
@@ -39,7 +40,6 @@ export enum WebhookEvent {
 	PROJECT_CREATED = "project.created",
 	DOMAIN_VERIFIED = "domain.verified",
 }
-
 
 @Entity("webhooks")
 export class WebhookEntity {
@@ -68,7 +68,6 @@ export class WebhookEntity {
 
 	@Column({ type: "jsonb", default: {} })
 	config!: Partial<WebhookConfig>;
-
 
 	@Column({
 		type: "enum",

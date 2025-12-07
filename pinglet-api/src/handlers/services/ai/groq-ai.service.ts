@@ -1,5 +1,4 @@
-import { Groq } from 'groq-sdk';
-
+import { Groq } from "groq-sdk";
 
 const groq = new Groq();
 export const SYSTEM_PROMPT = `You are a pure code converter. Your only task is to convert user-supplied HTML and CSS into a Vanilla JavaScript function that builds the exact same layout using document.createElement, element.style, and DOM methods.
@@ -55,40 +54,39 @@ You MUST return only RAW JSON.
 Do NOT use markdown.
 Do NOT wrap the JSON in \`\`\`.
 Your entire response MUST be a valid JSON object.
-`
-
+`;
 
 export async function getGroqAi(text: string) {
-    const chatCompletion = await groq.chat.completions.create({
-        "messages": [
-            {
-                "role": "system",
-                "content": SYSTEM_PROMPT
-            },
+	const chatCompletion = await groq.chat.completions.create({
+		messages: [
+			{
+				role: "system",
+				content: SYSTEM_PROMPT,
+			},
 
-            {
-                "role": "user",
-                "content": text
-            }
-        ],
-        "model": "meta-llama/llama-4-scout-17b-16e-instruct",
-        "temperature": 1,
-        "max_completion_tokens": 2048,
-        "top_p": 1,
-        "stream": false,
-        "response_format": {
-            type: 'json_object'
-        },
-        "stop": null
-    });
+			{
+				role: "user",
+				content: text,
+			},
+		],
+		model: "meta-llama/llama-4-scout-17b-16e-instruct",
+		temperature: 1,
+		max_completion_tokens: 2048,
+		top_p: 1,
+		stream: false,
+		response_format: {
+			type: "json_object",
+		},
+		stop: null,
+	});
 
-    return chatCompletion.choices[0].message.content;
+	return chatCompletion.choices[0].message.content;
 }
 function cleaned(res: string) {
-    const cleaned = res
-        .replace(/```json/g, "")
-        .replace(/```/g, "")
-        .replace(/\r?\n|\r/g, "")
-        .trim();
-    return cleaned;
+	const cleaned = res
+		.replace(/```json/g, "")
+		.replace(/```/g, "")
+		.replace(/\r?\n|\r/g, "")
+		.trim();
+	return cleaned;
 }

@@ -1,4 +1,3 @@
-import webpush from 'web-push';
 import {
 	BeforeInsert,
 	Column,
@@ -13,6 +12,7 @@ import {
 	Unique,
 	UpdateDateColumn,
 } from "typeorm";
+import webpush from "web-push";
 import { ProjectEntity } from "./project.entity";
 import { UserEntity } from "./users.entity";
 
@@ -49,8 +49,8 @@ export class WebsiteEntity {
 	})
 	updated_at!: Date;
 
-	@DeleteDateColumn({nullable: true})
-	deleted_at!: Date|null|null;
+	@DeleteDateColumn({ nullable: true })
+	deleted_at!: Date | null | null;
 
 	@OneToMany(
 		() => ProjectEntity,
@@ -67,7 +67,7 @@ export class WebsiteEntity {
 	@BeforeInsert()
 	insertPingletId() {
 		if (!this.pinglet_id) {
-			const keys = webpush.generateVAPIDKeys()
+			const keys = webpush.generateVAPIDKeys();
 			this.pinglet_id = {
 				publicKey: keys.publicKey,
 				privateKey: keys.privateKey,

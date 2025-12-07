@@ -1,1 +1,1747 @@
-!function(){"use strict";function t(t,e){switch(t.action){case"redirect":case"open":return window.open(t.src,"_blank");case"link":return window.open(t.src);case"alert":return alert(t.src);case"reload":return window.location.reload();case"event":return window.addEventListener(t.src,(()=>{}));case"close":case"dismiss":return window.dispatchEvent(new CustomEvent("pinglet:notificationClosed",{detail:{contentEl:e,reason:"user-dismiss"}}))}return window.open("https://pinglet.enjoys.in/docs","_blank")}function e(e,n,i=[{text:"See Docs",onClick:()=>window.open("https://pinglet.enjoys.in/docs","_blank")}],o="⚠️",s={duration:5e3,auto_dismiss:!0}){const a="toastContainer";let l=document.getElementById(a);l||(l=document.createElement("div"),l.id=a,Object.assign(l.style,{position:"fixed",bottom:"24px",right:"24px",zIndex:"9999",display:"flex",flexDirection:"column",gap:"4px",alignItems:"flex-end",fontFamily:"Manrope, sans-serif"}),document.body.appendChild(l));const r=document.createElement("div");Object.assign(r.style,{background:"#1f1f1f",color:"#fff",padding:"16px 20px",borderRadius:"12px",boxShadow:"0 6px 18px rgba(0, 0, 0, 0.25)",fontFamily:"'Inter', sans-serif",minWidth:"260px",maxWidth:"340px",opacity:"0",transform:"translateX(100%)",transition:"opacity 0.3s ease, transform 0.3s ease",display:"flex",flexDirection:"column",gap:"10px",fontFamily:"Manrope, sans-serif"});const c=document.createElement("div");Object.assign(c.style,{display:"flex",alignItems:"center",gap:"10px",fontSize:"16px",fontWeight:"600",fontFamily:"Manrope, sans-serif"});const d=document.createElement("div");d.textContent=o;const p=document.createElement("div");if(p.textContent=e,c.appendChild(d),c.appendChild(p),r.appendChild(c),n){const t=document.createElement("div");t.textContent=n,Object.assign(t.style,{fontSize:"13.5px",fontWeight:"400",color:"#ddd",lineHeight:"1.5"}),r.appendChild(t)}if(Array.isArray(i)&&i.length){const e=document.createElement("div");Object.assign(e.style,{marginTop:"8px",display:"flex",gap:"10px",justifyContent:"flex-start"});for(const n of i){const i=document.createElement("button");if(i.textContent=n.text||"Click Here",Object.assign(i.style,{padding:"8px 14px",background:"#333",color:"#fff",border:"1px solid #444",borderRadius:"6px",fontSize:"13px",cursor:"pointer",transition:"background 0.3s",fontFamily:"Manrope, sans-serif"}),i.onmouseover=()=>i.style.background="#444",i.onmouseout=()=>i.style.background="#333",n?.onClick){const t=new Function(`return ${n.onClick}`)();"function"==typeof t&&i.addEventListener("click",t)}else i.addEventListener("click",(e=>(e.stopPropagation(),t(n,i))));e.appendChild(i)}r.appendChild(e)}const m=document.createElement("div");return m.innerHTML='Notifications by <a href="https://pinglet.enjoys.in" target="_blank" style="color:#4da6ff;text-decoration:none;">Pinglet</a> - Enjoys',Object.assign(m.style,{fontSize:"11px",color:"#999",marginTop:"4px",textAlign:"right",fontFamily:"Manrope, sans-serif"}),l.appendChild(r),l.appendChild(m),requestAnimationFrame((()=>{r.style.opacity="1",r.style.transform="translateX(0)"})),s.auto_dismiss||setTimeout((()=>{r.style.opacity="0",r.style.transform="translateX(100%)",setTimeout((()=>{r.remove(),m.remove()}),500)}),s.duration||5e3),l}const n={duration:3e3,btn1:{color:"#ffffff",backgroundColor:"#007bff",padding:"6px 10px",borderRadius:"6px",fontSize:"14px",fontWeight:"600",border:"none",boxShadow:"0 2px 6px rgba(0,0,0,0.15)"},btn2:{color:"#333333",backgroundColor:"#f0f0f0",padding:"6px 10px",borderRadius:"6px",fontSize:"14px",fontWeight:"600",border:"1px solid #ccc"},title:{color:"#111111",fontSize:"14px",fontWeight:"500",lineHeight:"1.4",margin:"0 0 0 0",textAlign:"left"},description:{color:"#444444",fontSize:"13px",fontWeight:"400",lineHeight:"1.5",margin:"0 0 10px 0",textAlign:"left"},controls:{video:{autoplay:!1,muted:!1,loop:!1,controls:!1},audio:{autoplay:!1,muted:!1,loop:!1,controls:!1}},media:{image:{width:"100%",height:"200px",borderRadius:"6px",objectFit:"cover",margin:"0 0 8px 0"},icon:{width:"24px",height:"24px",margin:"0 8px 0 0",objectFit:"contain"},logo:{width:"50px",height:"50px",margin:"0 8px 0 0",objectFit:"contain"},video:{width:"100%",height:"140px",borderRadius:"6px",objectFit:"cover",margin:"0 0 10px 0"},iframe:{width:"100%",height:"140px",borderRadius:"6px",objectFit:"cover",margin:"0 0 10px 0"},audio:{width:"100%",margin:"8px 0"}}},i={position:"bottom-left",transition:"fade",branding:{show:!0,once:!0,html:'Notifications by <a href="https://pinglet.enjoys.in" style="color:#4da6ff;text-decoration:none;" target="_blank">Pinglet</a> - Enjoys'},sound:{play:!1,src:"https://pinglet.enjoys.in/api/v1/pinglet-sound.mp3?v=1&ext=mp3",volume:.6},duration:2e3,maxVisible:3,stacking:!0,auto_dismiss:!0,dismissible:!0,website:"https://pinglet.enjoys.in",time:!0,favicon:!0,pauseOnHover:!0,theme:{mode:"light",customClass:"",rounded:!0,shadow:!0,border:!1},iconDefaults:{show:!0,size:20,position:"left"},progressBar:{show:!0,color:"#4da6ff",height:3}};let o,s,a=null,l=null,r=null;function c(){o&&(o.currentTime=0,o.play())}function d(t){return l||(l=document.createElement("div"),l.className="pinglet-branding",l.innerHTML=t?.html||'Notifications by <a href="https://pinglet.enjoys.in" class="pinglet-link" target="_blank" style="color:#4da6ff;text-decoration:none;">Pinglet</a>',l.style="\n      font-size: 11px;\n      color: #808080;\n      text-align: right;\n      width: 100%;\n      pointer-events: auto;\n    ",l)}function p(t){if(s&&a)return{toastContainer:s,toastStack:a};const e=document.getElementById("pinglet-widget-container");return e?(s=e,a=s.querySelector(".pinglet-widget-stack"),{toastContainer:s,toastStack:a}):(s=document.createElement("div"),s.id="pinglet-widget-container",s.style.position="fixed",s.style.bottom="20px",s.style.left="20px",s.style.zIndex="9999",s.style.display="flex",s.style.flexDirection="column",s.style.alignItems="flex-start",s.style.gap="8px",s.style.maxWidth="360px",s.style.width="360px",s.style.boxSizing="border-box",s.style.pointerEvents="none",s.style.padding="4px",s.style.borderRadius="8px",a=document.createElement("div"),a.className="pinglet-widget-stack",a.style.display="flex",a.style.flexDirection="column",a.style.gap="12px",a.style.pointerEvents="none",a.style.overflow="visible",a.style.flexShrink="0",s.appendChild(a),t?.show&&t?.once&&s.appendChild(d(t)),document.body.appendChild(s),{toastContainer:s,toastStack:a})}function m(t,e){const n=e.config,{toastContainer:i,toastStack:o}=p(n.branding);var s,a;let r;function c(){n?.auto_dismiss&&(r=setTimeout((()=>{o.contains(t)&&(g("dropped",t,"user doesn't engaged"),f(t,n?.transition||"fade"))}),n.duration||5e3))}return n?.branding?.show&&n?.branding?.once&&i.appendChild(l),s=t,a=n.transition,s.style.opacity="0",s.style.transition="all 0.4s ease","fade"===a?(s.style.transform="translateX(20px)",requestAnimationFrame((()=>{s.style.opacity="1",s.style.transform="translateX(0)"}))):"slide"===a?(s.style.transform="translateX(100%)",requestAnimationFrame((()=>{s.style.opacity="1",s.style.transform="translateX(0)"}))):"zoom"===a?(s.style.transform="scale(0.8)",requestAnimationFrame((()=>{s.style.opacity="1",s.style.transform="scale(1)"}))):s.style.opacity="1",t.style.pointerEvents="auto",o.appendChild(t),i.addEventListener("mouseenter",(function(){clearTimeout(r)})),i.addEventListener("mouseleave",c),c(),{toastContainer:i,toastStack:o}}function f(t,e){t&&(t.style.transition="all 0.4s ease","fade"===e?(t.style.opacity="0",t.style.transform="translateX(-40px)"):"slide"===e?(t.style.transform="translateX(-100%)",t.style.opacity="0"):"zoom"===e?(t.style.transform="scale(0.8)",t.style.opacity="0"):t.style.opacity="0",t.addEventListener("transitionend",(()=>{t.remove(),a&&0===a.children.length&&l?.remove()}),{once:!0}))}async function g(t,e,n="user-dismiss"){const i=e.getAttribute("data-notification-id"),o=e.getAttribute("data-notification-type")||"0",[s,a]=i.split("-");window.sendNotificationEvent(t,{project_id:s,notification_id:i,timestamp:a,reason:n,type:o})}function u(t=i,e=window.location.hostname,n="just now",o=!1){const s=document.createElement("div");s.className="pinglet-row",Object.assign(s.style,{display:"flex",justifyContent:"space-between",alignItems:"center",background:o?"#1a1a1a":"transparent",fontFamily:"system-ui, sans-serif",fontSize:"10px",padding:"6px 10px",borderBottom:o?"1px solid rgba(255, 255, 255, 0.1)":"1px solid rgba(0, 0, 0, 0.05)",color:o?"#f0f0f0":"#000"});const r=document.createElement("div");r.className="pinglet-left",Object.assign(r.style,{display:"flex",alignItems:"center",gap:"6px",flexGrow:"1"});const c=document.createElement("span");c.className="pinglet-icon",c.textContent="- Pinglet",c.onclick=()=>{window.open("https://pinglet.enjoys.in","_blank")},Object.assign(c.style,{alignItems:"center",color:"dodgerblue",flexShrink:"0",fontWeight:"bold",cursor:"pointer"});const d=document.createElement("span");d.className="pinglet-domain",d.textContent=e,d.style.color=o?"#bbb":"#808080";const p=document.createElement("span");p.className="pinglet-time",p.textContent=`- ${n}`,p.style.color=o?"#ccc":"#aaa";const m=document.createElement("button");return m.className="pinglet-close",m.textContent="✕",Object.assign(m.style,{background:"none",border:"none",fontSize:"12px",cursor:"pointer",color:o?"#aaa":"#888",padding:"0 4px"}),m.addEventListener("mouseenter",(()=>{m.style.color="#f44"})),m.addEventListener("mouseleave",(()=>{m.style.color=o?"#aaa":"#888"})),t?.website&&r.appendChild(d),t?.time&&r.appendChild(p),t?.favicon&&r.appendChild(c),s.appendChild(r),t?.dismissible&&s.appendChild(m),m.addEventListener("click",(t=>{t.stopPropagation(),function(t="pinglet:notificationClosed",e){window.dispatchEvent(new CustomEvent(t,{detail:e}))}("pinglet:notificationClosed",{contentEl:m.parentElement?.parentElement,reason:"user-dismiss"}),a&&0===a.children.length&&l?.remove()})),s}function y(e,i){const o=i.style,s=i.config,a=(s.theme.mode||{})&&window.matchMedia("(prefers-color-scheme: dark)").matches,r=document.createElement("div");r.id="pinglet-variant",r.setAttribute("data-key",`${Date.now()}-${Math.random().toString(36).slice(2,8)}`),r.className=`pinglet-variant pinglet-${e.variant||"default"}`,Object.assign(r.style,{display:"flex",flexDirection:"column",alignItems:"stretch",width:"320px",maxHeight:"calc(100vh - 40px)",borderRadius:"8px",overflowY:"auto",padding:"4px",gap:"4px",pointerEvents:"none",overflow:"visible",flexShrink:"0",boxShadow:a?"0 2px 8px rgba(0,0,0,0.6)":"0 2px 8px rgba(0,0,0,0.1)",backgroundColor:a?"#1e1e1e":"whitesmoke",color:a?"#f0f0f0":"#000"}),r.appendChild(u(s,window.location.hostname,"just now",a));let d=null;const p="icon"in e||"logo"in e;if(e.media?.type&&(d=function(t,e,i){switch(t.type){case"image":{const i=document.createElement("img");return i.src=t.src,Object.assign(i.style,e?.image||n.media.image),i}case"video":{const o=document.createElement("video");return o.src=t.src,o.autoplay=i?.video?.autoplay||n.controls.video.autoplay||!1,o.muted=i?.video?.muted||n.controls.video.muted||!1,o.loop=i?.video?.loop||n.controls.video.loop||!1,o.controls=i?.video?.controls||n.controls.video.controls||!1,o.style=e?.video||n.media.video,Object.assign(o.style,e?.video||n.media.video),o}case"audio":return function(t,e,n,i){const o=document.createElement("div");Object.assign(o.style,{maxWidth:"auto",padding:"16px",borderRadius:"20px 20px 6px 20px",background:"#fff",boxShadow:"0 8px 32px rgba(0,0,0,0.12)",position:"relative",fontFamily:"Segoe UI, sans-serif"});const s=document.createElement("div");Object.assign(s.style,{position:"absolute",bottom:"6px",right:"-6px",width:"0",height:"0",borderLeft:"8px solid #ffffff",borderBottom:"8px solid transparent"}),o.appendChild(s);const a=document.createElement("audio");a.src=t,a.autoplay=!0,a.muted=e,a.loop=n,a.controls=i,o.appendChild(a);const l=document.createElement("div");Object.assign(l.style,{display:"flex",alignItems:"center",gap:"14px"});const r=document.createElement("button");r.textContent="▶",Object.assign(r.style,{background:"linear-gradient(135deg, #667eea 0%, #764ba2 100%)",border:"none",borderRadius:"50%",color:"white",width:"44px",height:"44px",fontSize:"18px",cursor:"pointer",flexShrink:"0",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 4px 16px rgba(102, 126, 234, 0.4)",transition:"transform 0.3s ease"}),l.appendChild(r);const c=document.createElement("div");Object.assign(c.style,{flex:"1",display:"flex",flexDirection:"column",gap:"8px"});const d=document.createElement("div");Object.assign(d.style,{display:"flex",alignItems:"center",justifyContent:"space-between",height:"32px",padding:"0 4px"});const p=[];for(let t=0;t<20;t++){const e=document.createElement("div");Object.assign(e.style,{width:"4px",background:"linear-gradient(to top, #667eea, #764ba2)",borderRadius:"2px",transition:"all 0.3s ease",height:8+t%5*4+"px",animation:"wave 1.5s infinite ease-in-out",animationDelay:t%5*.15+"s",animationPlayState:"paused"}),p.push(e),d.appendChild(e)}c.appendChild(d);const m=document.createElement("div");Object.assign(m.style,{display:"flex",justifyContent:"space-between",alignItems:"center",fontSize:"13px",color:"#666"});const f=document.createElement("div");f.textContent="Voice message",f.style.fontSize="12px",f.style.color="#888";const g=document.createElement("div");g.textContent="0:00",Object.assign(g.style,{fontWeight:"500",color:"#667eea"}),m.appendChild(f),m.appendChild(g),c.appendChild(m),l.appendChild(c),o.appendChild(l);const u=document.createElement("style");function y(t){return`${Math.floor(t/60)}:${Math.floor(t%60).toString().padStart(2,"0")}`}return u.textContent="\n    @keyframes wave {\n      0%, 100% { opacity: 0.3; transform: scaleY(0.5); }\n      50% { opacity: 1; transform: scaleY(1); }\n    }\n  ",document.head.appendChild(u),a.addEventListener("loadedmetadata",(()=>{g.textContent=y(a.duration)})),a.addEventListener("timeupdate",(()=>{g.textContent=y(a.currentTime)})),r.addEventListener("click",(()=>{a.paused?(a.play(),r.textContent="⏸",p.forEach((t=>t.style.animationPlayState="running"))):(a.pause(),r.textContent="▶",p.forEach((t=>t.style.animationPlayState="paused")))})),a.addEventListener("ended",(()=>{r.textContent="▶",p.forEach((t=>t.style.animationPlayState="paused")),a.currentTime=0})),o}(t.src,i?.audio?.muted||n.controls?.audio.muted||!1,i?.audio?.loop||n.controls?.audio?.loop||!1,i?.audio?.controls||n.controls?.audio?.controls||!1);default:return null}}(e.media,o.media,o.controls),d.style.marginBottom="12px"),d&&r.appendChild(d),p){const t=document.createElement("div");Object.assign(t.style,{display:"flex",flexDirection:"row",alignItems:"flex-start",gap:"6px"});const s=document.createElement("div");Object.assign(s.style,{flex:"0 0 auto"});const l=function(t,e,i){if("logo"===t){const t=document.createElement("img");return t.src=e,Object.assign(t.style,i?.logo||n.media.logo),t}if("icon"===t){const t=document.createElement("span");if("string"==typeof e){const n=/^data:image\/(png|jpeg|gif|webp);base64,/.test(e),i=/^<svg[\s\S]*<\/svg>$/.test(e.trim());n?(t.style.backgroundImage=`url('${e}')`,t.style.backgroundSize="cover",t.textContent=""):i?t.innerHTML=e:t.textContent=e}return t.className="pinglet-icon",Object.assign(t.style,{width:"40px",height:"40px",display:"inline-flex",alignItems:"center",justifyContent:"center",backgroundPosition:"center",borderRadius:"8px",fontSize:"24px",overflow:"hidden"}),t}return null}("icon"in e?"icon":"logo",e?.icon||e?.logo,i.style.media);l&&s.appendChild(l),t.appendChild(s);const c=document.createElement("div");if(Object.assign(c.style,{display:"flex",flexDirection:"column",flex:"1"}),e.title){const t=document.createElement("div");t.className="pinglet-title",t.innerText=e.title,Object.assign(t.style,{...o.title||n.title,color:a?"#ffffff":"#000000"}),c.appendChild(t)}if(e.description){const t=document.createElement("p");t.className="pinglet-desc",t.innerText=e.description,Object.assign(t.style,{...o.description||n.description,color:a?"#dddddd":"#333333"}),c.appendChild(t)}t.appendChild(c),r.appendChild(t)}else{if(e.title){const t=document.createElement("div");t.className="pinglet-title",t.innerText=e.title,Object.assign(t.style,{...o.title||n.title,color:a?"#ffffff":"#000000"}),r.appendChild(t)}if(e.description){const t=document.createElement("p");t.className="pinglet-desc",t.innerText=e.description,Object.assign(t.style,{...o.description||n.description,color:a?"#dddddd":"#333333"}),r.appendChild(t)}}if(e.buttons){const n=document.createElement("div");n.className="pinglet-buttons",n.style.fontFamily="Manrope",e.buttons.forEach(((e,i)=>{const s=document.createElement("button");if(s.innerText=e.text,s.className="pinglet-btn",Object.assign(s.style,{cursor:"pointer",padding:"6px 10px",fontFamily:"Manrope, sans-serif",margin:"1px 4px",color:a?"#f0f0f0":"#000",backgroundColor:a?"#333":"#f0f0f0",border:"none",borderRadius:"4px"}),Object.assign(s.style,0===i?o.btn1:o.btn2),e?.onClick){const t=new Function(`return ${e.onClick}`)();"function"==typeof t&&s.addEventListener("click",t)}else s.addEventListener("click",(n=>(n.stopPropagation(),t(e,r))));n.appendChild(s)})),r.appendChild(n)}return s.sound?.play&&c(),!l||r.contains(l)||s.branding?.once||r.appendChild(l),r}function x(t){const e=(t+"=".repeat((4-t.length%4)%4)).replace(/\-/g,"+").replace(/_/g,"/"),n=window.atob(e);return Uint8Array.from([...n].map((t=>t.charCodeAt(0))))}function h(t,n,i){"Notification"in window?"granted"===Notification.permission||function(t={}){const{title:e="Stay updated with notifications",description:n="Get notified about important updates, new features, and exclusive content. We'll only send you valuable notifications.",site:i=window.location.hostname,onAllow:o=()=>{},onDeny:s=()=>{}}=t,a=document.createElement("div");a.className="notification-dialog",Object.assign(a.style,{position:"fixed",bottom:"24px",right:"24px",width:"380px",background:"#fff",borderRadius:"16px",boxShadow:"0 20px 40px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255,255,255,0.1)",zIndex:"1000",overflow:"hidden",transform:"translateX(420px)",animation:"slideIn 0.6s ease-out 1s forwards",fontFamily:"-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"});const l=document.createElement("style");l.textContent="\n        @keyframes slideIn { to { transform: translateX(0); } }\n        @keyframes pulse {\n            0%, 100% { box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); }\n            50% { box-shadow: 0 4px 20px rgba(102, 126, 234, 0.5); }\n        }\n        @media (max-width: 480px) {\n            .notification-dialog {\n                width: calc(100vw - 32px) !important;\n                right: 16px !important;\n                bottom: 16px !important;\n                transform: translateY(420px) !important;\n            }\n            @keyframes slideIn { to { transform: translateY(0); } }\n        }\n    ",document.head.appendChild(l);const r=document.createElement("div");r.style.display="flex",r.style.justifyContent="space-between",r.style.padding="20px 20px 0 20px";const c=document.createElement("div");c.style.display="flex",c.style.alignItems="center",c.style.gap="8px",c.style.color="#6b7280",c.style.fontSize="14px",c.style.fontWeight="500";const d=document.createElement("div");d.style.width="16px",d.style.height="16px",d.style.borderRadius="4px",d.style.background="linear-gradient(135deg, #667eea 0%, #764ba2 100%)",d.style.display="flex",d.style.alignItems="center",d.style.justifyContent="center",d.innerHTML='<svg viewBox="0 0 16 16" fill="white" width="10" height="10"><path d="M8 0C3.58 0 0 3.58 0 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8z"/></svg>';const p=document.createElement("span");p.textContent=i,c.append(d,p);const m=document.createElement("button");m.innerHTML='<svg viewBox="0 0 16 16" fill="currentColor" width="12" height="12">\n        <path d="M12.854 4.854a.5.5 0 0 0-.708-.708L8 8.293 3.854 4.146a.5.5 0 1 0-.708.708L7.293 9l-4.147 4.146a.5.5 0 0 0 .708.708L8 9.707l4.146 4.147a.5.5 0 0 0 .708-.708L8.707 9l4.147-4.146z"/>\n    </svg>',Object.assign(m.style,{width:"24px",height:"24px",background:"#f3f4f6",border:"none",borderRadius:"6px",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"#6b7280"}),m.onclick=()=>a.remove(),r.append(c,m);const f=document.createElement("div");f.style.padding="16px 24px 24px 24px";const g=document.createElement("div");g.style.width="48px",g.style.height="48px",g.style.borderRadius="12px",g.style.marginBottom="16px",g.style.animation="pulse 2s infinite",g.style.background="linear-gradient(135deg, #667eea 0%, #764ba2 100%)",g.style.display="flex",g.style.alignItems="center",g.style.justifyContent="center",g.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="24" height="24">\n        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>\n    </svg>';const u=document.createElement("h3");u.textContent=e,Object.assign(u.style,{fontSize:"18px",fontWeight:"600",color:"#111827",marginBottom:"8px"});const y=document.createElement("p");y.textContent=n,Object.assign(y.style,{fontSize:"14px",color:"#6b7280",lineHeight:"1.5",marginBottom:"20px"});const x=document.createElement("div");x.style.display="flex",x.style.gap="8px";const h=document.createElement("button");h.textContent="Not now",Object.assign(h.style,{flex:1,padding:"10px 16px",borderRadius:"8px",fontSize:"14px",fontWeight:"500",border:"1px solid #e5e7eb",background:"#f9fafb",color:"#6b7280",cursor:"pointer"}),h.onclick=()=>{s(),a.remove()};const b=document.createElement("button");b.textContent="Allow notifications",Object.assign(b.style,{flex:1,padding:"10px 16px",borderRadius:"8px",fontSize:"14px",fontWeight:"500",border:"none",background:"linear-gradient(135deg, #667eea 0%, #764ba2 100%)",color:"#fff",boxShadow:"0 2px 8px rgba(102, 126, 234, 0.3)",cursor:"pointer"}),b.onclick=()=>{o(),a.remove()},x.append(h,b);const w=document.createElement("div");w.style.marginTop="12px",w.style.display="flex",w.style.alignItems="center",w.style.justifyContent="center",w.style.gap="6px",w.style.color="#9ca3af",w.style.fontSize="12px",w.innerHTML='<svg viewBox="0 0 16 16" fill="currentColor" width="12" height="12"><path d="M8 0c-.69 0-1.843.265-2.928.56-1.11.3-2.229.655-2.887.87a1.54 1.54 0 0 0-1.044 1.262c-.596 4.477.787 7.795 2.465 9.99a11.777 11.777 0 0 0 2.517 2.453c.386.273.744.482 1.048.625.28.132.581.24.829.24s.548-.108.829-.24a7.159 7.159 0 0 0 1.048-.625 11.775 11.775 0 0 0 2.517-2.453c1.678-2.195 3.061-5.513 2.465-9.99a1.541 1.541 0 0 0-1.044-1.263 62.467 62.467 0 0 0-2.887-.87C9.843.266 8.69 0 8 0z"/></svg><span>Secure & private • Unsubscribe anytime</span>',f.append(g,u,y,x,w),a.append(r,f),document.body.appendChild(a)}({site:window.location.hostname,onAllow:()=>{Notification.requestPermission().then((async o=>"granted"===o?async function(t,n,i){try{const o=await navigator.serviceWorker.register(t+"/sw.js");if(await o.pushManager.getSubscription())return;const s=await o.pushManager.subscribe({userVisibleOnly:!0,applicationServerKey:x(i)}),a=await fetch(`${t}/subscribe?projectId=${n}`,{method:"POST",body:JSON.stringify(s),headers:{"Content-Type":"application/json"},credentials:"omit"}),l=await a.json();if(l.success)return localStorage.getItem("subscription")?void 0:(localStorage.setItem("subscription","true"),e("Notifications Enabled","You can now receive notifications from this site.",[{text:"See Demo",onClick:'()=>{\n                 new Notification("Pinglet", {\n                   body: "This is a demo notification",\n                   icon: "https://pinglet.enjoys.in/favicon.ico"\n                 }).onclick = () => {\n                   window.open("https://pinglet.enjoys.in", "_blank");\n                 })  \n                }'}],"🎉"));e("Something Went Wrong",l.message,[],"❌")}catch(t){}}(t,n,i):e("Permission Denied","You blocked notifications!",[],"😭"))).catch((t=>e("Permission Error","Error requesting notification permission:",[],"😭")))},onDeny:()=>e("Permission Denied","You blocked notifications!",[],"❌")}):e("Unsupported Browser","Notifications not supported.",[],"🚫")}window.addEventListener("pinglet:notificationClosed",(t=>{g("closed",t.detail.contentEl,t.detail.reason),f(t.detail.contentEl,"fade")}));let b=!1;async function w(t,e){(await self.clients.matchAll({type:"window",includeUncontrolled:!0})).forEach((n=>{n.postMessage({type:"CUSTOM_NOTIFICATION_EVENT",eventName:t,payload:e})}))}async function v(t,e){"project_id"in e&&await fetch("https://pinglet.enjoys.in/api/v1/log/event",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...e,event:t})})}function E(t,e){const n=new CustomEvent(`notification:${t}`,{detail:e});document.dispatchEvent(n)}function C(t,e){document.addEventListener(`notification:${t}`,(t=>{e(t.detail)}))}async function k(t,e){"project_id"in e&&await fetch("https://pinglet.enjoys.in/api/v1/log/track",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...e,event:t}),credentials:"omit"})}self.addEventListener("install",(t=>{self.skipWaiting()})),self.addEventListener("activate",(t=>{clients.claim()})),self.addEventListener("push",(async t=>{if(console.log("[Service Worker] Push Received."),!t.data)return;const e=t.data?.json?.()||{},n={body:e?.body,icon:e?.icon,badge:e?.badge,tag:e?.tag,requireInteraction:e?.requireInteraction||!0,silent:e?.silent||!1,data:e?.data,actions:e?.actions,image:e?.image,timestamp:Date.now(),vibrate:[200,100,200]};e.data&&e.data.duration&&setTimeout((()=>{self.registration.getNotifications({tag:e.tag}).then((async t=>{const n=await self.clients.matchAll({type:"window",includeUncontrolled:!0});t.forEach((t=>{n.length>0?w("dropped",{...e?.data,notificationTag:t.tag,timestamp:Date.now()}):v("dropped",{...e?.data,notificationTag:t.tag,timestamp:Date.now()}),t.close()}))}))}),e.data?.duration||5e3);const i=await self.clients.matchAll({type:"window",includeUncontrolled:!0});b=i.length>0,t.waitUntil(self.registration.showNotification(e.title,n))})),self.addEventListener("notificationclick",(t=>{t.notification.close();const e=t.notification.data||{},n=t.action;if(n&&e.actionEvents&&e.actionEvents[n]){const i=e.actionEvents[n];async function o(t,e,n){const{eventName:i,eventData:o,url:s,windowAction:a}=t;try{if(b?n.waitUntil(w(i,{...o,notificationTag:n.notification.tag,timestamp:Date.now()})):n.waitUntil(v("clicked",{...e,notificationTag:n.notification.tag,timestamp:Date.now()})),"open"===a&&s)await clients.openWindow(s);else if("focus"===a){const t=await clients.matchAll({type:"window"});t.length>0?await t[0].focus():s&&await clients.openWindow(s)}}catch(t){}}t.waitUntil(o(i,e,t))}else{if("dismiss"===t.action)return b?t.waitUntil(w("closed",{...e,notificationTag:t.notification.tag,timestamp:Date.now()})):t.waitUntil(v("closed",{...eventData,notificationTag:t.notification.tag,timestamp:Date.now()})),t.notification.close();if("url"in e){const s=e.url;t.waitUntil(clients.openWindow(s))}b?t.waitUntil(w("clicked",{...e,notificationTag:t.notification.tag,timestamp:Date.now()})):t.waitUntil(v("clicked",{...eventData,notificationTag:t.notification.tag,timestamp:Date.now()}))}})),self.addEventListener("notificationclose",(t=>{console.log("Notification closed:",t.notification.tag)})),window.notificationEventHandlers={},"serviceWorker"in navigator&&navigator.serviceWorker.addEventListener("message",(t=>{const{type:e,eventName:n,payload:i}=t.data;"CUSTOM_NOTIFICATION_EVENT"===e&&E(n,i)})),window.sendNotificationEvent=E,C("clicked",(t=>k("clicked",t))),C("dropped",(t=>k("dropped",t))),C("closed",(t=>k("closed",t)));const j={autoCloseDelay:1e4,brandingText:"Powered by Enjoys",brandingPosition:"right",defaultClass:"pinglet-wigdet-wrapper",spacing:2,maxVisible:3,side:"right"},S=document.createElement("style");function I(t,e){let n=document.getElementById(t);return n||(n=document.createElement("div"),n.id=t,n.style.position="fixed",n.style.zIndex="9999",n.style.display="flex",n.style.flexDirection="column-reverse",n.style.gap=j.spacing+"px",n.style.pointerEvents="none",n.style.bottom="20px",n.classList.add(j.defaultClass),"left"===e?n.style.left="20px":n.style.right="20px",document.body.appendChild(n)),n}S.innerHTML="\n@keyframes slideIn {\n  from { opacity: 0; transform: translateY(40px); }\n  to { opacity: 1; transform: translateY(0); }\n}\n@keyframes slideOut {\n  from { opacity: 1; transform: translateY(0); }\n  to { opacity: 0; transform: translateY(40px); }\n}",document.head.appendChild(S);const O=I("container-right","right"),T=I("container-left","left"),L={left:[],right:[]},N={left:[],right:[]};function z(t=[],e={}){const n={...j,...e},i=document.createElement("div");i.style.position="relative",i.style.width="300px",i.style.borderRadius="10px",i.style.boxShadow="0 4px 12px rgba(0,0,0,0.15)",i.style.backgroundColor="#fff",i.style.transition="transform 0.3s ease, opacity 0.3s ease",i.style.animation="slideIn 0.4s forwards",i.style.pointerEvents="all",i.id="pinglet-custom-wrapper",t.forEach((t=>i.appendChild(t)));const o=document.createElement("button");o.innerText="×",Object.assign(o.style,{position:"absolute",top:"-10px",right:"-10px",width:"25px",height:"25px",borderRadius:"50%",border:"none",backgroundColor:"#f00",color:"#fff",fontSize:"16px",fontWeight:"bold",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 2px 4px rgba(0,0,0,0.2)"}),o.addEventListener("click",(async t=>{t.stopPropagation(),r(),g("closed",i),P(i,n.side)})),i.appendChild(o);const s=document.createElement("div");let a;function l(){a=setTimeout((()=>{(T.contains(i)||O.contains(i))&&g("dropped",i,"user doesn't interact"),P(i,n.side)}),n.autoCloseDelay)}function r(){clearTimeout(a)}return s.innerText=n.brandingText,Object.assign(s.style,{position:"absolute",bottom:"5px",fontSize:"12px",color:"#666"}),s.style[n.brandingPosition]="10px",i.appendChild(s),i.addEventListener("mouseenter",r),i.addEventListener("mouseleave",l),l(),L[n.side].push(i),D(n.side),i}function D(t){const e="left"===t?T:O;for(;N[t].length<j.maxVisible&&L[t].length>0;){const n=L[t].shift();e.appendChild(n),N[t].push(n)}}function P(t,e){t.style.animation="slideOut 0.4s forwards",t.addEventListener("animationend",(()=>{t.remove();const n=N[e].indexOf(t);-1!==n&&N[e].splice(n,1),D(e)}))}const M=Array.from(document.scripts).find((t=>t.src.includes("pinglet-sse")&&t.dataset.endpoint))||document.currentScript,_=M?.dataset.endpoint,W=M?.dataset.configuredDomain,A=M?.dataset.projectId,R=M?.dataset.pingletId,F=M?.dataset.checksum,$=M?.dataset.testimonials,X=M?.dataset.templates;(async t=>{if(t.projectId=A,t.PingletWidget)return void console.warn("PingletNotification is already initialized.");!function(){const t=document.createElement("link");t.rel="stylesheet",t.href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap",document.head.appendChild(t);const e=document.createElement("style");e.innerHTML='\n    [class^="pinglet-"],\n    [class*=" pinglet-"] {\n      font-family: \'Manrope\', sans-serif !important;\n      font-weight: 400 !important;\n    }\n  ',document.head.appendChild(e)}(),h(_,A,R),$&&function(){const t=document.getElementById("pinglet-testimonials");if(t)return t;const n=document.createElement("div");n.className="pinglet-floating-btn",n.style.position="fixed",n.style.bottom="30px",n.style.right="30px",n.style.display="flex",n.style.alignItems="center",n.style.background="#667EEA",n.style.borderRadius="50px",n.style.padding="0",n.style.cursor="pointer",n.style.boxShadow="0 4px 14px 0 rgba(102, 126, 234, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05)",n.style.transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",n.style.overflow="hidden",n.style.width="24px",n.style.height="24px",n.style.zIndex="1000",n.style.backdropFilter="blur(10px)",n.style.border="1px solid rgba(255, 255, 255, 0.1)";const i=document.createElement("div");i.textContent="❔",i.className="icon",i.style.fontSize="20px",i.style.display="flex",i.style.alignItems="center",i.style.justifyContent="center",i.style.transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",i.style.width="24px",i.style.height="24px",i.style.flexShrink="0",i.style.color="white";const o=document.createElement("span");o.textContent="View",o.className="label",o.style.color="white",o.style.fontWeight="500",o.style.fontSize="14px",o.style.marginLeft="8px",o.style.marginRight="16px",o.style.opacity="0",o.style.transform="translateX(-8px)",o.style.transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",o.style.whiteSpace="nowrap",o.style.letterSpacing="0.025em",n.appendChild(i),n.appendChild(o),document.body.appendChild(n),n.addEventListener("mouseenter",(()=>{n.style.width="100px",n.style.borderRadius="28px",n.style.boxShadow="0 8px 25px 0 rgba(102, 126, 234, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.1)",n.style.transform="translateY(-2px)",o.style.opacity="1",o.style.transform="translateX(0)",i.style.transform="scale(1.05)"})),n.addEventListener("mouseleave",(()=>{n.style.width="40px",n.style.height="40px",n.style.borderRadius="50px",n.style.boxShadow="0 4px 14px 0 rgba(102, 126, 234, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05)",n.style.transform="translateY(0)",o.style.opacity="0",o.style.transform="translateX(-8px)",i.style.transform="scale(1)"})),n.addEventListener("mousedown",(()=>{n.style.transform="translateY(0) scale(0.98)",n.style.boxShadow="0 2px 8px 0 rgba(102, 126, 234, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05)"})),n.addEventListener("mouseup",(()=>{n.style.transform="translateY(-2px)",n.style.boxShadow="0 8px 25px 0 rgba(102, 126, 234, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.1)"})),o.addEventListener("click",(()=>{e("Testimonials Error","There was an error loading testimonials. Please try again later. If the issue persists, please contact support.",[],"❌")}));const s=()=>{window.innerWidth<=768?(n.style.bottom="16px",n.style.right="16px",n.style.width="48px",n.style.height="48px",i.style.width="48px",i.style.height="48px",i.style.fontSize="18px",o.style.fontSize="13px",o.style.marginLeft="6px",o.style.marginRight="12px"):(n.style.bottom="30px",n.style.right="30px",n.style.width="40px",n.style.height="40px",i.style.width="40px",i.style.height="40px",i.style.fontSize="20px",o.style.fontSize="14px",o.style.marginLeft="8px",o.style.marginRight="16px")};s(),window.addEventListener("resize",s)}();const s={version:"1.1.4",checksum:F.replace("sha384-",""),async init({endpoint:t,configuredDomain:s,projectId:a,pingletId:l}){if(console.log("%cPingletWidget initialized successfully.","color: #1e90ff; font-weight: bold;",this.version),!X)return e("Configuration Error","Missing templatesIds.",[{text:"Retry",action:"reload"},{text:"See Docs",action:"redirect",src:"https://pinglet.enjoys.in/docs"}],"❌"),console.error("Missing templatesIds.");if(!l)return e("Configuration Error","Missing Pinglet ID.",[{text:"Retry",action:"reload"},{text:"See Docs",action:"redirect",src:"https://pinglet.enjoys.in/docs"}],"❌"),console.error("Missing pingletId.");if(!t)return e("Configuration Error","Missing Endpoint.",[{text:"Retry",action:"reload"},{text:"See Docs",action:"redirect",src:"https://pinglet.enjoys.in/docs"}],"❌"),console.error("Missing pingletId.");if("1.1.3"!==this.version)return e("Pinglet Unsupported Version",`PingletWidget version ${this.version} is not supported. Please update to the latest version.`,[{text:"See Docs",actions:"redirect",src:"https://pinglet.enjoys.in/docs"}],"⚠️"),void console.warn("Unsupported version detected.");if(!this.checksum||!F)return e("Configuration Error","Missing checksum.");const p=await fetch(`${t}/load/projects?projectId=${a}&domain=${s}`,{headers:{"X-Project-ID":a,"X-Timestamp":Date.now(),"X-Pinglet-Signature":l,"X-Pinglet-Checksum":this.checksum,"X-Pinglet-Version":this.version,"X-Configured-Domain":s,"X-Pinglet-Id":l},credentials:"omit"}),f=await p.json();if(!f||!f.success)return e("Configuration Error",`Failed to load configuration for PingletWidget. ${f.message||"Unknown error"}`,[{text:"Retry",action:"reload"},{text:"See Docs",action:"redirect",src:"https://pinglet.enjoys.in/docs"}],"❌"),console.error("Failed to load configuration for PingletWidget.");d(f.result.config.branding);let u=await async function(t,e,n,i,o,s){const a=await fetch(`${t}/load/templates?projectId=${e}&templatesIds=${s}`,{headers:{"X-Project-ID":e,"X-Timestamp":Date.now(),"X-Pinglet-Signature":n,"X-Pinglet-Checksum":i,"X-Pinglet-Version":o},credentials:"omit"}),l=await a.json();return l&&l.success?l.result:null}(t,a,l,this.checksum,this.version,X);u||e("Configuration Error","Failed to load templates for PingletWidget.");const x={is_tff:f.result?.is_premium??!1,templates:Object.assign({},{default:{compiled_text:e.toString(),config:i,is_active:!0,is_default:!0}},u),style:Object.assign({},n,f.result.template?.config),config:Object.assign({},i,f.result.config)};!function(t){if(o)return o;t.config.sound?.play&&t.config.sound.src&&(r=t.config.sound.src,o=new Audio(r||t.config.sound.src),o.volume=t.config.sound.volume??.5)}(x);new EventSource(`${t}/sse?projectId=${a}&pingletId=${l}`,{withCredentials:!1}).onmessage=t=>{const e=JSON.parse(t.data),n=e.data;if(x?.is_tff&&Object.assign(x.config,x.config,n?.overrides??{}),"1"===e?.type&&e?.template_id&&e?.custom_template){const t=x.templates[e.template_id];if(!t||0===t.compiled_text.length)return console.log("Template not found");const n=new Function("return "+t.compiled_text?.trim())()(e?.custom_template);let i;return x.config.sound&&c(),i=Array.isArray(n)?z(n,{side:"left"}):z([n],{side:"left"}),i.setAttribute("data-notification-id",`${e?.project_id||a}-${Date.now()}`),i.setAttribute("data-notification-type",e?.type||"1"),void i.addEventListener("click",(()=>{g("clicked",i,"user clicked"),e.custom_template.url&&window.open(e.custom_template.url,"_blank")}))}if("0"===e?.type&&e?.body){const t=y(e.body,x);t.setAttribute("data-notification-id",`${e?.project_id||a}-${Date.now()}`),t.setAttribute("data-notification-type",e?.type||"0");const{toastContainer:n}=m(t,x);"url"in e.body&&n.addEventListener("click",(()=>{g("clicked",t,"user clicked"),t.remove(),window.open(e.body.url,"_blank")}))}else e&&"-1"===e?.type&&function(t,e,n){new Notification(t,{badge:"🎉",body:e,actions:[{action:"pinglet",title:"Pinglet"}],icon:n,dir:"rtl",lang:"en",silent:!1,tag:"pinglet",vibrate:[100,50,100],requireInteraction:!0}).onclick=()=>{}}(body.title,body.description,body.type?.icon?.src||"")}}};t.PingletWidget=s,s.init({endpoint:_,configuredDomain:W,projectId:A,pingletId:R})})(window)}();
+!(() => {
+	function t(t, e) {
+		switch (t.action) {
+			case "redirect":
+			case "open":
+				return window.open(t.src, "_blank");
+			case "link":
+				return window.open(t.src);
+			case "alert":
+				return alert(t.src);
+			case "reload":
+				return window.location.reload();
+			case "event":
+				return window.addEventListener(t.src, () => {});
+			case "close":
+			case "dismiss":
+				return window.dispatchEvent(
+					new CustomEvent("pinglet:notificationClosed", {
+						detail: { contentEl: e, reason: "user-dismiss" },
+					}),
+				);
+		}
+		return window.open("https://pinglet.enjoys.in/docs", "_blank");
+	}
+	function e(
+		e,
+		n,
+		i = [
+			{
+				text: "See Docs",
+				onClick: () => window.open("https://pinglet.enjoys.in/docs", "_blank"),
+			},
+		],
+		o = "⚠️",
+		s = { duration: 5e3, auto_dismiss: !0 },
+	) {
+		const a = "toastContainer";
+		let l = document.getElementById(a);
+		l ||
+			((l = document.createElement("div")),
+			(l.id = a),
+			Object.assign(l.style, {
+				position: "fixed",
+				bottom: "24px",
+				right: "24px",
+				zIndex: "9999",
+				display: "flex",
+				flexDirection: "column",
+				gap: "4px",
+				alignItems: "flex-end",
+				fontFamily: "Manrope, sans-serif",
+			}),
+			document.body.appendChild(l));
+		const r = document.createElement("div");
+		Object.assign(r.style, {
+			background: "#1f1f1f",
+			color: "#fff",
+			padding: "16px 20px",
+			borderRadius: "12px",
+			boxShadow: "0 6px 18px rgba(0, 0, 0, 0.25)",
+			minWidth: "260px",
+			maxWidth: "340px",
+			opacity: "0",
+			transform: "translateX(100%)",
+			transition: "opacity 0.3s ease, transform 0.3s ease",
+			display: "flex",
+			flexDirection: "column",
+			gap: "10px",
+			fontFamily: "Manrope, sans-serif",
+		});
+		const c = document.createElement("div");
+		Object.assign(c.style, {
+			display: "flex",
+			alignItems: "center",
+			gap: "10px",
+			fontSize: "16px",
+			fontWeight: "600",
+			fontFamily: "Manrope, sans-serif",
+		});
+		const d = document.createElement("div");
+		d.textContent = o;
+		const p = document.createElement("div");
+		if (
+			((p.textContent = e),
+			c.appendChild(d),
+			c.appendChild(p),
+			r.appendChild(c),
+			n)
+		) {
+			const t = document.createElement("div");
+			(t.textContent = n),
+				Object.assign(t.style, {
+					fontSize: "13.5px",
+					fontWeight: "400",
+					color: "#ddd",
+					lineHeight: "1.5",
+				}),
+				r.appendChild(t);
+		}
+		if (Array.isArray(i) && i.length) {
+			const e = document.createElement("div");
+			Object.assign(e.style, {
+				marginTop: "8px",
+				display: "flex",
+				gap: "10px",
+				justifyContent: "flex-start",
+			});
+			for (const n of i) {
+				const i = document.createElement("button");
+				if (
+					((i.textContent = n.text || "Click Here"),
+					Object.assign(i.style, {
+						padding: "8px 14px",
+						background: "#333",
+						color: "#fff",
+						border: "1px solid #444",
+						borderRadius: "6px",
+						fontSize: "13px",
+						cursor: "pointer",
+						transition: "background 0.3s",
+						fontFamily: "Manrope, sans-serif",
+					}),
+					(i.onmouseover = () => (i.style.background = "#444")),
+					(i.onmouseout = () => (i.style.background = "#333")),
+					n?.onClick)
+				) {
+					const t = new Function(`return ${n.onClick}`)();
+					"function" === typeof t && i.addEventListener("click", t);
+				} else
+					i.addEventListener("click", (e) => (e.stopPropagation(), t(n, i)));
+				e.appendChild(i);
+			}
+			r.appendChild(e);
+		}
+		const m = document.createElement("div");
+		return (
+			(m.innerHTML =
+				'Notifications by <a href="https://pinglet.enjoys.in" target="_blank" style="color:#4da6ff;text-decoration:none;">Pinglet</a> - Enjoys'),
+			Object.assign(m.style, {
+				fontSize: "11px",
+				color: "#999",
+				marginTop: "4px",
+				textAlign: "right",
+				fontFamily: "Manrope, sans-serif",
+			}),
+			l.appendChild(r),
+			l.appendChild(m),
+			requestAnimationFrame(() => {
+				(r.style.opacity = "1"), (r.style.transform = "translateX(0)");
+			}),
+			s.auto_dismiss ||
+				setTimeout(() => {
+					(r.style.opacity = "0"),
+						(r.style.transform = "translateX(100%)"),
+						setTimeout(() => {
+							r.remove(), m.remove();
+						}, 500);
+				}, s.duration || 5e3),
+			l
+		);
+	}
+	const n = {
+		duration: 3e3,
+		btn1: {
+			color: "#ffffff",
+			backgroundColor: "#007bff",
+			padding: "6px 10px",
+			borderRadius: "6px",
+			fontSize: "14px",
+			fontWeight: "600",
+			border: "none",
+			boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+		},
+		btn2: {
+			color: "#333333",
+			backgroundColor: "#f0f0f0",
+			padding: "6px 10px",
+			borderRadius: "6px",
+			fontSize: "14px",
+			fontWeight: "600",
+			border: "1px solid #ccc",
+		},
+		title: {
+			color: "#111111",
+			fontSize: "14px",
+			fontWeight: "500",
+			lineHeight: "1.4",
+			margin: "0 0 0 0",
+			textAlign: "left",
+		},
+		description: {
+			color: "#444444",
+			fontSize: "13px",
+			fontWeight: "400",
+			lineHeight: "1.5",
+			margin: "0 0 10px 0",
+			textAlign: "left",
+		},
+		controls: {
+			video: { autoplay: !1, muted: !1, loop: !1, controls: !1 },
+			audio: { autoplay: !1, muted: !1, loop: !1, controls: !1 },
+		},
+		media: {
+			image: {
+				width: "100%",
+				height: "200px",
+				borderRadius: "6px",
+				objectFit: "cover",
+				margin: "0 0 8px 0",
+			},
+			icon: {
+				width: "24px",
+				height: "24px",
+				margin: "0 8px 0 0",
+				objectFit: "contain",
+			},
+			logo: {
+				width: "50px",
+				height: "50px",
+				margin: "0 8px 0 0",
+				objectFit: "contain",
+			},
+			video: {
+				width: "100%",
+				height: "140px",
+				borderRadius: "6px",
+				objectFit: "cover",
+				margin: "0 0 10px 0",
+			},
+			iframe: {
+				width: "100%",
+				height: "140px",
+				borderRadius: "6px",
+				objectFit: "cover",
+				margin: "0 0 10px 0",
+			},
+			audio: { width: "100%", margin: "8px 0" },
+		},
+	};
+	const i = {
+		position: "bottom-left",
+		transition: "fade",
+		branding: {
+			show: !0,
+			once: !0,
+			html: 'Notifications by <a href="https://pinglet.enjoys.in" style="color:#4da6ff;text-decoration:none;" target="_blank">Pinglet</a> - Enjoys',
+		},
+		sound: {
+			play: !1,
+			src: "https://pinglet.enjoys.in/api/v1/pinglet-sound.mp3?v=1&ext=mp3",
+			volume: 0.6,
+		},
+		duration: 2e3,
+		maxVisible: 3,
+		stacking: !0,
+		auto_dismiss: !0,
+		dismissible: !0,
+		website: "https://pinglet.enjoys.in",
+		time: !0,
+		favicon: !0,
+		pauseOnHover: !0,
+		theme: {
+			mode: "light",
+			customClass: "",
+			rounded: !0,
+			shadow: !0,
+			border: !1,
+		},
+		iconDefaults: { show: !0, size: 20, position: "left" },
+		progressBar: { show: !0, color: "#4da6ff", height: 3 },
+	};
+	let o;
+	let s;
+	let a = null;
+	let l = null;
+	let r = null;
+	function c() {
+		o && ((o.currentTime = 0), o.play());
+	}
+	function d(t) {
+		return (
+			l ||
+			((l = document.createElement("div")),
+			(l.className = "pinglet-branding"),
+			(l.innerHTML =
+				t?.html ||
+				'Notifications by <a href="https://pinglet.enjoys.in" class="pinglet-link" target="_blank" style="color:#4da6ff;text-decoration:none;">Pinglet</a>'),
+			(l.style =
+				"\n      font-size: 11px;\n      color: #808080;\n      text-align: right;\n      width: 100%;\n      pointer-events: auto;\n    "),
+			l)
+		);
+	}
+	function p(t) {
+		if (s && a) return { toastContainer: s, toastStack: a };
+		const e = document.getElementById("pinglet-widget-container");
+		return e
+			? ((s = e),
+				(a = s.querySelector(".pinglet-widget-stack")),
+				{ toastContainer: s, toastStack: a })
+			: ((s = document.createElement("div")),
+				(s.id = "pinglet-widget-container"),
+				(s.style.position = "fixed"),
+				(s.style.bottom = "20px"),
+				(s.style.left = "20px"),
+				(s.style.zIndex = "9999"),
+				(s.style.display = "flex"),
+				(s.style.flexDirection = "column"),
+				(s.style.alignItems = "flex-start"),
+				(s.style.gap = "8px"),
+				(s.style.maxWidth = "360px"),
+				(s.style.width = "360px"),
+				(s.style.boxSizing = "border-box"),
+				(s.style.pointerEvents = "none"),
+				(s.style.padding = "4px"),
+				(s.style.borderRadius = "8px"),
+				(a = document.createElement("div")),
+				(a.className = "pinglet-widget-stack"),
+				(a.style.display = "flex"),
+				(a.style.flexDirection = "column"),
+				(a.style.gap = "12px"),
+				(a.style.pointerEvents = "none"),
+				(a.style.overflow = "visible"),
+				(a.style.flexShrink = "0"),
+				s.appendChild(a),
+				t?.show && t?.once && s.appendChild(d(t)),
+				document.body.appendChild(s),
+				{ toastContainer: s, toastStack: a });
+	}
+	function m(t, e) {
+		const n = e.config;
+		const { toastContainer: i, toastStack: o } = p(n.branding);
+		let s;
+		let a;
+		let r;
+		function c() {
+			n?.auto_dismiss &&
+				(r = setTimeout(() => {
+					o.contains(t) &&
+						(g("dropped", t, "user doesn't engaged"),
+						f(t, n?.transition || "fade"));
+				}, n.duration || 5e3));
+		}
+		return (
+			n?.branding?.show && n?.branding?.once && i.appendChild(l),
+			(s = t),
+			(a = n.transition),
+			(s.style.opacity = "0"),
+			(s.style.transition = "all 0.4s ease"),
+			"fade" === a
+				? ((s.style.transform = "translateX(20px)"),
+					requestAnimationFrame(() => {
+						(s.style.opacity = "1"), (s.style.transform = "translateX(0)");
+					}))
+				: "slide" === a
+					? ((s.style.transform = "translateX(100%)"),
+						requestAnimationFrame(() => {
+							(s.style.opacity = "1"), (s.style.transform = "translateX(0)");
+						}))
+					: "zoom" === a
+						? ((s.style.transform = "scale(0.8)"),
+							requestAnimationFrame(() => {
+								(s.style.opacity = "1"), (s.style.transform = "scale(1)");
+							}))
+						: (s.style.opacity = "1"),
+			(t.style.pointerEvents = "auto"),
+			o.appendChild(t),
+			i.addEventListener("mouseenter", () => {
+				clearTimeout(r);
+			}),
+			i.addEventListener("mouseleave", c),
+			c(),
+			{ toastContainer: i, toastStack: o }
+		);
+	}
+	function f(t, e) {
+		t &&
+			((t.style.transition = "all 0.4s ease"),
+			"fade" === e
+				? ((t.style.opacity = "0"), (t.style.transform = "translateX(-40px)"))
+				: "slide" === e
+					? ((t.style.transform = "translateX(-100%)"), (t.style.opacity = "0"))
+					: "zoom" === e
+						? ((t.style.transform = "scale(0.8)"), (t.style.opacity = "0"))
+						: (t.style.opacity = "0"),
+			t.addEventListener(
+				"transitionend",
+				() => {
+					t.remove(), a && 0 === a.children.length && l?.remove();
+				},
+				{ once: !0 },
+			));
+	}
+	async function g(t, e, n = "user-dismiss") {
+		const i = e.getAttribute("data-notification-id");
+		const o = e.getAttribute("data-notification-type") || "0";
+		const [s, a] = i.split("-");
+		window.sendNotificationEvent(t, {
+			project_id: s,
+			notification_id: i,
+			timestamp: a,
+			reason: n,
+			type: o,
+		});
+	}
+	function u(t = i, e = window.location.hostname, n = "just now", o = !1) {
+		const s = document.createElement("div");
+		(s.className = "pinglet-row"),
+			Object.assign(s.style, {
+				display: "flex",
+				justifyContent: "space-between",
+				alignItems: "center",
+				background: o ? "#1a1a1a" : "transparent",
+				fontFamily: "system-ui, sans-serif",
+				fontSize: "10px",
+				padding: "6px 10px",
+				borderBottom: o
+					? "1px solid rgba(255, 255, 255, 0.1)"
+					: "1px solid rgba(0, 0, 0, 0.05)",
+				color: o ? "#f0f0f0" : "#000",
+			});
+		const r = document.createElement("div");
+		(r.className = "pinglet-left"),
+			Object.assign(r.style, {
+				display: "flex",
+				alignItems: "center",
+				gap: "6px",
+				flexGrow: "1",
+			});
+		const c = document.createElement("span");
+		(c.className = "pinglet-icon"),
+			(c.textContent = "- Pinglet"),
+			(c.onclick = () => {
+				window.open("https://pinglet.enjoys.in", "_blank");
+			}),
+			Object.assign(c.style, {
+				alignItems: "center",
+				color: "dodgerblue",
+				flexShrink: "0",
+				fontWeight: "bold",
+				cursor: "pointer",
+			});
+		const d = document.createElement("span");
+		(d.className = "pinglet-domain"),
+			(d.textContent = e),
+			(d.style.color = o ? "#bbb" : "#808080");
+		const p = document.createElement("span");
+		(p.className = "pinglet-time"),
+			(p.textContent = `- ${n}`),
+			(p.style.color = o ? "#ccc" : "#aaa");
+		const m = document.createElement("button");
+		return (
+			(m.className = "pinglet-close"),
+			(m.textContent = "✕"),
+			Object.assign(m.style, {
+				background: "none",
+				border: "none",
+				fontSize: "12px",
+				cursor: "pointer",
+				color: o ? "#aaa" : "#888",
+				padding: "0 4px",
+			}),
+			m.addEventListener("mouseenter", () => {
+				m.style.color = "#f44";
+			}),
+			m.addEventListener("mouseleave", () => {
+				m.style.color = o ? "#aaa" : "#888";
+			}),
+			t?.website && r.appendChild(d),
+			t?.time && r.appendChild(p),
+			t?.favicon && r.appendChild(c),
+			s.appendChild(r),
+			t?.dismissible && s.appendChild(m),
+			m.addEventListener("click", (t) => {
+				t.stopPropagation(),
+					((t, e) => {
+						window.dispatchEvent(new CustomEvent(t, { detail: e }));
+					})("pinglet:notificationClosed", {
+						contentEl: m.parentElement?.parentElement,
+						reason: "user-dismiss",
+					}),
+					a && 0 === a.children.length && l?.remove();
+			}),
+			s
+		);
+	}
+	function y(e, i) {
+		const o = i.style;
+		const s = i.config;
+		const a =
+			(s.theme.mode || {}) &&
+			window.matchMedia("(prefers-color-scheme: dark)").matches;
+		const r = document.createElement("div");
+		(r.id = "pinglet-variant"),
+			r.setAttribute(
+				"data-key",
+				`${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+			),
+			(r.className = `pinglet-variant pinglet-${e.variant || "default"}`),
+			Object.assign(r.style, {
+				display: "flex",
+				flexDirection: "column",
+				alignItems: "stretch",
+				width: "320px",
+				maxHeight: "calc(100vh - 40px)",
+				borderRadius: "8px",
+				overflowY: "auto",
+				padding: "4px",
+				gap: "4px",
+				pointerEvents: "none",
+				overflow: "visible",
+				flexShrink: "0",
+				boxShadow: a
+					? "0 2px 8px rgba(0,0,0,0.6)"
+					: "0 2px 8px rgba(0,0,0,0.1)",
+				backgroundColor: a ? "#1e1e1e" : "whitesmoke",
+				color: a ? "#f0f0f0" : "#000",
+			}),
+			r.appendChild(u(s, window.location.hostname, "just now", a));
+		let d = null;
+		const p = "icon" in e || "logo" in e;
+		if (
+			(e.media?.type &&
+				((d = ((t, e, i) => {
+					switch (t.type) {
+						case "image": {
+							const i = document.createElement("img");
+							return (
+								(i.src = t.src),
+								Object.assign(i.style, e?.image || n.media.image),
+								i
+							);
+						}
+						case "video": {
+							const o = document.createElement("video");
+							return (
+								(o.src = t.src),
+								(o.autoplay =
+									i?.video?.autoplay || n.controls.video.autoplay || !1),
+								(o.muted = i?.video?.muted || n.controls.video.muted || !1),
+								(o.loop = i?.video?.loop || n.controls.video.loop || !1),
+								(o.controls =
+									i?.video?.controls || n.controls.video.controls || !1),
+								(o.style = e?.video || n.media.video),
+								Object.assign(o.style, e?.video || n.media.video),
+								o
+							);
+						}
+						case "audio":
+							return ((t, e, n, i) => {
+								const o = document.createElement("div");
+								Object.assign(o.style, {
+									maxWidth: "auto",
+									padding: "16px",
+									borderRadius: "20px 20px 6px 20px",
+									background: "#fff",
+									boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
+									position: "relative",
+									fontFamily: "Segoe UI, sans-serif",
+								});
+								const s = document.createElement("div");
+								Object.assign(s.style, {
+									position: "absolute",
+									bottom: "6px",
+									right: "-6px",
+									width: "0",
+									height: "0",
+									borderLeft: "8px solid #ffffff",
+									borderBottom: "8px solid transparent",
+								}),
+									o.appendChild(s);
+								const a = document.createElement("audio");
+								(a.src = t),
+									(a.autoplay = !0),
+									(a.muted = e),
+									(a.loop = n),
+									(a.controls = i),
+									o.appendChild(a);
+								const l = document.createElement("div");
+								Object.assign(l.style, {
+									display: "flex",
+									alignItems: "center",
+									gap: "14px",
+								});
+								const r = document.createElement("button");
+								(r.textContent = "▶"),
+									Object.assign(r.style, {
+										background:
+											"linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+										border: "none",
+										borderRadius: "50%",
+										color: "white",
+										width: "44px",
+										height: "44px",
+										fontSize: "18px",
+										cursor: "pointer",
+										flexShrink: "0",
+										display: "flex",
+										alignItems: "center",
+										justifyContent: "center",
+										boxShadow: "0 4px 16px rgba(102, 126, 234, 0.4)",
+										transition: "transform 0.3s ease",
+									}),
+									l.appendChild(r);
+								const c = document.createElement("div");
+								Object.assign(c.style, {
+									flex: "1",
+									display: "flex",
+									flexDirection: "column",
+									gap: "8px",
+								});
+								const d = document.createElement("div");
+								Object.assign(d.style, {
+									display: "flex",
+									alignItems: "center",
+									justifyContent: "space-between",
+									height: "32px",
+									padding: "0 4px",
+								});
+								const p = [];
+								for (let t = 0; t < 20; t++) {
+									const e = document.createElement("div");
+									Object.assign(e.style, {
+										width: "4px",
+										background: "linear-gradient(to top, #667eea, #764ba2)",
+										borderRadius: "2px",
+										transition: "all 0.3s ease",
+										height: `${8 + (t % 5) * 4}px`,
+										animation: "wave 1.5s infinite ease-in-out",
+										animationDelay: `${(t % 5) * 0.15}s`,
+										animationPlayState: "paused",
+									}),
+										p.push(e),
+										d.appendChild(e);
+								}
+								c.appendChild(d);
+								const m = document.createElement("div");
+								Object.assign(m.style, {
+									display: "flex",
+									justifyContent: "space-between",
+									alignItems: "center",
+									fontSize: "13px",
+									color: "#666",
+								});
+								const f = document.createElement("div");
+								(f.textContent = "Voice message"),
+									(f.style.fontSize = "12px"),
+									(f.style.color = "#888");
+								const g = document.createElement("div");
+								(g.textContent = "0:00"),
+									Object.assign(g.style, {
+										fontWeight: "500",
+										color: "#667eea",
+									}),
+									m.appendChild(f),
+									m.appendChild(g),
+									c.appendChild(m),
+									l.appendChild(c),
+									o.appendChild(l);
+								const u = document.createElement("style");
+								function y(t) {
+									return `${Math.floor(t / 60)}:${Math.floor(t % 60)
+										.toString()
+										.padStart(2, "0")}`;
+								}
+								return (
+									(u.textContent =
+										"\n    @keyframes wave {\n      0%, 100% { opacity: 0.3; transform: scaleY(0.5); }\n      50% { opacity: 1; transform: scaleY(1); }\n    }\n  "),
+									document.head.appendChild(u),
+									a.addEventListener("loadedmetadata", () => {
+										g.textContent = y(a.duration);
+									}),
+									a.addEventListener("timeupdate", () => {
+										g.textContent = y(a.currentTime);
+									}),
+									r.addEventListener("click", () => {
+										a.paused
+											? (a.play(),
+												(r.textContent = "⏸"),
+												p.forEach(
+													(t) => (t.style.animationPlayState = "running"),
+												))
+											: (a.pause(),
+												(r.textContent = "▶"),
+												p.forEach(
+													(t) => (t.style.animationPlayState = "paused"),
+												));
+									}),
+									a.addEventListener("ended", () => {
+										(r.textContent = "▶"),
+											p.forEach((t) => (t.style.animationPlayState = "paused")),
+											(a.currentTime = 0);
+									}),
+									o
+								);
+							})(
+								t.src,
+								i?.audio?.muted || n.controls?.audio.muted || !1,
+								i?.audio?.loop || n.controls?.audio?.loop || !1,
+								i?.audio?.controls || n.controls?.audio?.controls || !1,
+							);
+						default:
+							return null;
+					}
+				})(e.media, o.media, o.controls)),
+				(d.style.marginBottom = "12px")),
+			d && r.appendChild(d),
+			p)
+		) {
+			const t = document.createElement("div");
+			Object.assign(t.style, {
+				display: "flex",
+				flexDirection: "row",
+				alignItems: "flex-start",
+				gap: "6px",
+			});
+			const s = document.createElement("div");
+			Object.assign(s.style, { flex: "0 0 auto" });
+			const l = ((t, e, i) => {
+				if ("logo" === t) {
+					const t = document.createElement("img");
+					return (
+						(t.src = e), Object.assign(t.style, i?.logo || n.media.logo), t
+					);
+				}
+				if ("icon" === t) {
+					const t = document.createElement("span");
+					if ("string" === typeof e) {
+						const n = /^data:image\/(png|jpeg|gif|webp);base64,/.test(e);
+						const i = /^<svg[\s\S]*<\/svg>$/.test(e.trim());
+						n
+							? ((t.style.backgroundImage = `url('${e}')`),
+								(t.style.backgroundSize = "cover"),
+								(t.textContent = ""))
+							: i
+								? (t.innerHTML = e)
+								: (t.textContent = e);
+					}
+					return (
+						(t.className = "pinglet-icon"),
+						Object.assign(t.style, {
+							width: "40px",
+							height: "40px",
+							display: "inline-flex",
+							alignItems: "center",
+							justifyContent: "center",
+							backgroundPosition: "center",
+							borderRadius: "8px",
+							fontSize: "24px",
+							overflow: "hidden",
+						}),
+						t
+					);
+				}
+				return null;
+			})("icon" in e ? "icon" : "logo", e?.icon || e?.logo, i.style.media);
+			l && s.appendChild(l), t.appendChild(s);
+			const c = document.createElement("div");
+			if (
+				(Object.assign(c.style, {
+					display: "flex",
+					flexDirection: "column",
+					flex: "1",
+				}),
+				e.title)
+			) {
+				const t = document.createElement("div");
+				(t.className = "pinglet-title"),
+					(t.innerText = e.title),
+					Object.assign(t.style, {
+						...(o.title || n.title),
+						color: a ? "#ffffff" : "#000000",
+					}),
+					c.appendChild(t);
+			}
+			if (e.description) {
+				const t = document.createElement("p");
+				(t.className = "pinglet-desc"),
+					(t.innerText = e.description),
+					Object.assign(t.style, {
+						...(o.description || n.description),
+						color: a ? "#dddddd" : "#333333",
+					}),
+					c.appendChild(t);
+			}
+			t.appendChild(c), r.appendChild(t);
+		} else {
+			if (e.title) {
+				const t = document.createElement("div");
+				(t.className = "pinglet-title"),
+					(t.innerText = e.title),
+					Object.assign(t.style, {
+						...(o.title || n.title),
+						color: a ? "#ffffff" : "#000000",
+					}),
+					r.appendChild(t);
+			}
+			if (e.description) {
+				const t = document.createElement("p");
+				(t.className = "pinglet-desc"),
+					(t.innerText = e.description),
+					Object.assign(t.style, {
+						...(o.description || n.description),
+						color: a ? "#dddddd" : "#333333",
+					}),
+					r.appendChild(t);
+			}
+		}
+		if (e.buttons) {
+			const n = document.createElement("div");
+			(n.className = "pinglet-buttons"),
+				(n.style.fontFamily = "Manrope"),
+				e.buttons.forEach((e, i) => {
+					const s = document.createElement("button");
+					if (
+						((s.innerText = e.text),
+						(s.className = "pinglet-btn"),
+						Object.assign(s.style, {
+							cursor: "pointer",
+							padding: "6px 10px",
+							fontFamily: "Manrope, sans-serif",
+							margin: "1px 4px",
+							color: a ? "#f0f0f0" : "#000",
+							backgroundColor: a ? "#333" : "#f0f0f0",
+							border: "none",
+							borderRadius: "4px",
+						}),
+						Object.assign(s.style, 0 === i ? o.btn1 : o.btn2),
+						e?.onClick)
+					) {
+						const t = new Function(`return ${e.onClick}`)();
+						"function" === typeof t && s.addEventListener("click", t);
+					} else
+						s.addEventListener("click", (n) => (n.stopPropagation(), t(e, r)));
+					n.appendChild(s);
+				}),
+				r.appendChild(n);
+		}
+		return (
+			s.sound?.play && c(),
+			!l || r.contains(l) || s.branding?.once || r.appendChild(l),
+			r
+		);
+	}
+	function x(t) {
+		const e = (t + "=".repeat((4 - (t.length % 4)) % 4))
+			.replace(/\-/g, "+")
+			.replace(/_/g, "/");
+		const n = window.atob(e);
+		return Uint8Array.from([...n].map((t) => t.charCodeAt(0)));
+	}
+	function h(t, n, i) {
+		"Notification" in window
+			? "granted" === Notification.permission ||
+				((t = {}) => {
+					const {
+						title: e = "Stay updated with notifications",
+						description:
+							n = "Get notified about important updates, new features, and exclusive content. We'll only send you valuable notifications.",
+						site: i = window.location.hostname,
+						onAllow: o = () => {},
+						onDeny: s = () => {},
+					} = t;
+					const a = document.createElement("div");
+					(a.className = "notification-dialog"),
+						Object.assign(a.style, {
+							position: "fixed",
+							bottom: "24px",
+							right: "24px",
+							width: "380px",
+							background: "#fff",
+							borderRadius: "16px",
+							boxShadow:
+								"0 20px 40px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255,255,255,0.1)",
+							zIndex: "1000",
+							overflow: "hidden",
+							transform: "translateX(420px)",
+							animation: "slideIn 0.6s ease-out 1s forwards",
+							fontFamily:
+								"-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+						});
+					const l = document.createElement("style");
+					(l.textContent =
+						"\n        @keyframes slideIn { to { transform: translateX(0); } }\n        @keyframes pulse {\n            0%, 100% { box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); }\n            50% { box-shadow: 0 4px 20px rgba(102, 126, 234, 0.5); }\n        }\n        @media (max-width: 480px) {\n            .notification-dialog {\n                width: calc(100vw - 32px) !important;\n                right: 16px !important;\n                bottom: 16px !important;\n                transform: translateY(420px) !important;\n            }\n            @keyframes slideIn { to { transform: translateY(0); } }\n        }\n    "),
+						document.head.appendChild(l);
+					const r = document.createElement("div");
+					(r.style.display = "flex"),
+						(r.style.justifyContent = "space-between"),
+						(r.style.padding = "20px 20px 0 20px");
+					const c = document.createElement("div");
+					(c.style.display = "flex"),
+						(c.style.alignItems = "center"),
+						(c.style.gap = "8px"),
+						(c.style.color = "#6b7280"),
+						(c.style.fontSize = "14px"),
+						(c.style.fontWeight = "500");
+					const d = document.createElement("div");
+					(d.style.width = "16px"),
+						(d.style.height = "16px"),
+						(d.style.borderRadius = "4px"),
+						(d.style.background =
+							"linear-gradient(135deg, #667eea 0%, #764ba2 100%)"),
+						(d.style.display = "flex"),
+						(d.style.alignItems = "center"),
+						(d.style.justifyContent = "center"),
+						(d.innerHTML =
+							'<svg viewBox="0 0 16 16" fill="white" width="10" height="10"><path d="M8 0C3.58 0 0 3.58 0 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8z"/></svg>');
+					const p = document.createElement("span");
+					(p.textContent = i), c.append(d, p);
+					const m = document.createElement("button");
+					(m.innerHTML =
+						'<svg viewBox="0 0 16 16" fill="currentColor" width="12" height="12">\n        <path d="M12.854 4.854a.5.5 0 0 0-.708-.708L8 8.293 3.854 4.146a.5.5 0 1 0-.708.708L7.293 9l-4.147 4.146a.5.5 0 0 0 .708.708L8 9.707l4.146 4.147a.5.5 0 0 0 .708-.708L8.707 9l4.147-4.146z"/>\n    </svg>'),
+						Object.assign(m.style, {
+							width: "24px",
+							height: "24px",
+							background: "#f3f4f6",
+							border: "none",
+							borderRadius: "6px",
+							cursor: "pointer",
+							display: "flex",
+							alignItems: "center",
+							justifyContent: "center",
+							color: "#6b7280",
+						}),
+						(m.onclick = () => a.remove()),
+						r.append(c, m);
+					const f = document.createElement("div");
+					f.style.padding = "16px 24px 24px 24px";
+					const g = document.createElement("div");
+					(g.style.width = "48px"),
+						(g.style.height = "48px"),
+						(g.style.borderRadius = "12px"),
+						(g.style.marginBottom = "16px"),
+						(g.style.animation = "pulse 2s infinite"),
+						(g.style.background =
+							"linear-gradient(135deg, #667eea 0%, #764ba2 100%)"),
+						(g.style.display = "flex"),
+						(g.style.alignItems = "center"),
+						(g.style.justifyContent = "center"),
+						(g.innerHTML =
+							'<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="24" height="24">\n        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>\n    </svg>');
+					const u = document.createElement("h3");
+					(u.textContent = e),
+						Object.assign(u.style, {
+							fontSize: "18px",
+							fontWeight: "600",
+							color: "#111827",
+							marginBottom: "8px",
+						});
+					const y = document.createElement("p");
+					(y.textContent = n),
+						Object.assign(y.style, {
+							fontSize: "14px",
+							color: "#6b7280",
+							lineHeight: "1.5",
+							marginBottom: "20px",
+						});
+					const x = document.createElement("div");
+					(x.style.display = "flex"), (x.style.gap = "8px");
+					const h = document.createElement("button");
+					(h.textContent = "Not now"),
+						Object.assign(h.style, {
+							flex: 1,
+							padding: "10px 16px",
+							borderRadius: "8px",
+							fontSize: "14px",
+							fontWeight: "500",
+							border: "1px solid #e5e7eb",
+							background: "#f9fafb",
+							color: "#6b7280",
+							cursor: "pointer",
+						}),
+						(h.onclick = () => {
+							s(), a.remove();
+						});
+					const b = document.createElement("button");
+					(b.textContent = "Allow notifications"),
+						Object.assign(b.style, {
+							flex: 1,
+							padding: "10px 16px",
+							borderRadius: "8px",
+							fontSize: "14px",
+							fontWeight: "500",
+							border: "none",
+							background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+							color: "#fff",
+							boxShadow: "0 2px 8px rgba(102, 126, 234, 0.3)",
+							cursor: "pointer",
+						}),
+						(b.onclick = () => {
+							o(), a.remove();
+						}),
+						x.append(h, b);
+					const w = document.createElement("div");
+					(w.style.marginTop = "12px"),
+						(w.style.display = "flex"),
+						(w.style.alignItems = "center"),
+						(w.style.justifyContent = "center"),
+						(w.style.gap = "6px"),
+						(w.style.color = "#9ca3af"),
+						(w.style.fontSize = "12px"),
+						(w.innerHTML =
+							'<svg viewBox="0 0 16 16" fill="currentColor" width="12" height="12"><path d="M8 0c-.69 0-1.843.265-2.928.56-1.11.3-2.229.655-2.887.87a1.54 1.54 0 0 0-1.044 1.262c-.596 4.477.787 7.795 2.465 9.99a11.777 11.777 0 0 0 2.517 2.453c.386.273.744.482 1.048.625.28.132.581.24.829.24s.548-.108.829-.24a7.159 7.159 0 0 0 1.048-.625 11.775 11.775 0 0 0 2.517-2.453c1.678-2.195 3.061-5.513 2.465-9.99a1.541 1.541 0 0 0-1.044-1.263 62.467 62.467 0 0 0-2.887-.87C9.843.266 8.69 0 8 0z"/></svg><span>Secure & private • Unsubscribe anytime</span>'),
+						f.append(g, u, y, x, w),
+						a.append(r, f),
+						document.body.appendChild(a);
+				})({
+					site: window.location.hostname,
+					onAllow: () => {
+						Notification.requestPermission()
+							.then(async (o) =>
+								"granted" === o
+									? (async (t, n, i) => {
+											try {
+												const o = await navigator.serviceWorker.register(
+													`${t}/sw.js`,
+												);
+												if (await o.pushManager.getSubscription()) return;
+												const s = await o.pushManager.subscribe({
+													userVisibleOnly: !0,
+													applicationServerKey: x(i),
+												});
+												const a = await fetch(`${t}/subscribe?projectId=${n}`, {
+													method: "POST",
+													body: JSON.stringify(s),
+													headers: { "Content-Type": "application/json" },
+													credentials: "omit",
+												});
+												const l = await a.json();
+												if (l.success)
+													return localStorage.getItem("subscription")
+														? void 0
+														: (localStorage.setItem("subscription", "true"),
+															e(
+																"Notifications Enabled",
+																"You can now receive notifications from this site.",
+																[
+																	{
+																		text: "See Demo",
+																		onClick:
+																			'()=>{\n                 new Notification("Pinglet", {\n                   body: "This is a demo notification",\n                   icon: "https://pinglet.enjoys.in/favicon.ico"\n                 }).onclick = () => {\n                   window.open("https://pinglet.enjoys.in", "_blank");\n                 })  \n                }',
+																	},
+																],
+																"🎉",
+															));
+												e("Something Went Wrong", l.message, [], "❌");
+											} catch (t) {}
+										})(t, n, i)
+									: e(
+											"Permission Denied",
+											"You blocked notifications!",
+											[],
+											"😭",
+										),
+							)
+							.catch((t) =>
+								e(
+									"Permission Error",
+									"Error requesting notification permission:",
+									[],
+									"😭",
+								),
+							);
+					},
+					onDeny: () =>
+						e("Permission Denied", "You blocked notifications!", [], "❌"),
+				})
+			: e("Unsupported Browser", "Notifications not supported.", [], "🚫");
+	}
+	window.addEventListener("pinglet:notificationClosed", (t) => {
+		g("closed", t.detail.contentEl, t.detail.reason),
+			f(t.detail.contentEl, "fade");
+	});
+	let b = !1;
+	async function w(t, e) {
+		(
+			await self.clients.matchAll({ type: "window", includeUncontrolled: !0 })
+		).forEach((n) => {
+			n.postMessage({
+				type: "CUSTOM_NOTIFICATION_EVENT",
+				eventName: t,
+				payload: e,
+			});
+		});
+	}
+	async function v(t, e) {
+		"project_id" in e &&
+			(await fetch("https://pinglet.enjoys.in/api/v1/log/event", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ ...e, event: t }),
+			}));
+	}
+	function E(t, e) {
+		const n = new CustomEvent(`notification:${t}`, { detail: e });
+		document.dispatchEvent(n);
+	}
+	function C(t, e) {
+		document.addEventListener(`notification:${t}`, (t) => {
+			e(t.detail);
+		});
+	}
+	async function k(t, e) {
+		"project_id" in e &&
+			(await fetch("https://pinglet.enjoys.in/api/v1/log/track", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ ...e, event: t }),
+				credentials: "omit",
+			}));
+	}
+	self.addEventListener("install", (t) => {
+		self.skipWaiting();
+	}),
+		self.addEventListener("activate", (t) => {
+			clients.claim();
+		}),
+		self.addEventListener("push", async (t) => {
+			if ((console.log("[Service Worker] Push Received."), !t.data)) return;
+			const e = t.data?.json?.() || {};
+			const n = {
+				body: e?.body,
+				icon: e?.icon,
+				badge: e?.badge,
+				tag: e?.tag,
+				requireInteraction: e?.requireInteraction || !0,
+				silent: e?.silent || !1,
+				data: e?.data,
+				actions: e?.actions,
+				image: e?.image,
+				timestamp: Date.now(),
+				vibrate: [200, 100, 200],
+			};
+			e.data?.duration &&
+				setTimeout(() => {
+					self.registration.getNotifications({ tag: e.tag }).then(async (t) => {
+						const n = await self.clients.matchAll({
+							type: "window",
+							includeUncontrolled: !0,
+						});
+						t.forEach((t) => {
+							n.length > 0
+								? w("dropped", {
+										...e?.data,
+										notificationTag: t.tag,
+										timestamp: Date.now(),
+									})
+								: v("dropped", {
+										...e?.data,
+										notificationTag: t.tag,
+										timestamp: Date.now(),
+									}),
+								t.close();
+						});
+					});
+				}, e.data?.duration || 5e3);
+			const i = await self.clients.matchAll({
+				type: "window",
+				includeUncontrolled: !0,
+			});
+			(b = i.length > 0),
+				t.waitUntil(self.registration.showNotification(e.title, n));
+		}),
+		self.addEventListener("notificationclick", (t) => {
+			t.notification.close();
+			const e = t.notification.data || {};
+			const n = t.action;
+			if (n && e.actionEvents && e.actionEvents[n]) {
+				const i = e.actionEvents[n];
+				async function o(t, e, n) {
+					const { eventName: i, eventData: o, url: s, windowAction: a } = t;
+					try {
+						if (
+							(b
+								? n.waitUntil(
+										w(i, {
+											...o,
+											notificationTag: n.notification.tag,
+											timestamp: Date.now(),
+										}),
+									)
+								: n.waitUntil(
+										v("clicked", {
+											...e,
+											notificationTag: n.notification.tag,
+											timestamp: Date.now(),
+										}),
+									),
+							"open" === a && s)
+						)
+							await clients.openWindow(s);
+						else if ("focus" === a) {
+							const t = await clients.matchAll({ type: "window" });
+							t.length > 0
+								? await t[0].focus()
+								: s && (await clients.openWindow(s));
+						}
+					} catch (t) {}
+				}
+				t.waitUntil(o(i, e, t));
+			} else {
+				if ("dismiss" === t.action)
+					return (
+						b
+							? t.waitUntil(
+									w("closed", {
+										...e,
+										notificationTag: t.notification.tag,
+										timestamp: Date.now(),
+									}),
+								)
+							: t.waitUntil(
+									v("closed", {
+										...eventData,
+										notificationTag: t.notification.tag,
+										timestamp: Date.now(),
+									}),
+								),
+						t.notification.close()
+					);
+				if ("url" in e) {
+					const s = e.url;
+					t.waitUntil(clients.openWindow(s));
+				}
+				b
+					? t.waitUntil(
+							w("clicked", {
+								...e,
+								notificationTag: t.notification.tag,
+								timestamp: Date.now(),
+							}),
+						)
+					: t.waitUntil(
+							v("clicked", {
+								...eventData,
+								notificationTag: t.notification.tag,
+								timestamp: Date.now(),
+							}),
+						);
+			}
+		}),
+		self.addEventListener("notificationclose", (t) => {
+			console.log("Notification closed:", t.notification.tag);
+		}),
+		(window.notificationEventHandlers = {}),
+		"serviceWorker" in navigator &&
+			navigator.serviceWorker.addEventListener("message", (t) => {
+				const { type: e, eventName: n, payload: i } = t.data;
+				"CUSTOM_NOTIFICATION_EVENT" === e && E(n, i);
+			}),
+		(window.sendNotificationEvent = E),
+		C("clicked", (t) => k("clicked", t)),
+		C("dropped", (t) => k("dropped", t)),
+		C("closed", (t) => k("closed", t));
+	const j = {
+		autoCloseDelay: 1e4,
+		brandingText: "Powered by Enjoys",
+		brandingPosition: "right",
+		defaultClass: "pinglet-wigdet-wrapper",
+		spacing: 2,
+		maxVisible: 3,
+		side: "right",
+	};
+	const S = document.createElement("style");
+	function I(t, e) {
+		let n = document.getElementById(t);
+		return (
+			n ||
+				((n = document.createElement("div")),
+				(n.id = t),
+				(n.style.position = "fixed"),
+				(n.style.zIndex = "9999"),
+				(n.style.display = "flex"),
+				(n.style.flexDirection = "column-reverse"),
+				(n.style.gap = `${j.spacing}px`),
+				(n.style.pointerEvents = "none"),
+				(n.style.bottom = "20px"),
+				n.classList.add(j.defaultClass),
+				"left" === e ? (n.style.left = "20px") : (n.style.right = "20px"),
+				document.body.appendChild(n)),
+			n
+		);
+	}
+	(S.innerHTML =
+		"\n@keyframes slideIn {\n  from { opacity: 0; transform: translateY(40px); }\n  to { opacity: 1; transform: translateY(0); }\n}\n@keyframes slideOut {\n  from { opacity: 1; transform: translateY(0); }\n  to { opacity: 0; transform: translateY(40px); }\n}"),
+		document.head.appendChild(S);
+	const O = I("container-right", "right");
+	const T = I("container-left", "left");
+	const L = { left: [], right: [] };
+	const N = { left: [], right: [] };
+	function z(t = [], e = {}) {
+		const n = { ...j, ...e };
+		const i = document.createElement("div");
+		(i.style.position = "relative"),
+			(i.style.width = "300px"),
+			(i.style.borderRadius = "10px"),
+			(i.style.boxShadow = "0 4px 12px rgba(0,0,0,0.15)"),
+			(i.style.backgroundColor = "#fff"),
+			(i.style.transition = "transform 0.3s ease, opacity 0.3s ease"),
+			(i.style.animation = "slideIn 0.4s forwards"),
+			(i.style.pointerEvents = "all"),
+			(i.id = "pinglet-custom-wrapper"),
+			t.forEach((t) => i.appendChild(t));
+		const o = document.createElement("button");
+		(o.innerText = "×"),
+			Object.assign(o.style, {
+				position: "absolute",
+				top: "-10px",
+				right: "-10px",
+				width: "25px",
+				height: "25px",
+				borderRadius: "50%",
+				border: "none",
+				backgroundColor: "#f00",
+				color: "#fff",
+				fontSize: "16px",
+				fontWeight: "bold",
+				cursor: "pointer",
+				display: "flex",
+				alignItems: "center",
+				justifyContent: "center",
+				boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+			}),
+			o.addEventListener("click", async (t) => {
+				t.stopPropagation(), r(), g("closed", i), P(i, n.side);
+			}),
+			i.appendChild(o);
+		const s = document.createElement("div");
+		let a;
+		function l() {
+			a = setTimeout(() => {
+				(T.contains(i) || O.contains(i)) &&
+					g("dropped", i, "user doesn't interact"),
+					P(i, n.side);
+			}, n.autoCloseDelay);
+		}
+		function r() {
+			clearTimeout(a);
+		}
+		return (
+			(s.innerText = n.brandingText),
+			Object.assign(s.style, {
+				position: "absolute",
+				bottom: "5px",
+				fontSize: "12px",
+				color: "#666",
+			}),
+			(s.style[n.brandingPosition] = "10px"),
+			i.appendChild(s),
+			i.addEventListener("mouseenter", r),
+			i.addEventListener("mouseleave", l),
+			l(),
+			L[n.side].push(i),
+			D(n.side),
+			i
+		);
+	}
+	function D(t) {
+		const e = "left" === t ? T : O;
+		while (N[t].length < j.maxVisible && L[t].length > 0) {
+			const n = L[t].shift();
+			e.appendChild(n), N[t].push(n);
+		}
+	}
+	function P(t, e) {
+		(t.style.animation = "slideOut 0.4s forwards"),
+			t.addEventListener("animationend", () => {
+				t.remove();
+				const n = N[e].indexOf(t);
+				-1 !== n && N[e].splice(n, 1), D(e);
+			});
+	}
+	const M =
+		Array.from(document.scripts).find(
+			(t) => t.src.includes("pinglet-sse") && t.dataset.endpoint,
+		) || document.currentScript;
+	const _ = M?.dataset.endpoint;
+	const W = M?.dataset.configuredDomain;
+	const A = M?.dataset.projectId;
+	const R = M?.dataset.pingletId;
+	const F = M?.dataset.checksum;
+	const $ = M?.dataset.testimonials;
+	const X = M?.dataset.templates;
+	(async (t) => {
+		if (((t.projectId = A), t.PingletWidget))
+			return void console.warn("PingletNotification is already initialized.");
+		!(() => {
+			const t = document.createElement("link");
+			(t.rel = "stylesheet"),
+				(t.href =
+					"https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap"),
+				document.head.appendChild(t);
+			const e = document.createElement("style");
+			(e.innerHTML =
+				'\n    [class^="pinglet-"],\n    [class*=" pinglet-"] {\n      font-family: \'Manrope\', sans-serif !important;\n      font-weight: 400 !important;\n    }\n  '),
+				document.head.appendChild(e);
+		})(),
+			h(_, A, R),
+			$ &&
+				(() => {
+					const t = document.getElementById("pinglet-testimonials");
+					if (t) return t;
+					const n = document.createElement("div");
+					(n.className = "pinglet-floating-btn"),
+						(n.style.position = "fixed"),
+						(n.style.bottom = "30px"),
+						(n.style.right = "30px"),
+						(n.style.display = "flex"),
+						(n.style.alignItems = "center"),
+						(n.style.background = "#667EEA"),
+						(n.style.borderRadius = "50px"),
+						(n.style.padding = "0"),
+						(n.style.cursor = "pointer"),
+						(n.style.boxShadow =
+							"0 4px 14px 0 rgba(102, 126, 234, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05)"),
+						(n.style.transition = "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"),
+						(n.style.overflow = "hidden"),
+						(n.style.width = "24px"),
+						(n.style.height = "24px"),
+						(n.style.zIndex = "1000"),
+						(n.style.backdropFilter = "blur(10px)"),
+						(n.style.border = "1px solid rgba(255, 255, 255, 0.1)");
+					const i = document.createElement("div");
+					(i.textContent = "❔"),
+						(i.className = "icon"),
+						(i.style.fontSize = "20px"),
+						(i.style.display = "flex"),
+						(i.style.alignItems = "center"),
+						(i.style.justifyContent = "center"),
+						(i.style.transition = "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"),
+						(i.style.width = "24px"),
+						(i.style.height = "24px"),
+						(i.style.flexShrink = "0"),
+						(i.style.color = "white");
+					const o = document.createElement("span");
+					(o.textContent = "View"),
+						(o.className = "label"),
+						(o.style.color = "white"),
+						(o.style.fontWeight = "500"),
+						(o.style.fontSize = "14px"),
+						(o.style.marginLeft = "8px"),
+						(o.style.marginRight = "16px"),
+						(o.style.opacity = "0"),
+						(o.style.transform = "translateX(-8px)"),
+						(o.style.transition = "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"),
+						(o.style.whiteSpace = "nowrap"),
+						(o.style.letterSpacing = "0.025em"),
+						n.appendChild(i),
+						n.appendChild(o),
+						document.body.appendChild(n),
+						n.addEventListener("mouseenter", () => {
+							(n.style.width = "100px"),
+								(n.style.borderRadius = "28px"),
+								(n.style.boxShadow =
+									"0 8px 25px 0 rgba(102, 126, 234, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.1)"),
+								(n.style.transform = "translateY(-2px)"),
+								(o.style.opacity = "1"),
+								(o.style.transform = "translateX(0)"),
+								(i.style.transform = "scale(1.05)");
+						}),
+						n.addEventListener("mouseleave", () => {
+							(n.style.width = "40px"),
+								(n.style.height = "40px"),
+								(n.style.borderRadius = "50px"),
+								(n.style.boxShadow =
+									"0 4px 14px 0 rgba(102, 126, 234, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05)"),
+								(n.style.transform = "translateY(0)"),
+								(o.style.opacity = "0"),
+								(o.style.transform = "translateX(-8px)"),
+								(i.style.transform = "scale(1)");
+						}),
+						n.addEventListener("mousedown", () => {
+							(n.style.transform = "translateY(0) scale(0.98)"),
+								(n.style.boxShadow =
+									"0 2px 8px 0 rgba(102, 126, 234, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05)");
+						}),
+						n.addEventListener("mouseup", () => {
+							(n.style.transform = "translateY(-2px)"),
+								(n.style.boxShadow =
+									"0 8px 25px 0 rgba(102, 126, 234, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.1)");
+						}),
+						o.addEventListener("click", () => {
+							e(
+								"Testimonials Error",
+								"There was an error loading testimonials. Please try again later. If the issue persists, please contact support.",
+								[],
+								"❌",
+							);
+						});
+					const s = () => {
+						window.innerWidth <= 768
+							? ((n.style.bottom = "16px"),
+								(n.style.right = "16px"),
+								(n.style.width = "48px"),
+								(n.style.height = "48px"),
+								(i.style.width = "48px"),
+								(i.style.height = "48px"),
+								(i.style.fontSize = "18px"),
+								(o.style.fontSize = "13px"),
+								(o.style.marginLeft = "6px"),
+								(o.style.marginRight = "12px"))
+							: ((n.style.bottom = "30px"),
+								(n.style.right = "30px"),
+								(n.style.width = "40px"),
+								(n.style.height = "40px"),
+								(i.style.width = "40px"),
+								(i.style.height = "40px"),
+								(i.style.fontSize = "20px"),
+								(o.style.fontSize = "14px"),
+								(o.style.marginLeft = "8px"),
+								(o.style.marginRight = "16px"));
+					};
+					s(), window.addEventListener("resize", s);
+				})();
+		const s = {
+			version: "1.1.4",
+			checksum: F.replace("sha384-", ""),
+			async init({
+				endpoint: t,
+				configuredDomain: s,
+				projectId: a,
+				pingletId: l,
+			}) {
+				if (
+					(console.log(
+						"%cPingletWidget initialized successfully.",
+						"color: #1e90ff; font-weight: bold;",
+						this.version,
+					),
+					!X)
+				)
+					return (
+						e(
+							"Configuration Error",
+							"Missing templatesIds.",
+							[
+								{ text: "Retry", action: "reload" },
+								{
+									text: "See Docs",
+									action: "redirect",
+									src: "https://pinglet.enjoys.in/docs",
+								},
+							],
+							"❌",
+						),
+						console.error("Missing templatesIds.")
+					);
+				if (!l)
+					return (
+						e(
+							"Configuration Error",
+							"Missing Pinglet ID.",
+							[
+								{ text: "Retry", action: "reload" },
+								{
+									text: "See Docs",
+									action: "redirect",
+									src: "https://pinglet.enjoys.in/docs",
+								},
+							],
+							"❌",
+						),
+						console.error("Missing pingletId.")
+					);
+				if (!t)
+					return (
+						e(
+							"Configuration Error",
+							"Missing Endpoint.",
+							[
+								{ text: "Retry", action: "reload" },
+								{
+									text: "See Docs",
+									action: "redirect",
+									src: "https://pinglet.enjoys.in/docs",
+								},
+							],
+							"❌",
+						),
+						console.error("Missing pingletId.")
+					);
+				if ("1.1.3" !== this.version)
+					return (
+						e(
+							"Pinglet Unsupported Version",
+							`PingletWidget version ${this.version} is not supported. Please update to the latest version.`,
+							[
+								{
+									text: "See Docs",
+									actions: "redirect",
+									src: "https://pinglet.enjoys.in/docs",
+								},
+							],
+							"⚠️",
+						),
+						void console.warn("Unsupported version detected.")
+					);
+				if (!this.checksum || !F)
+					return e("Configuration Error", "Missing checksum.");
+				const p = await fetch(`${t}/load/projects?projectId=${a}&domain=${s}`, {
+					headers: {
+						"X-Project-ID": a,
+						"X-Timestamp": Date.now(),
+						"X-Pinglet-Signature": l,
+						"X-Pinglet-Checksum": this.checksum,
+						"X-Pinglet-Version": this.version,
+						"X-Configured-Domain": s,
+						"X-Pinglet-Id": l,
+					},
+					credentials: "omit",
+				});
+				const f = await p.json();
+				if (!f || !f.success)
+					return (
+						e(
+							"Configuration Error",
+							`Failed to load configuration for PingletWidget. ${f.message || "Unknown error"}`,
+							[
+								{ text: "Retry", action: "reload" },
+								{
+									text: "See Docs",
+									action: "redirect",
+									src: "https://pinglet.enjoys.in/docs",
+								},
+							],
+							"❌",
+						),
+						console.error("Failed to load configuration for PingletWidget.")
+					);
+				d(f.result.config.branding);
+				const u = await (async (t, e, n, i, o, s) => {
+					const a = await fetch(
+						`${t}/load/templates?projectId=${e}&templatesIds=${s}`,
+						{
+							headers: {
+								"X-Project-ID": e,
+								"X-Timestamp": Date.now(),
+								"X-Pinglet-Signature": n,
+								"X-Pinglet-Checksum": i,
+								"X-Pinglet-Version": o,
+							},
+							credentials: "omit",
+						},
+					);
+					const l = await a.json();
+					return l?.success ? l.result : null;
+				})(t, a, l, this.checksum, this.version, X);
+				u ||
+					e(
+						"Configuration Error",
+						"Failed to load templates for PingletWidget.",
+					);
+				const x = {
+					is_tff: f.result?.is_premium ?? !1,
+					templates: Object.assign(
+						{},
+						{
+							default: {
+								compiled_text: e.toString(),
+								config: i,
+								is_active: !0,
+								is_default: !0,
+							},
+						},
+						u,
+					),
+					style: Object.assign({}, n, f.result.template?.config),
+					config: Object.assign({}, i, f.result.config),
+				};
+				!((t) => {
+					if (o) return o;
+					t.config.sound?.play &&
+						t.config.sound.src &&
+						((r = t.config.sound.src),
+						(o = new Audio(r || t.config.sound.src)),
+						(o.volume = t.config.sound.volume ?? 0.5));
+				})(x);
+				new EventSource(`${t}/sse?projectId=${a}&pingletId=${l}`, {
+					withCredentials: !1,
+				}).onmessage = (t) => {
+					const e = JSON.parse(t.data);
+					const n = e.data;
+					if (
+						(x?.is_tff && Object.assign(x.config, x.config, n?.overrides ?? {}),
+						"1" === e?.type && e?.template_id && e?.custom_template)
+					) {
+						const t = x.templates[e.template_id];
+						if (!t || 0 === t.compiled_text.length)
+							return console.log("Template not found");
+						const n = new Function(`return ${t.compiled_text?.trim()}`)()(
+							e?.custom_template,
+						);
+						let i;
+						return (
+							x.config.sound && c(),
+							(i = Array.isArray(n)
+								? z(n, { side: "left" })
+								: z([n], { side: "left" })),
+							i.setAttribute(
+								"data-notification-id",
+								`${e?.project_id || a}-${Date.now()}`,
+							),
+							i.setAttribute("data-notification-type", e?.type || "1"),
+							void i.addEventListener("click", () => {
+								g("clicked", i, "user clicked"),
+									e.custom_template.url &&
+										window.open(e.custom_template.url, "_blank");
+							})
+						);
+					}
+					if ("0" === e?.type && e?.body) {
+						const t = y(e.body, x);
+						t.setAttribute(
+							"data-notification-id",
+							`${e?.project_id || a}-${Date.now()}`,
+						),
+							t.setAttribute("data-notification-type", e?.type || "0");
+						const { toastContainer: n } = m(t, x);
+						"url" in e.body &&
+							n.addEventListener("click", () => {
+								g("clicked", t, "user clicked"),
+									t.remove(),
+									window.open(e.body.url, "_blank");
+							});
+					} else
+						e &&
+							"-1" === e?.type &&
+							((t, e, n) => {
+								new Notification(t, {
+									badge: "🎉",
+									body: e,
+									actions: [{ action: "pinglet", title: "Pinglet" }],
+									icon: n,
+									dir: "rtl",
+									lang: "en",
+									silent: !1,
+									tag: "pinglet",
+									vibrate: [100, 50, 100],
+									requireInteraction: !0,
+								}).onclick = () => {};
+							})(body.title, body.description, body.type?.icon?.src || "");
+				};
+			},
+		};
+		(t.PingletWidget = s),
+			s.init({ endpoint: _, configuredDomain: W, projectId: A, pingletId: R });
+	})(window);
+})();

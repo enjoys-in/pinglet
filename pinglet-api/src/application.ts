@@ -1,4 +1,3 @@
-import cors from "cors";
 import * as http from "node:http";
 import { join } from "node:path";
 import { useHttpsRedirection } from "@/app/common/HttpsRedirection";
@@ -16,6 +15,7 @@ import { CloseConnection, CreateConnection } from "@factory/typeorm";
 import bodyParser from "body-parser";
 import { blue } from "colorette";
 import cookieParser from "cookie-parser";
+import cors from "cors";
 import express, { type Application } from "express";
 import fileUpload from "express-fileupload";
 import helmet from "helmet";
@@ -29,11 +29,10 @@ import "./utils/services/queue/event-listener";
 
 const io = getSocketIo();
 const allowedWithCreds = [
-	'http://pinglet.enjoys.in',
-	'https://pinglet.enjoys.in',
-	'http://localhost:3000'
+	"http://pinglet.enjoys.in",
+	"https://pinglet.enjoys.in",
+	"http://localhost:3000",
 ];
-
 
 class AppServer {
 	static App: Application = express();
@@ -42,7 +41,6 @@ class AppServer {
 	 * Initializes the constructor.
 	 */
 	constructor() {
-
 		AppLifecycleManager.initializeModules();
 		this.ApplyConfiguration();
 		this.InitMiddlewares();
@@ -69,19 +67,18 @@ class AppServer {
 				origin: (origin, callback) => {
 					if (!origin) {
 						// For requests like curl, Postman, or same-origin requests
-						return callback(null, '*');
+						return callback(null, "*");
 					}
 
 					if (allowedWithCreds.includes(origin)) {
 						callback(null, true); // Allow origin for credentials
 					} else {
-						callback(null, '*'); // Public access for files
+						callback(null, "*"); // Public access for files
 					}
 				},
 				credentials: true,
 				optionsSuccessStatus: 200,
 				preflightContinue: true,
-
 			}),
 		);
 		AppServer.App.use(bodyParser.json({ limit: "1mb" }));
@@ -119,8 +116,8 @@ class AppServer {
 				credentials: false,
 				optionsSuccessStatus: 200,
 				preflightContinue: true,
-
-			}), express.static(join(process.cwd(), "public"), options),
+			}),
+			express.static(join(process.cwd(), "public"), options),
 		);
 	}
 	/**
@@ -269,7 +266,7 @@ class AppServer {
 		AppEvents.emit("shutdown");
 		/** NOTE  Close Database/Redis or any opened Connection */
 		CloseConnection();
-		Cache.closeClonnection()
+		Cache.closeClonnection();
 	}
 	/**
 	 * Closes the given server and exits the process.

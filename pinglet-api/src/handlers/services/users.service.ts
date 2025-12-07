@@ -56,7 +56,6 @@ class UserService {
 		user.password = newPassword;
 		return this.userRepo.save(user);
 	}
-
 }
 
 export const userService = new UserService(InjectRepository(UserEntity));

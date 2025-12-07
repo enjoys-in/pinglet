@@ -1,3 +1,6 @@
+import { PROJECT_DEFAULT_CONFIG } from "@/handlers/services/default/constant";
+import helpers from "@/utils/helpers";
+import type { ProjectConfig } from "@/utils/interfaces/project.interface";
 import {
 	BeforeInsert,
 	Column,
@@ -15,15 +18,11 @@ import {
 	UpdateDateColumn,
 } from "typeorm";
 import { NotificationEntity } from "./notifications.entity";
-import { WebhookEntity } from "./webhook.entity";
-import { WebsiteEntity } from "./website.entity";
+import { PushSubscriptionEntity } from "./pushSubscription.entity";
 import { TemplateCategoryEntity } from "./template-category.entity";
 import { UserEntity } from "./users.entity";
-import helpers from "@/utils/helpers";
-import { ProjectConfig } from "@/utils/interfaces/project.interface";
-import { PROJECT_DEFAULT_CONFIG } from "@/handlers/services/default/constant";
-import { PushSubscriptionEntity } from "./pushSubscription.entity";
-
+import { WebhookEntity } from "./webhook.entity";
+import { WebsiteEntity } from "./website.entity";
 
 @Entity("projects")
 @Unique(["unique_id"])
@@ -73,7 +72,6 @@ export class ProjectEntity {
 	@JoinColumn({ name: "website_id" })
 	website!: Relation<WebsiteEntity>;
 
-
 	@ManyToOne(
 		() => UserEntity,
 		(u) => u.id,
@@ -83,23 +81,26 @@ export class ProjectEntity {
 
 	@OneToMany(
 		() => NotificationEntity,
-		(notif) => notif.project, {
-		nullable: true
-	}
+		(notif) => notif.project,
+		{
+			nullable: true,
+		},
 	)
 	notifications!: NotificationEntity[];
 
 	@ManyToOne(
 		() => TemplateCategoryEntity,
-		(p) => p.project, { nullable: true, onDelete: "SET NULL", }
+		(p) => p.project,
+		{ nullable: true, onDelete: "SET NULL" },
 	)
 	@JoinColumn({ name: "category_id" })
 	category!: Relation<TemplateCategoryEntity>;
 
-	@OneToMany(() => PushSubscriptionEntity, sub => sub.project)
+	@OneToMany(
+		() => PushSubscriptionEntity,
+		(sub) => sub.project,
+	)
 	subscriptions!: PushSubscriptionEntity[];
-
-
 
 	@BeforeInsert()
 	setProjectId() {
