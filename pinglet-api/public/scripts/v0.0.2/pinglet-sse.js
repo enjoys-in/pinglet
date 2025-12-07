@@ -51,7 +51,7 @@ const templatesIds = currentScript?.dataset.templates;
   testimonials && ShowTestimonials();
 
   const PingletWidget = {
-    version: "1.2.0",
+    version: "1.2.3",
     checksum: checksum.replace("sha384-", ""),
     /**
      * Initialize the PingletWidget.
@@ -70,25 +70,7 @@ const templatesIds = currentScript?.dataset.templates;
         "color: #1e90ff; font-weight: bold;",
         this.version
       );
-      if (!templatesIds) {
-        _showPopup(
-          "Configuration Error",
-          "Missing templatesIds.",
-          [
-            {
-              text: "Retry",
-              action: "reload",
-            },
-            {
-              text: "See Docs",
-              action: "redirect",
-              src: "https://pinglet.enjoys.in/docs",
-            },
-          ],
-          "❌"
-        );
-        return console.error("Missing templatesIds.");
-      }
+
       if (!pingletId) {
         _showPopup(
           "Configuration Error",
@@ -127,7 +109,7 @@ const templatesIds = currentScript?.dataset.templates;
         );
         return console.error("Missing pingletId.");
       }
-      if (this.version !== "1.2.0") {
+      if (this.version !== "1.2.3") {
         _showPopup(
           "Pinglet Unsupported Version",
           `PingletWidget version ${this.version} is not supported. Please update to the latest version.`,
@@ -191,19 +173,22 @@ const templatesIds = currentScript?.dataset.templates;
       }
       createBrandingElement(data.result.config.branding);
       /** @type {GlobalConfig["templates"]} */
-      const allTemplates = await loadAllTemplates(
-        endpoint,
-        projectId,
-        pingletId,
-        this.checksum,
-        this.version,
-        templatesIds
-      );
-      if (!allTemplates) {
-        _showPopup(
-          "Configuration Error",
-          "Failed to load templates for PingletWidget."
+      let allTemplates = {};
+      if (!templatesIds) {
+        allTemplates = await loadAllTemplates(
+          endpoint,
+          projectId,
+          pingletId,
+          this.checksum,
+          this.version,
+          templatesIds
         );
+        if (!allTemplates) {
+          _showPopup(
+            "Configuration Error",
+            "Failed to load templates for PingletWidget."
+          );
+        }
       }
 
       /** @type {GlobalConfig} */
@@ -260,7 +245,7 @@ const templatesIds = currentScript?.dataset.templates;
           /** @type {import("./types/index.js").TemplateData} */
           const template = globalConfig.templates[parsed.template_id];
           if (!template || template.compiled_text.length === 0) {
-            return console.log("Template not found");
+            return console.error("Template not found");
           }
           const func = new Function(
             `return ${template.compiled_text?.trim()}`
