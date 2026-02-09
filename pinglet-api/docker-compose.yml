@@ -1,0 +1,49 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: pinglet-api
+    container_name: pinglet-api
+    working_dir: /usr/src/app
+    command: bun run ./build/main.js
+    restart: always
+    ports:
+      - "8888:8888"
+    env_file:
+      - .env   
+    networks:
+      - pinglet-network
+
+  worker:
+    image: pinglet-api
+    container_name: pinglet-worker
+    working_dir: /usr/src/app
+    command: bun run ./build/worker.js
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      - api
+    networks:
+      - pinglet-network
+
+  consumer:
+    image: pinglet-api
+    container_name: pinglet-consumer
+    working_dir: /usr/src/app
+    command: bun run ./build/consumer.js
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      - api
+    networks:
+      - pinglet-network
+
+ 
+ 
+
+networks:
+  pinglet-network:
+    driver: bridge
