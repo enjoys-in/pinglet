@@ -23,9 +23,8 @@ serverAxios.interceptors.request.use(async (config) => {
         config.headers['Authorization'] = token
     }
 
-    security.GenerateSignature((config.method as string).toUpperCase(), config.baseURL as string, config.data).then((signature) => {
-        config.headers['X-Signature'] = signature
-    })
+    const signature = await security.GenerateSignature((config.method as string).toUpperCase(), config.baseURL as string, config.data);
+    config.headers['X-Signature'] = signature;
     return config;
 }, (error) => {
     return Promise.reject(error);

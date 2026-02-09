@@ -24,6 +24,7 @@ docker run -d \
   --env-file .env \
   -p 8888:8888 \
   -m 450m \
+  --restart unless-stopped \
   pinglet-api \
   bun run ./build/main.js
 
@@ -34,6 +35,7 @@ docker run -d \
   --name pinglet-worker \
   --env-file .env \
   -m 256m \
+  --restart unless-stopped \
   pinglet-api \
   bun run ./build/worker.js
 
@@ -44,6 +46,7 @@ docker run -d \
   --name pinglet-consumer \
   --env-file .env \
   -m 256m \
+  --restart unless-stopped \
   pinglet-api \
   bun run ./build/consumer.js
 

@@ -23,9 +23,8 @@ instance.defaults.headers["common"] = {
 
 instance.interceptors.request.use(async (config) => {
 
-    security.GenerateSignature((config.method as string).toUpperCase(), `${config.baseURL}${config.url}` as string, config?.data,).then((signature) => {
-        config.headers['X-Signature'] = signature
-    })
+    const signature = await security.GenerateSignature((config.method as string).toUpperCase(), `${config.baseURL}${config.url}` as string, config?.data);
+    config.headers['X-Signature'] = signature;
 
 
     return config;

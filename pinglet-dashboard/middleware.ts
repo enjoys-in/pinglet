@@ -34,6 +34,7 @@ export async function middleware(request: NextRequest) {
 // Configure the middleware to match specific paths
 export const config = {
     matcher: [
-        '/dashboard/:path*', '/dashboard',
-        '/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|service-worker.js|.js|.css|.mp3|.svg).*)'],
+        '/auth/:path*',
+        '/u/:path*',
+    ],
 }
