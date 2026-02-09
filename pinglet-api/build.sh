@@ -33,6 +33,7 @@ echo "Starting Pinglet Worker..."
 docker run -d \
   --name pinglet-worker \
   --env-file .env \
+  -m 256m \
   pinglet-api \
   bun run ./build/worker.js
 
@@ -42,6 +43,7 @@ echo "Starting Pinglet Consumer..."
 docker run -d \
   --name pinglet-consumer \
   --env-file .env \
+  -m 256m \
   pinglet-api \
   bun run ./build/consumer.js
 
