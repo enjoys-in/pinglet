@@ -1,21 +1,22 @@
-# ---- Base ----
-FROM oven/bun:1-alpine AS base
+# ---- Dependencies ----
+FROM oven/bun:1-alpine AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# ---- Dependencies ----
-FROM base AS deps
-COPY package.json ./
-RUN bun install
+COPY package.json bun.lockb* ./
+RUN bun install --frozen-lockfile --production
 
 # ---- Build ----
-FROM base AS builder
+FROM oven/bun:1-alpine AS builder
+RUN apk add --no-cache libc6-compat
 WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
+
+COPY package.json bun.lockb* ./
+RUN bun install --frozen-lockfile
+
 COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
-
 RUN bun run build
 
 # ---- Production ----
@@ -24,22 +25,21 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
 
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
 
-# Copy the public folder
+# Copy only necessary files
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json 
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
 
 USER nextjs
 
 EXPOSE 3000
-ENV PORT=3000
-ENV HOSTNAME="0.0.0.0"
 
 CMD ["bun", "run", "start"]
-
