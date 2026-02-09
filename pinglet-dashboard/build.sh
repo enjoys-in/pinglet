@@ -4,7 +4,7 @@ set -e
 
 APP_NAME="pinglet-dashboard"
 PORT="3000"
-MEMORY_LIMIT="200m"
+MEMORY_LIMIT="512m"
 ENV_FILE=".env"
 
 echo "🛑 Stopping old container..."
