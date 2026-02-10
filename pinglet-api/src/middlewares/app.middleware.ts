@@ -33,12 +33,14 @@ export class AppMiddlewares {
 		Logging.dev("API Route are Protected");
 		return (req: Request, res: Response, next: NextFunction) => {
 			const headers = req.headers;
-			const apiKey = headers.api_key || undefined;
+			
+			const apiKey = headers["x-api-key"] || undefined;
 			if (typeof apiKey === "undefined") {
-				res.status(404).json({
+				res.status(400).json({
 					success: false,
 					result: {
-						code: 404,
+						code: 400,
+
 					},
 					message: "API_KEY is Required",
 				});
@@ -49,7 +51,7 @@ export class AppMiddlewares {
 				res.status(401).json({
 					success: false,
 					status_code: {
-						code: 412,
+						code: 401,
 					},
 					message: "Invalid KEY, Check API KEY",
 				});
@@ -73,7 +75,7 @@ export class AppMiddlewares {
 			const requestId = Helpers.RequestId();
 			req.headers["X-Request-Id"] = requestId;
 			res.setHeader("X-Request-Id", requestId);
-			res.setHeader("X-Platform", "AIRAPI - ENJOYS");
+			res.setHeader("X-Platform", "Pinglet - ENJOYS");
 			next();
 		};
 	}
