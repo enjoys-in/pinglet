@@ -7,7 +7,6 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Mail, ArrowLeft, CheckCircle2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
@@ -59,102 +58,99 @@ export default function ForgotPasswordPage() {
 
     if (isSubmitted) {
         return (
-            <Card className="w-full">
-                <CardHeader className="space-y-1">
-                    <div className="flex items-center justify-center mb-4">
-                        <div className="w-16 h-16 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
-                            <CheckCircle2 className="w-8 h-8 text-green-600 dark:text-green-400" />
-                        </div>
-                    </div>
-                    <CardTitle className="text-2xl text-center">Check your email</CardTitle>
-                    <CardDescription className="text-center">
-                        We've sent a password reset link to
-                    </CardDescription>
-                    <p className="text-center font-medium text-sm">{submittedEmail}</p>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="bg-muted p-4 rounded-lg">
-                        <p className="text-sm text-muted-foreground">
-                            Click the link in the email to reset your password. If you don't see the email, check your spam folder.
-                        </p>
-                    </div>
+            <div className="rounded-2xl border border-border/50 bg-card p-8 text-center">
+                <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-full bg-green-500/10">
+                    <CheckCircle2 className="size-7 text-green-500" />
+                </div>
+                <h1 className="text-2xl font-bold tracking-tight">Check your email</h1>
+                <p className="mt-2 text-sm text-muted-foreground">
+                    We&apos;ve sent a password reset link to
+                </p>
+                <p className="mt-1 text-sm font-medium">{submittedEmail}</p>
 
+                <div className="mt-6 rounded-xl bg-muted/50 p-4">
+                    <p className="text-sm text-muted-foreground">
+                        Click the link in the email to reset your password. If you don&apos;t see it, check your spam folder.
+                    </p>
+                </div>
+
+                <div className="mt-6 space-y-3">
                     <Link href="/auth/login" className="block">
-                        <Button variant="outline" className="w-full">
+                        <Button variant="outline" className="w-full rounded-xl">
                             <ArrowLeft className="mr-2 h-4 w-4" />
                             Back to login
                         </Button>
                     </Link>
 
-                    <div className="text-center text-sm text-muted-foreground">
-                        Didn't receive the email?{" "}
-                        <Button
-                            variant="link"
-                            className="p-0 h-auto font-normal text-primary hover:underline"
+                    <p className="text-sm text-muted-foreground">
+                        Didn&apos;t receive the email?{" "}
+                        <button
+                            className="font-medium text-primary hover:underline"
                             onClick={() => {
                                 setIsSubmitted(false)
                                 form.reset()
                             }}
                         >
                             Try again
-                        </Button>
-                    </div>
-                </CardContent>
-            </Card>
+                        </button>
+                    </p>
+                </div>
+            </div>
         )
     }
 
     return (
-        <Card className="w-full">
-            <CardHeader className="space-y-1">
-                <div className="flex items-center justify-center mb-4">
-                    <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
-                        <Mail className="text-primary-foreground h-6 w-6" />
-                    </div>
+        <div className="rounded-2xl border border-border/50 bg-card p-8">
+            <div className="mb-8 text-center">
+                <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-xl bg-primary/10">
+                    <Mail className="size-5 text-primary" />
                 </div>
-                <CardTitle className="text-2xl text-center">Forgot password?</CardTitle>
-                <CardDescription className="text-center">
-                    Enter your email address and we'll send you a link to reset your password
-                </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                        <FormField
-                            control={form.control}
-                            name="email"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Email</FormLabel>
-                                    <FormControl>
-                                        <div className="relative">
-                                            <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                            <Input
-                                                placeholder="Enter your email"
-                                                className="pl-10"
-                                                {...field}
-                                                disabled={isLoading}
-                                            />
-                                        </div>
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+                <h1 className="text-2xl font-bold tracking-tight">Forgot password?</h1>
+                <p className="mt-1.5 text-sm text-muted-foreground">
+                    Enter your email and we&apos;ll send you a reset link
+                </p>
+            </div>
 
-                        <Button type="submit" className="w-full" disabled={isLoading}>
-                            {isLoading ? "Sending..." : "Send reset link"}
-                        </Button>
-                    </form>
-                </Form>
+            <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                    <FormField
+                        control={form.control}
+                        name="email"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel className="text-sm font-medium">Email</FormLabel>
+                                <FormControl>
+                                    <div className="relative">
+                                        <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                        <Input
+                                            placeholder="you@example.com"
+                                            className="rounded-xl pl-10"
+                                            {...field}
+                                            disabled={isLoading}
+                                        />
+                                    </div>
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
 
-                <div className="text-center">
-                    <Link href="/auth/login" className="inline-flex items-center text-sm text-primary hover:underline">
-                        <ArrowLeft className="mr-2 h-4 w-4" />
-                        Back to login
-                    </Link>
-                </div>
-            </CardContent>
-        </Card>
+                    <Button
+                        type="submit"
+                        className="w-full rounded-xl font-medium shadow-sm shadow-primary/20"
+                        disabled={isLoading}
+                    >
+                        {isLoading ? "Sending..." : "Send reset link"}
+                    </Button>
+                </form>
+            </Form>
+
+            <div className="mt-6 text-center">
+                <Link href="/auth/login" className="inline-flex items-center text-sm text-primary hover:underline">
+                    <ArrowLeft className="mr-1.5 size-3.5" />
+                    Back to login
+                </Link>
+            </div>
+        </div>
     )
 }

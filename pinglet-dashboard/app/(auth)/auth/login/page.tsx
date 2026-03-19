@@ -7,10 +7,8 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Separator } from "@/components/ui/separator"
-import { Mail, Lock, Eye, EyeOff, User, UserPlus } from "lucide-react"
+import { Mail, Lock, Eye, EyeOff, ArrowRight } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { API } from "@/lib/api/handler"
 import { useAuthStore } from "@/store/auth.store"
@@ -32,17 +30,6 @@ export default function LoginPage() {
   const { setUser } = useAuthStore()
   const router = useRouter()
 
-
-
-
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "Enter") {
-      event.preventDefault()
-      form.handleSubmit(onSubmit)()
-    }
-  }
-
-
   const form = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -50,6 +37,7 @@ export default function LoginPage() {
       password: "",
     },
   })
+
   const handleGoogleLogin = () => {
     toast({
       title: "Google Login",
@@ -94,139 +82,142 @@ export default function LoginPage() {
       setIsLoading(false)
     }
   }
-  // useEffect(() => {
-  //   document.addEventListener("keydown", handleKeyDown)
-  //   return () => {
-  //     document.removeEventListener("keydown", handleKeyDown)
-  //   }
-  // }, [])
 
   return (
-    <Card className="w-full">
-      <CardHeader className="space-y-1">
-        <div className="flex items-center justify-center mb-4">
-          <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-xl">P</span>
-          </div>
+    <div className="rounded-2xl border border-border/50 bg-card p-8">
+      <div className="mb-8 text-center">
+        <h1 className="text-2xl font-bold tracking-tight">
+          {authType === "signin" ? "Welcome back" : "Create an account"}
+        </h1>
+        <p className="mt-1.5 text-sm text-muted-foreground">
+          {authType === "signin"
+            ? "Sign in to your Pinglet account"
+            : "Get started with Pinglet for free"}
+        </p>
+      </div>
+
+      <Button
+        variant="outline"
+        className="mb-6 w-full rounded-xl"
+        type="button"
+        onClick={handleGoogleLogin}
+      >
+        <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
+          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+        </svg>
+        Continue with Google
+      </Button>
+
+      <div className="relative mb-6">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-border/60" />
         </div>
-        <CardTitle className="text-2xl text-center">Welcome back</CardTitle>
-        <CardDescription className="text-center">Made with ❤️ by Enjoys</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <Button variant="outline" className="w-full bg-transparent" type="button" onClick={handleGoogleLogin}>
-          <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
-            <path
-              d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-              fill="#4285F4"
-            />
-            <path
-              d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-              fill="#34A853"
-            />
-            <path
-              d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-              fill="#FBBC05"
-            />
-            <path
-              d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-              fill="#EA4335"
-            />
-          </svg>
-          Continue with Google
-        </Button>
-
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <Separator className="w-full" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">Or continue with email</span>
-          </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-card px-3 text-muted-foreground">Or continue with email</span>
         </div>
+      </div>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input placeholder="Enter your email" className="pl-10" {...field} />
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-medium">Email</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      placeholder="you@example.com"
+                      className="rounded-xl pl-10"
+                      {...field}
+                    />
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Password</FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        type={showPassword ? "text" : "password"}
-                        placeholder="Enter your password"
-                        className="pl-10 pr-10"
-                        {...field}
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                        onClick={() => setShowPassword(!showPassword)}
-                      >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </Button>
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-medium">Password</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Enter your password"
+                      className="rounded-xl pl-10 pr-10"
+                      {...field}
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-            <div className="flex items-center justify-between">
-              <Link href="/forgot-password" className="text-sm text-primary hover:underline">
+          {authType === "signin" && (
+            <div className="flex justify-end">
+              <Link href="/forgot-password" className="text-xs text-primary hover:underline">
                 Forgot password?
               </Link>
             </div>
+          )}
 
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {
-                authType === "signin" ?
-                  <User className="mr-2 h-4 w-4" /> : <UserPlus className="mr-2 h-4 w-4" />
-              }
-              {authType === "signin" ? isLoading ? "Signing in..." : "Sign in" : isLoading ? "Registering..." : "Register"}
-            </Button>
-          </form>
-        </Form>
-        {
-          authType === "signup" ?
-            <div className="text-center text-sm">
-              Already have an account?{" "}
-              <Button variant="link" type="button" onClick={() => setAuthType("signin")} className="text-primary hover:underline">
-                Sign in
-              </Button>
-            </div>
-            :
-            <div className="text-center text-sm">
-              Don&apos;t have an account?{" "}
-              <Button variant="link" type="button" onClick={() => setAuthType("signup")} className="text-primary hover:underline">
-                Sign up
-              </Button>
-            </div>
-        }
+          <Button
+            type="submit"
+            className="w-full rounded-xl font-medium shadow-sm shadow-primary/20"
+            disabled={isLoading}
+          >
+            {authType === "signin"
+              ? isLoading ? "Signing in..." : "Sign in"
+              : isLoading ? "Creating account..." : "Create account"}
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
+        </form>
+      </Form>
 
-      </CardContent>
-    </Card>
+      <p className="mt-6 text-center text-sm text-muted-foreground">
+        {authType === "signin" ? (
+          <>
+            Don&apos;t have an account?{" "}
+            <button
+              type="button"
+              onClick={() => setAuthType("signup")}
+              className="font-medium text-primary hover:underline"
+            >
+              Sign up
+            </button>
+          </>
+        ) : (
+          <>
+            Already have an account?{" "}
+            <button
+              type="button"
+              onClick={() => setAuthType("signin")}
+              className="font-medium text-primary hover:underline"
+            >
+              Sign in
+            </button>
+          </>
+        )}
+      </p>
+    </div>
   )
 }

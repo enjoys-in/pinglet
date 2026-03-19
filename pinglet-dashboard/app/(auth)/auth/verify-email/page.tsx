@@ -4,9 +4,9 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { useToast } from "@/hooks/use-toast"
+import { Mail } from "lucide-react"
 
 const otpSchema = z.object({
   otp: z.string().length(6, "OTP must be exactly 6 digits").regex(/^\d+$/, "OTP must contain only numbers"),
@@ -31,8 +31,7 @@ export default function VerifyEmailPage() {
         title: "Email verified successfully!",
         description: "Welcome to Pinglet!",
       })
-      // Redirect to dashboard
-    window.location.href = "/u/dashboard"
+      window.location.href = "/u/dashboard"
     } catch (error) {
       toast({
         title: "Verification failed",
@@ -50,47 +49,55 @@ export default function VerifyEmailPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">Verify Your Email</CardTitle>
-          <CardDescription>We've sent a 6-digit verification code to your email address</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="otp"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Verification Code</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Enter 6-digit code"
-                        className="text-center text-lg tracking-widest"
-                        maxLength={6}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+    <div className="rounded-2xl border border-border/50 bg-card p-8">
+      <div className="mb-8 text-center">
+        <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-xl bg-primary/10">
+          <Mail className="size-5 text-primary" />
+        </div>
+        <h1 className="text-2xl font-bold tracking-tight">Verify Your Email</h1>
+        <p className="mt-1.5 text-sm text-muted-foreground">
+          We&apos;ve sent a 6-digit verification code to your email
+        </p>
+      </div>
 
-              <Button type="submit" className="w-full">
-                Verify Email
-              </Button>
-            </form>
-          </Form>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <FormField
+            control={form.control}
+            name="otp"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-medium">Verification Code</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="000000"
+                    className="rounded-xl text-center text-lg tracking-[0.5em] font-mono"
+                    maxLength={6}
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-          <div className="text-center">
-            <Button variant="ghost" onClick={resendOtp}>
-              Resend verification code
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+          <Button
+            type="submit"
+            className="w-full rounded-xl font-medium shadow-sm shadow-primary/20"
+          >
+            Verify Email
+          </Button>
+        </form>
+      </Form>
+
+      <div className="mt-4 text-center">
+        <button
+          onClick={resendOtp}
+          className="text-sm text-primary hover:underline"
+        >
+          Resend verification code
+        </button>
+      </div>
     </div>
   )
 }
