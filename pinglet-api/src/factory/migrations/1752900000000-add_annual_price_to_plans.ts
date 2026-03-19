@@ -1,14 +1,20 @@
 import type { MigrationInterface, QueryRunner } from "typeorm";
 
 export class AddAnnualPriceToPlans1752900000000 implements MigrationInterface {
-	// Must run outside a transaction — ALTER TYPE ADD VALUE is not safe inside one
-	transaction = false as const;
-
 	public async up(queryRunner: QueryRunner): Promise<void> {
-		// Add missing enum values (IF NOT EXISTS requires PostgreSQL 12+)
-		await queryRunner.query(`ALTER TYPE plans_name_enum ADD VALUE IF NOT EXISTS 'starter';`);
-		await queryRunner.query(`ALTER TYPE plans_name_enum ADD VALUE IF NOT EXISTS 'professional';`);
-		await queryRunner.query(`ALTER TYPE plans_name_enum ADD VALUE IF NOT EXISTS 'enterprise';`);
+		// Recreate enum with all values (ALTER TYPE ADD VALUE can't run in a transaction)
+		const hasEnum = await queryRunner.query(
+			`SELECT 1 FROM pg_type WHERE typname = 'plans_name_enum'`
+		);
+		if (hasEnum.length > 0) {
+			await queryRunner.query(`ALTER TYPE plans_name_enum RENAME TO plans_name_enum_old;`);
+			await queryRunner.query(`CREATE TYPE plans_name_enum AS ENUM ('free', 'starter', 'professional', 'enterprise');`);
+			await queryRunner.query(`ALTER TABLE plans ALTER COLUMN name TYPE plans_name_enum USING name::text::plans_name_enum;`);
+			await queryRunner.query(`DROP TYPE plans_name_enum_old;`);
+		} else {
+			await queryRunner.query(`CREATE TYPE plans_name_enum AS ENUM ('free', 'starter', 'professional', 'enterprise');`);
+		}
+
 		await queryRunner.query(`ALTER TABLE plans ADD COLUMN IF NOT EXISTS annual_price int DEFAULT 0;`);
 	}
 
