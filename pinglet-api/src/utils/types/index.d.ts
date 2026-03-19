@@ -21,7 +21,7 @@ type ENV = {
 	COOKIE_SECRET: string;
 	SESSION_SECRET: string;
 	MAIL_TEMPLATE_PATH: string;
-	CACHE_ENBALED: string;
+	CACHE_ENABLED: string;
 	CLUSTERS: string;
 	CACHE_HOST: string;
 	CACHE_PORT: string;

@@ -6,8 +6,11 @@ export class Cors {
 	 * @return {CorsOptions} The options object containing the origin, optionsSuccessStatus, and credentials properties.
 	 */
 	static options(): CorsOptions {
+		const allowedOrigins = process.env.ALLOWED_ORIGINS
+			? process.env.ALLOWED_ORIGINS.split(",")
+			: ["http://localhost:3000"];
 		return {
-			origin: ["*"],
+			origin: allowedOrigins,
 			optionsSuccessStatus: 200,
 			methods: ["GET", "POST", "PUT", "DELETE"],
 			allowedHeaders: [

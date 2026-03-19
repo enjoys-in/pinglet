@@ -1,6 +1,5 @@
 import bcrypt from "bcrypt";
 const saltRounds = 10;
-const salt = bcrypt.genSaltSync(saltRounds);
 import { __CONFIG__ } from "@/app/config";
 import jwt from "jsonwebtoken";
 import helpers, { type TTL } from "./helpers";
@@ -13,7 +12,7 @@ class Utils {
 	 * @return {Promise<string>} - The hashed password string.
 	 */
 	async HashPassword(PasswordStr: string): Promise<string> {
-		return bcrypt.hashSync(PasswordStr, salt);
+		return bcrypt.hash(PasswordStr, saltRounds);
 	}
 
 	/**
@@ -27,7 +26,7 @@ class Utils {
 		HashedPassword: string,
 		Password: string,
 	): Promise<boolean> {
-		return bcrypt.compareSync(Password, HashedPassword);
+		return bcrypt.compare(Password, HashedPassword);
 	}
 	/**
 	 * Signs a JSON Web Token (JWT) with the given payload and key ID.

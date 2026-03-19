@@ -1,7 +1,7 @@
 import { WidgetEntity } from "@/factory/entities/widget.entity";
 import { InjectRepository } from "@/factory/typeorm";
 import type { DeepPartial, FindManyOptions, Repository } from "typeorm";
-class WigdetService {
+class WidgetServiceImpl {
 	constructor(private readonly widgetRepo: Repository<WidgetEntity>) {
 		this.widgetRepo = widgetRepo;
 	}
@@ -29,4 +29,4 @@ class WigdetService {
 	}
 }
 
-export const WidgetService = new WigdetService(InjectRepository(WidgetEntity));
+export const WidgetService = new WidgetServiceImpl(InjectRepository(WidgetEntity));

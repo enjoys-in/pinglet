@@ -23,7 +23,7 @@ router.post(
 );
 router.post(
 	"/notifications/unsubscribe",
-	pushNtfyController.subscribeNotificatons,
+	pushNtfyController.unsubscribeNotificatons,
 );
 router.get("/notifications/sse", pushNtfyController.customNotificatons);
 router.get("/notifications/sw.js", pushNtfyController.swJSFile);

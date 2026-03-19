@@ -1,10 +1,10 @@
 import { exec } from "node:child_process";
 import { platform } from "node:os";
-import { CONFIG } from "@/app/config";
+import { __CONFIG__ } from "@/app/config";
 import { Logging } from "@/logs";
 const osPlatform = platform();
 
-const url = CONFIG.APP.APP_URL;
+const url = __CONFIG__.APP.APP_URL;
 const WINDOWS_PLATFORM = "win32";
 const MAC_PLATFORM = "darwin";
 

@@ -1,7 +1,7 @@
 import { getSocketIo } from "./Sockets";
 import { SocketEventConstants } from "./socketEventConstants";
 
-class BroadCaseEvents {
+class BroadCastEvents {
 	sendServerClosed() {
 		return getSocketIo().emit(SocketEventConstants.ServerClosed, {
 			type: "error",
@@ -9,4 +9,4 @@ class BroadCaseEvents {
 		});
 	}
 }
-export default new BroadCaseEvents();
+export default new BroadCastEvents();

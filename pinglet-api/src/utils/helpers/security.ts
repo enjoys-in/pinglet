@@ -4,7 +4,7 @@ import CryptoJS from "crypto-js";
 import type { RoutingMethods } from "../interfaces/routes.interface";
 const ALGORITHM = "aes-256-cbc";
 const ENCODING = "hex";
-const ENCRYPTION_KEY: string = "enjoys_encrption_key!@#%^&*()_NJ";
+const ENCRYPTION_KEY: string = __CONFIG__.SECRETS.APP_SECRET.padEnd(32, "0").slice(0, 32);
 const IV_LENGTH = 16;
 
 /**
@@ -244,9 +244,11 @@ export class Security {
 		method: RoutingMethods,
 		uri: string,
 		body: any,
-		clientSecret: string,
+		signature: string,
 	): Promise<boolean> {
-		return true;
+		const expected = await this.GenerateSignature(method, uri, body);
+		if (expected.length !== signature.length) return false;
+		return crypto.timingSafeEqual(Buffer.from(expected, "hex"), Buffer.from(signature, "hex"));
 	}
 	/**
 	 * Sorts the query parameters in the given URL and returns the sorted URL.

@@ -56,6 +56,9 @@ class UserService {
 		user.password = newPassword;
 		return this.userRepo.save(user);
 	}
+	updateUser(id: number, data: Partial<UserEntity>) {
+		return this.userRepo.update(id, data);
+	}
 }
 
 export const userService = new UserService(InjectRepository(UserEntity));

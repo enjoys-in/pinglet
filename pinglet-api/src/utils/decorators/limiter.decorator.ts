@@ -20,11 +20,8 @@ export function UseLimiter(limit?: number | "noLimit", timeout = 0): Function {
 		if (limit === "noLimit") limit = 60;
 		if (timeout === 0) timeout = 1;
 		const options = {
-			windowMs: timeout * 60 * 1000, // 15 minutes
-			max: 5, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
-			// standardHeaders: 'draft-7', // draft-6: RateLimit-* headers; draft-7: combined RateLimit header
-			// legacyHeaders: false, // X-RateLimit-* headers
-
+			windowMs: timeout * 60 * 1000, // minutes
+			max: typeof limit === "number" ? limit : 5,
 			handler: ThrottleException,
 		};
 		descriptor.value = rateLimit(options);

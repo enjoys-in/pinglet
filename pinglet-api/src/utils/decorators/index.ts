@@ -148,7 +148,7 @@ export function Accessible<T = AllowedRoles[]>(allowedRoles: T) {
 
 				if (!hasRole) {
 					return res
-						.status(401)
+						.status(403)
 						.json({ message: "Access Denied", result: null, success: false });
 				}
 
@@ -192,7 +192,7 @@ export function isAuthorized(
 						next: NextFunction,
 					) {
 						handleAuthorization(req, res, next, opts, () => {
-							originalMethod.call(this, arguments);
+							originalMethod.call(this, req, res, next);
 						});
 					};
 				}
@@ -208,7 +208,7 @@ export function isAuthorized(
 				next: NextFunction,
 			) {
 				handleAuthorization(req, res, next, opts, () => {
-					originalMethod.call(this, arguments);
+					originalMethod.call(this, req, res, next);
 				});
 			};
 

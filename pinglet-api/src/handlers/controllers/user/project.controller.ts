@@ -1,3 +1,4 @@
+import { planService } from "@/handlers/services/plan.service";
 import { projectService } from "@/handlers/services/project.service";
 import type { Request, Response } from "express";
 
@@ -125,6 +126,23 @@ class ProjectController {
 			const id = +req.params.id;
 			const body = req.body;
 			const userId = req.user?.id;
+
+			// White-label gate: prevent non-Enterprise users from hiding/replacing branding
+			if (body.config?.branding && userId) {
+				const brandingChanged = body.config.branding.show === false || body.config.branding.html;
+				if (brandingChanged) {
+					const hasWhiteLabel = await planService.hasFeature(userId, "white_label");
+					if (!hasWhiteLabel) {
+						res.status(403).json({
+							message: "White-label branding customization requires an Enterprise plan",
+							result: null,
+							success: false,
+						}).end();
+						return;
+					}
+				}
+			}
+
 			await projectService.updateProject(id, {
 				...body,
 				user: {

@@ -2,7 +2,7 @@ import type { ConnectionOptions, Job, JobsOptions } from "bullmq";
 import { Queue as BullMQQueue, Worker as BullMQWorker } from "bullmq";
 import { QUEUE_JOBS, QUEUE_NAME } from "./name";
 const __CONFIG__ = {
-	CACHE_ENBALED: String(process.env.CACHE_ENBALED),
+	CACHE_ENABLED: String(process.env.CACHE_ENABLED),
 	CACHE_HOST: String(process.env.CACHE_HOST),
 	CACHE_PORT: Number(process.env.CACHE_PORT) || 6379,
 };

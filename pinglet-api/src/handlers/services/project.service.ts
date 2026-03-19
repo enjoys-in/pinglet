@@ -96,7 +96,7 @@ class ProjectService {
 					.from("push_subscriptions", "ps")
 					.where("ps.project_id = project.unique_id");
 			}, "subscriptions")
-			.addSelect("n.total_sent", "sent_notications")
+			.addSelect("n.total_sent", "sent_notifications")
 			.addSelect("n.total_clicked", "total_clicked")
 
 			.where("project.user_id = :userId", { userId })

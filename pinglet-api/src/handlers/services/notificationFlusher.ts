@@ -179,10 +179,21 @@ class NotificationFlusherService {
 			"projectId",
 			"*",
 		);
-		const baseCounterKeys = await this.redis.keys(baseCounterKey);
-		const baseBufferkeys = await this.redis.keys(baseBufferKey);
-		this.flushCounterData(baseCounterKeys);
-		this.flushBufferData(baseBufferkeys);
+		const baseCounterKeys = await this.scanKeys(baseCounterKey);
+		const baseBufferkeys = await this.scanKeys(baseBufferKey);
+		await this.flushCounterData(baseCounterKeys);
+		await this.flushBufferData(baseBufferkeys);
+	}
+
+	private async scanKeys(pattern: string): Promise<string[]> {
+		const keys: string[] = [];
+		let cursor = 0;
+		do {
+			const result = await this.redis.scan(cursor, { MATCH: pattern, COUNT: 100 });
+			cursor = result.cursor;
+			keys.push(...result.keys);
+		} while (cursor !== 0);
+		return keys;
 	}
 }
 

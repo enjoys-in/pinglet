@@ -37,10 +37,10 @@ export class GoogleAuthProvider extends AbstractOAuth2Provider {
 		return data as T;
 	}
 	async refreshToken<T>(refresh_token: string): Promise<T> {
-		const response = await fetch("hhttps://oauth2.googleapis.com/token", {
+		const response = await fetch("https://oauth2.googleapis.com/token", {
 			method: "POST",
 			headers: {
-				"Content-Type": "application/json,application/x-www-form-urlencoded",
+				"Content-Type": "application/x-www-form-urlencoded",
 			},
 			body: JSON.stringify({
 				client_id: this.clientId,

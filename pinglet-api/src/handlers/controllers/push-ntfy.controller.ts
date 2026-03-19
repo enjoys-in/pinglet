@@ -1,6 +1,7 @@
 import { createReadStream, readFile } from "node:fs";
 import path from "node:path";
 import type { Request, Response } from "express";
+import { planService } from "../services/plan.service";
 import { projectService } from "../services/project.service";
 
 import { WebhookEvent, WebhookType } from "@/factory/entities/webhook.entity";
@@ -80,6 +81,7 @@ class PushNtfyController {
 				select: {
 					id: true,
 					config: true,
+					user: { id: true },
 					category: {
 						id: true,
 						templates: {
@@ -92,6 +94,7 @@ class PushNtfyController {
 					},
 				},
 				relations: {
+					user: true,
 					category: {
 						templates: true,
 					},
@@ -100,12 +103,22 @@ class PushNtfyController {
 			if (!loadConfig) {
 				throw new Error("No projects found for the given IDs");
 			}
+
+			// White-label enforcement: force branding for non-Enterprise users
+			const config = { ...loadConfig.config };
+			if (loadConfig.user?.id) {
+				const hasWhiteLabel = await planService.hasFeature(loadConfig.user.id, "white_label");
+				if (!hasWhiteLabel && config.branding) {
+					config.branding = { ...config.branding, show: true };
+				}
+			}
+
 			const result = loadConfig.category.templates.filter(
 				(t) => t.is_active && t.is_default,
 			);
 
 			const obj = {
-				config: loadConfig.config,
+				config,
 				template: result[0] || null,
 				// tag,
 				// pid: encrypted
@@ -215,6 +228,24 @@ class PushNtfyController {
 			if (!projectId) {
 				res.status(400).send("Missing projectId");
 				return;
+			}
+
+			// --- Plan feature gate: browser_notifications ---
+			const project = await projectService.getSelectedProjects({
+				where: { unique_id: projectId },
+				select: { id: true, user: { id: true } },
+				relations: { user: true },
+			});
+			if (project?.user?.id) {
+				const allowed = await planService.hasFeature(project.user.id, "browser_notifications");
+				if (!allowed) {
+					res.status(403).json({
+						message: "Browser notifications are not available on your current plan",
+						result: null,
+						success: false,
+					}).end();
+					return;
+				}
 			}
 
 			await pushSubscriptionService.handleSubscription({
@@ -337,6 +368,41 @@ class PushNtfyController {
 				return;
 			}
 			const { projectId, ...rest } = req.body;
+
+			// --- Plan quota enforcement (notification send limit) ---
+			const project = await projectService.getSelectedProjects({
+				where: { unique_id: projectId },
+				select: { id: true, user: { id: true } },
+				relations: { user: true },
+			});
+			if (project?.user?.id) {
+				const quota = await planService.canSendNotification(project.user.id);
+				if (!quota.allowed) {
+					res
+						.status(403)
+						.json({
+							message: "Monthly notification limit reached for your plan",
+							result: { current: quota.current, max: quota.max },
+							success: false,
+						})
+						.end();
+					return;
+				}
+
+				// White-label gate: prevent branding override for non-Enterprise plans
+				if (rest.overrides?.branding) {
+					const hasWhiteLabel = await planService.hasFeature(project.user.id, "white_label");
+					if (!hasWhiteLabel) {
+						res.status(403).json({
+							message: "Branding customization requires an Enterprise plan",
+							result: null,
+							success: false,
+						}).end();
+						return;
+					}
+				}
+			}
+
 			if (projectId && rest.type === "-1" && rest?.data) {
 				sendPushQueue.add(
 					"send-browser-notification",
@@ -472,6 +538,16 @@ class PushNtfyController {
 				}),
 				{ EX: 60 * 60 * 24 },
 			);
+			res.send(
+				DEFAULT_WIDGET_TEMPLATE(
+					req.params.wid,
+					widget.data.text,
+					widget.data.description,
+					widget.data.buttonText,
+					widget.data.link,
+					widget.data.imagePreview,
+				),
+			);
 			return;
 		}
 
@@ -510,6 +586,9 @@ class PushNtfyController {
 					style_props: widget.style_props,
 				}),
 				{ EX: 60 * 60 * 24 },
+			);
+			res.send(
+				`const element = [document.createElement("p")];element[0].innerText = "Right side notification!";`,
 			);
 			return;
 		}

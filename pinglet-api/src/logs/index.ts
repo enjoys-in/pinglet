@@ -21,11 +21,13 @@ const Colors: Record<LoggingLevel, string> = {
 };
 
 class Logger {
+	private _logger: ReturnType<typeof createLogger> | null = null;
+
 	constructor() {
 		process.stdout.write("\u001b[2J\u001b[0;0H");
 		process.stdout.write(
 			greenBright(
-				`[PINGLET] ${yellow(process.pid)} - ${white(moment().format("DD/MM/YYYY hh:mm:ss A"))}, INFO ${Logger.name} Service Iniatialized \n`,
+				`[PINGLET] ${yellow(process.pid)} - ${white(moment().format("DD/MM/YYYY hh:mm:ss A"))}, INFO ${Logger.name} Service Initialized \n`,
 			),
 		);
 	}
@@ -62,32 +64,34 @@ class Logger {
 	 * @return {Logger} - The created logger.
 	 */
 	private HandleCreateLogger(level: LoggingLevel = "info") {
-		return createLogger({
-			format: combine(
-				// colorize({ all: true, level: true, message: true, colors: Colors }),
-				timestamp({ format: "YYYY-MM-DD HH:mm:ss a" }),
-				printf(
-					(info) =>
-						`[ENJOYS-API] ${info.level.toUpperCase()}, ${info.timestamp} - ${info.message}`,
+		if (!this._logger) {
+			this._logger = createLogger({
+				format: combine(
+					timestamp({ format: "YYYY-MM-DD HH:mm:ss a" }),
+					printf(
+						(info) =>
+							`[ENJOYS-API] ${info.level.toUpperCase()}, ${info.timestamp} - ${info.message}`,
+					),
 				),
-			),
-			levels: winston.config.syslog.levels,
-			transports: [
-				new transports.File({
-					filename: `${LogsPath}/error.log`,
-					level: level,
-				}),
-				new transports.File(this.LoggingOptions().file),
-				new transports.Console(this.LoggingOptions().console),
-			],
-			rejectionHandlers: [
-				new transports.File({ filename: `${LogsPath}/rejection.log` }),
-			],
-			exceptionHandlers: [
-				new transports.File({ filename: `${LogsPath}/error.log` }),
-			],
-			exitOnError: false,
-		});
+				levels: winston.config.syslog.levels,
+				transports: [
+					new transports.File({
+						filename: `${LogsPath}/error.log`,
+						level: "error",
+					}),
+					new transports.File(this.LoggingOptions().file),
+					new transports.Console(this.LoggingOptions().console),
+				],
+				rejectionHandlers: [
+					new transports.File({ filename: `${LogsPath}/rejection.log` }),
+				],
+				exceptionHandlers: [
+					new transports.File({ filename: `${LogsPath}/error.log` }),
+				],
+				exitOnError: false,
+			});
+		}
+		return this._logger;
 	}
 	/**
    * Logs an info message.
@@ -136,7 +140,7 @@ class Logger {
 					`[ENJOYS] ${process.pid} - ${white(moment().format("DD/MM/YYYY hh:mm:ss A"))},${(type).toUpperCase()} ${text} \n`,
 				),
 			);
-			return process.exit(1);
+			return;
 		}
 		if (type === "alert") {
 			process.stdout.write(

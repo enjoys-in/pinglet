@@ -13,9 +13,9 @@ import type { Request, Response } from "express";
 const emailSvc = MailService.createInstance();
 const provider = AuthProviderFactory.createProvider(
 	"google",
-	"dd",
-	"ss",
-	"http://localhost",
+	process.env.GOOGLE_CLIENT_ID || "",
+	process.env.GOOGLE_CLIENT_SECRET || "",
+	process.env.GOOGLE_REDIRECT_URI || "",
 );
 const tokenStore = new Map();
 class AuthController {
@@ -370,7 +370,7 @@ class AuthController {
 						first_name: decodedToken.name,
 						last_name: decodedToken.family_name || decodedToken.given_name,
 					},
-					success: false,
+					success: true,
 				})
 				.end();
 		} catch (error: any) {

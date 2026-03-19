@@ -5,7 +5,10 @@ import type { NotificationEvent } from ".";
 export class KafkaNotificationProducer {
 	private producer: Producer;
 
-	constructor(brokers: string[] = ["77.237.241.24:9092"]) {
+	constructor(brokers: string[]) {
+		if (!brokers || brokers.length === 0) {
+			throw new Error("Kafka brokers must be provided via configuration");
+		}
 		const kafka = new Kafka({ clientId: "notification-service", brokers });
 		this.producer = kafka.producer();
 	}

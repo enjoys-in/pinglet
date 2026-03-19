@@ -40,7 +40,7 @@ const __config = {
 		SMTP_SENDER_NAME: String(process.env.SMTP_SENDER_NAME),
 	},
 	CACHE: {
-		CACHE_ENBALED: String(process.env.CACHE_ENBALED),
+		CACHE_ENABLED: String(process.env.CACHE_ENABLED),
 		CACHE_HOST: String(process.env.CACHE_HOST),
 		CACHE_PORT: Number(process.env.CACHE_PORT) || 6379,
 	},

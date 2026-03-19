@@ -9,7 +9,7 @@ import type {
 } from "@utils/types/fileupload.interface";
 import type { NextFunction, Request, Response } from "express";
 
-const UploadFilesPath = helpers.createPath("public/train-data");
+const UploadFilesPath = helpers.CreatePath("public/train-data");
 export class Storage {
 	UploadFiles({
 		fieldName,
@@ -23,7 +23,7 @@ export class Storage {
 					Logging.dev("No files found for upload.", "error");
 					return next();
 				}
-				uploadDirPath = helpers.createPath(uploadDirPath);
+				uploadDirPath = helpers.CreatePath(uploadDirPath);
 				fs.mkdirSync(uploadDirPath, { recursive: true });
 				if (hasMultipleFiles && Object.keys(req.files).length) {
 					const filetack = req.files as unknown as FileHandler[];

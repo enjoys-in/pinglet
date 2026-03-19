@@ -1,6 +1,5 @@
 import { TemplateCategoryEntity } from "@/factory/entities/template-category.entity";
 import { UserEntity } from "@/factory/entities/users.entity";
-import { Gemini } from "@/handlers/services/ai/gemini-ai.sevice";
 import { getMistralCompletion } from "@/handlers/services/ai/mysteral";
 import { templateService } from "@/handlers/services/template.service";
 import type { Request, Response } from "express";
@@ -71,13 +70,13 @@ class TemplateController {
 		} catch (error) {
 			if (error instanceof Error) {
 				res
-					.status(200)
+					.status(400)
 					.json({ message: error.message, result: null, success: false })
 					.end();
 				return;
 			}
 			res
-				.status(200)
+				.status(500)
 				.json({
 					message: "Something went wrong",
 					result: null,
@@ -132,13 +131,13 @@ class TemplateController {
 		} catch (error) {
 			if (error instanceof Error) {
 				res
-					.status(200)
+					.status(400)
 					.json({ message: error.message, result: null, success: false })
 					.end();
 				return;
 			}
 			res
-				.status(200)
+				.status(500)
 				.json({
 					message: "Something went wrong",
 					result: null,
@@ -192,13 +191,13 @@ class TemplateController {
 		} catch (error) {
 			if (error instanceof Error) {
 				res
-					.status(200)
+					.status(400)
 					.json({ message: error.message, result: null, success: false })
 					.end();
 				return;
 			}
 			res
-				.status(200)
+				.status(500)
 				.json({
 					message: "Something went wrong",
 					result: null,
@@ -214,13 +213,12 @@ class TemplateController {
 			const deleted = await templateService.deleteTemplate(+id);
 			if (!deleted) {
 				res
-					.status(200)
+					.status(404)
 					.json({ message: "Template not found", result: null, success: false })
 					.end();
 				return;
 			}
 			res
-				.status(200)
 				.json({
 					message: "Template deleted successfully",
 					result: null,
@@ -230,13 +228,13 @@ class TemplateController {
 		} catch (error) {
 			if (error instanceof Error) {
 				res
-					.status(200)
+					.status(400)
 					.json({ message: error.message, result: null, success: false })
 					.end();
 				return;
 			}
 			res
-				.status(200)
+				.status(500)
 				.json({
 					message: "Something went wrong",
 					result: null,

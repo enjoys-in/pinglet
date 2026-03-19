@@ -26,6 +26,7 @@ export class Scheduler {
 	}
 }
 export function InitializeCronJobs(targetClass: any) {
+	const instance = new targetClass();
 	const methods = Object.getOwnPropertyNames(targetClass.prototype);
 	methods.forEach((methodName) => {
 		const cronSchedule = Reflect.getMetadata(
@@ -34,7 +35,7 @@ export function InitializeCronJobs(targetClass: any) {
 			methodName,
 		);
 		if (cronSchedule) {
-			cron.schedule(cronSchedule, targetClass.prototype[methodName]);
+			cron.schedule(cronSchedule, () => instance[methodName]());
 			console.log(
 				`Cron job scheduled for method ${methodName} with schedule ${cronSchedule}`,
 			);

@@ -120,7 +120,7 @@ export class ListenWorkers extends QueueService {
 							}
 
 							webpush.setVapidDetails(
-								"mailto:mullayam06@outlook.com",
+								`mailto:${process.env.VAPID_MAILTO || "admin@pinglet.enjoys.in"}`,
 								getWebsite.pinglet_id.publicKey,
 								getWebsite.pinglet_id.privateKey,
 							);
@@ -170,7 +170,7 @@ export class ListenWorkers extends QueueService {
 						}[];
 					};
 					webpush.setVapidDetails(
-						"mailto:mullayam06@outlook.com",
+						`mailto:${process.env.VAPID_MAILTO || "admin@pinglet.enjoys.in"}`,
 						parsedValue.vapidKeys.publicKey,
 						parsedValue.vapidKeys.privateKey,
 					);

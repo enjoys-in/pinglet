@@ -224,11 +224,7 @@ class Helpers {
 			.replace(/^-+|-+$/g, "");
 	}
 	uuid_v4() {
-		return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
-			const r = (Math.random() * 16) | 0;
-			const v = c === "x" ? r : (r & 0x3) | 0x8;
-			return v.toString(16);
-		});
+		return crypto.randomUUID();
 	}
 	Md5Checksum(content: string): string {
 		return crypto.createHash("md5").update(content).digest("hex");

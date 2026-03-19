@@ -20,8 +20,8 @@ class AnalyticsService {
 			.innerJoin("notifications.project_id", "project")
 			.innerJoin("project.website", "website")
 			.select("website.id", "website_id")
-			.addSelect("SUM(notification.total_sent)", "total_sent")
-			.addSelect("SUM(notification.total_request)", "total_request")
+			.addSelect("SUM(notifications.total_sent)", "total_sent")
+			.addSelect("SUM(notifications.total_request)", "total_request")
 			.groupBy("website.id")
 			.getRawMany();
 	}
@@ -29,9 +29,9 @@ class AnalyticsService {
 		return this.notificationRepo
 			.createQueryBuilder("notifications")
 			.select("notifications.project_id", "project_id")
-			.addSelect("SUM(notification.total_sent)", "total_sent")
-			.addSelect("SUM(notification.total_request)", "total_request")
-			.groupBy("notification.project_id")
+			.addSelect("SUM(notifications.total_sent)", "total_sent")
+			.addSelect("SUM(notifications.total_request)", "total_request")
+			.groupBy("notifications.project_id")
 			.getRawMany();
 	}
 	getPerWebsite() {
@@ -40,8 +40,8 @@ class AnalyticsService {
 			.innerJoin("notifications.project_id", "project")
 			.innerJoin("project.website", "website")
 			.select("website.id", "website_id")
-			.addSelect("SUM(notification.total_sent)", "total_sent")
-			.addSelect("SUM(notification.total_request)", "total_request")
+			.addSelect("SUM(notifications.total_sent)", "total_sent")
+			.addSelect("SUM(notifications.total_request)", "total_request")
 			.groupBy("website.id")
 			.getRawMany();
 	}

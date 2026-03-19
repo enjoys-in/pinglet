@@ -7,6 +7,7 @@ import {
 	ManyToOne,
 	PrimaryGeneratedColumn,
 	type Relation,
+	UpdateDateColumn,
 } from "typeorm";
 
 import { UserEntity } from "./users.entity";
@@ -83,10 +84,9 @@ export class WebhookEntity {
 	@CreateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
 	created_at!: Date;
 
-	@CreateDateColumn({
+	@UpdateDateColumn({
 		type: "timestamp",
 		default: () => "CURRENT_TIMESTAMP",
-		onUpdate: "CURRENT_TIMESTAMP",
 	})
 	updated_at!: Date;
 

@@ -4,11 +4,13 @@ import {
 	DeleteDateColumn,
 	Entity,
 	JoinColumn,
+	ManyToOne,
 	OneToMany,
 	OneToOne,
 	PrimaryGeneratedColumn,
 	UpdateDateColumn,
 } from "typeorm";
+import { Plan, PlanType } from "./plan.entity";
 import { UserSettingsEntity } from "./user-settings.entity";
 import { WebhookEntity } from "./webhook.entity";
 import { WebsiteEntity } from "./website.entity";
@@ -29,6 +31,22 @@ export class UserEntity {
 
 	@Column({ type: "varchar", length: 255, select: false })
 	password!: string;
+
+	@Column({ type: "enum", enum: PlanType, default: PlanType.FREE })
+	plan_type!: PlanType;
+
+	@ManyToOne(() => Plan, { nullable: true, eager: false })
+	@JoinColumn({ name: "plan_id" })
+	plan!: Plan | null;
+
+	@Column({ nullable: true })
+	plan_id!: string | null;
+
+	@Column({ type: "varchar", length: 20, default: "monthly" })
+	billing_cycle!: "monthly" | "annual";
+
+	@Column({ type: "timestamp", nullable: true })
+	plan_expires_at!: Date | null;
 
 	@CreateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
 	created_at!: Date;
