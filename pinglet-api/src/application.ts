@@ -29,9 +29,15 @@ import "./utils/services/queue/event-listener";
 
 const io = getSocketIo();
 const allowedWithCreds = [
-	"http://pinglet.enjoys.in",
-	"https://pinglet.enjoys.in",
 	"http://localhost:3000",
+	"http://localhost:8888",
+	...(__CONFIG__.APP.ALLOWED_PRIMARY_DOMAINS
+		? __CONFIG__.APP.ALLOWED_PRIMARY_DOMAINS.split(",").flatMap((d) => {
+				const domain = d.trim();
+				if (!domain) return [];
+				return [`https://${domain}`, `http://${domain}`];
+			})
+		: []),
 ];
 
 class AppServer {
@@ -66,28 +72,24 @@ class AppServer {
 			cors({
 				origin: (origin, callback) => {
 					if (!origin) {
-						// For requests like curl, Postman, or same-origin requests
-						return callback(null, "*");
+						return callback(null, true);
 					}
-
 					if (allowedWithCreds.includes(origin)) {
-						callback(null, true); // Allow origin for credentials
-					} else {
-						callback(null, "*"); // Public access for files
+						return callback(null, origin);
 					}
+					return callback(null, false);
 				},
 				credentials: true,
 				optionsSuccessStatus: 200,
-				preflightContinue: true,
 			}),
 		);
+		AppServer.App.use(cookieParser(__CONFIG__.SECRETS.COOKIE_SECRET));
 		AppServer.App.use(bodyParser.json({ limit: "1mb" }));
+		AppServer.App.use(bodyParser.urlencoded({ extended: false }));
 		AppServer.App.use(useHttpsRedirection);
 		AppServer.App.use(SessionHandler.forRoot());
 		AppServer.App.use(fileUpload({ tempFileDir: "./" }));
-		AppServer.App.use(bodyParser.urlencoded({ extended: false }));
 		AppServer.App.use(AppMiddlewares.attachIoToRequestHandler(io));
-		AppServer.App.use(cookieParser(__CONFIG__.SECRETS.COOKIE_SECRET));
 	}
 	/**
 	 * Configures the Express application to serve static assets.
@@ -112,10 +114,9 @@ class AppServer {
 		AppServer.App.use(
 			"/api/v1/public",
 			cors({
-				origin: ["http://localhost:3000", "https://pinglet.enjoys.in"],
+				origin: allowedWithCreds,
 				credentials: false,
 				optionsSuccessStatus: 200,
-				preflightContinue: true,
 			}),
 			express.static(join(process.cwd(), "public"), options),
 		);

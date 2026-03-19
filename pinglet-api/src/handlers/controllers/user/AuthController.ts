@@ -179,7 +179,7 @@ class AuthController {
 				httpOnly: true,
 				maxAge: exp, // 30 day
 				secure: __CONFIG__.APP.APP_ENV !== "DEV",
-				sameSite: __CONFIG__.APP.APP_ENV === "DEV" ? "lax" : "strict",
+				sameSite: "lax",
 				expires: new Date(Date.now() + exp),
 			});
 
@@ -231,7 +231,7 @@ class AuthController {
 				httpOnly: true,
 				maxAge: exp, // 30 day
 				secure: __CONFIG__.APP.APP_ENV !== "DEV",
-				sameSite: __CONFIG__.APP.APP_ENV === "DEV" ? "lax" : "strict",
+				sameSite: "lax",
 				expires: new Date(Date.now() + exp),
 			});
 
@@ -299,7 +299,7 @@ class AuthController {
 				httpOnly: true,
 				maxAge: exp, // 30 day
 				secure: __CONFIG__.APP.APP_ENV !== "DEV",
-				sameSite: __CONFIG__.APP.APP_ENV === "DEV" ? "lax" : "strict",
+				sameSite: "lax",
 				expires: new Date(Date.now() + exp),
 			});
 
@@ -364,7 +364,7 @@ class AuthController {
 				httpOnly: true,
 				maxAge: exp, // 30 day
 				secure: __CONFIG__.APP.APP_ENV !== "DEV",
-				sameSite: __CONFIG__.APP.APP_ENV === "DEV" ? "lax" : "strict",
+				sameSite: "lax",
 				expires: new Date(Date.now() + exp),
 			});
 			res

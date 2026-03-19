@@ -20,7 +20,7 @@ export class SessionHandler {
 			cookie: {
 				httpOnly: true,
 				secure: isProduction,
-				sameSite: isProduction ? "strict" : "lax",
+				sameSite: "lax",
 				maxAge: 1000 * 60 * 60 * 24 * 7,
 			},
 		};
