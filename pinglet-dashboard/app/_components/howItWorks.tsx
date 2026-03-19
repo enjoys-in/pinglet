@@ -4,6 +4,12 @@ import { SectionHeader } from "./shared/section-header"
 import { FadeIn } from "./shared/fade-in"
 import { steps } from "./_data/how-it-works"
 
+const stepColors = [
+  { bg: "bg-gradient-to-br from-purple-500 to-violet-600", ring: "ring-purple-500/20" },
+  { bg: "bg-gradient-to-br from-blue-500 to-cyan-500", ring: "ring-blue-500/20" },
+  { bg: "bg-gradient-to-br from-pink-500 to-rose-500", ring: "ring-pink-500/20" },
+]
+
 export default function HowItWorksSection() {
   return (
     <section id="how-it-works" className="relative w-full py-24 md:py-32">
@@ -18,8 +24,8 @@ export default function HowItWorksSection() {
 
         {/* Vertical timeline */}
         <div className="relative mx-auto max-w-2xl">
-          {/* Vertical line */}
-          <div className="absolute bottom-0 left-5 top-0 w-px bg-border md:left-1/2 md:-translate-x-px" />
+          {/* Gradient vertical line */}
+          <div className="absolute bottom-0 left-5 top-0 w-px bg-gradient-to-b from-purple-500/50 via-blue-500/50 to-pink-500/50 md:left-1/2 md:-translate-x-px" />
 
           <div className="space-y-12">
             {steps.map((step, i) => (
@@ -37,8 +43,8 @@ export default function HowItWorksSection() {
                     )}
                   </div>
 
-                  {/* Dot */}
-                  <div className="relative z-10 flex size-10 shrink-0 items-center justify-center rounded-full border-2 border-primary bg-background text-sm font-bold text-primary md:mx-0">
+                  {/* Colorful gradient dot */}
+                  <div className={`relative z-10 flex size-10 shrink-0 items-center justify-center rounded-full ${stepColors[i % stepColors.length].bg} text-sm font-bold text-white shadow-lg ring-4 ${stepColors[i % stepColors.length].ring} md:mx-0`}>
                     {step.step}
                   </div>
 

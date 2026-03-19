@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { Bell } from "lucide-react"
+import { Bell, Heart } from "lucide-react"
 
 const footerSections = {
   Product: [
@@ -34,11 +34,11 @@ export default function Footer() {
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-6">
           {/* Brand */}
           <div className="lg:col-span-2">
-            <Link href="/" className="inline-flex items-center gap-2">
-              <div className="flex size-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
+            <Link href="/" className="inline-flex items-center gap-2 group">
+              <div className="flex size-7 items-center justify-center rounded-md bg-gradient-to-br from-primary to-purple-500 text-white shadow-sm shadow-primary/20 transition-shadow group-hover:shadow-md group-hover:shadow-primary/30">
                 <Bell className="size-3.5" />
               </div>
-              <span className="text-base font-semibold tracking-tight">Pinglet</span>
+              <span className="text-base font-bold tracking-tight">Pinglet</span>
             </Link>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted-foreground">
               The modern push notification platform for developers.
@@ -66,9 +66,10 @@ export default function Footer() {
           ))}
         </div>
 
-        <div className="mt-12 border-t border-border/40 pt-6">
-          <p className="text-center text-xs text-muted-foreground">
-            &copy; {new Date().getFullYear()} Pinglet &mdash; Powered by ENJOYS. All rights reserved.
+        <div className="mt-12 h-px w-full bg-gradient-to-r from-transparent via-border/60 to-transparent" />
+        <div className="pt-6">
+          <p className="flex items-center justify-center gap-1 text-center text-xs text-muted-foreground">
+            &copy; {new Date().getFullYear()} Pinglet &mdash; Made with <Heart className="size-3 fill-red-500 text-red-500" /> by ENJOYS. All rights reserved.
           </p>
         </div>
       </div>

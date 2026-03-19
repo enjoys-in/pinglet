@@ -40,20 +40,20 @@ export default function Header() {
     >
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2">
-          <div className="flex size-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
+        <Link href="/" className="flex items-center gap-2 group">
+          <div className="flex size-7 items-center justify-center rounded-md bg-gradient-to-br from-primary to-purple-500 text-white shadow-md shadow-primary/20 transition-shadow group-hover:shadow-lg group-hover:shadow-primary/30">
             <Bell className="size-3.5" />
           </div>
-          <span className="text-base font-semibold tracking-tight">Pinglet</span>
+          <span className="text-base font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text">Pinglet</span>
         </Link>
 
         {/* Desktop Nav - Pill */}
-        <nav className="hidden items-center rounded-full border border-border/60 bg-muted/50 p-1 md:flex">
+        <nav className="hidden items-center rounded-full border border-border/40 bg-card/50 backdrop-blur-sm p-1 shadow-sm md:flex">
           {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="rounded-full px-4 py-1.5 text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+              className="rounded-full px-4 py-1.5 text-[13px] font-medium text-muted-foreground transition-all duration-200 hover:text-foreground hover:bg-muted/60"
             >
               {link.label}
             </Link>
@@ -76,7 +76,7 @@ export default function Header() {
             </Button>
           </Link>
           <Link href="/auth/login">
-            <Button size="sm" className="h-8 rounded-full px-4 text-[13px] font-medium">
+            <Button size="sm" className="h-8 rounded-full px-4 text-[13px] font-medium bg-gradient-to-r from-primary to-purple-500 hover:shadow-md hover:shadow-primary/20 transition-all duration-300 border-0">
               Get Started
               <ChevronRight className="ml-0.5 size-3.5" />
             </Button>

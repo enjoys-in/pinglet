@@ -12,7 +12,7 @@ import { faqs } from "./_data/faqs"
 
 export default function FAQSection() {
   return (
-    <section id="faq" className="w-full bg-muted/30 py-24 md:py-32">
+    <section id="faq" className="relative w-full bg-muted/30 py-24 md:py-32 overflow-hidden">
       <div className="mx-auto max-w-6xl px-6">
         <FadeIn>
           <SectionHeader
@@ -28,7 +28,7 @@ export default function FAQSection() {
               <AccordionItem
                 key={i}
                 value={`item-${i}`}
-                className="border-b border-border/40"
+                className="border-b border-border/30"
               >
                 <AccordionTrigger className="py-5 text-left text-[15px] font-medium hover:no-underline">
                   {faq.question}
