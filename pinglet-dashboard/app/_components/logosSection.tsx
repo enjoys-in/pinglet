@@ -1,29 +1,28 @@
-import Image from 'next/image'
-import React from 'react'
+const companies = [
+  "Vercel", "Stripe", "Linear", "Notion", "Figma",
+  "Slack", "Discord", "Shopify", "Supabase", "Railway",
+]
 
-const LogosSection = () => {
-    return (
-        <section className="w-full py-12 border-y bg-muted/30">
-            <div className="px-4 md:px-6">
-                <div className="flex flex-col items-center justify-center space-y-4 text-center">
-                    <p className="text-sm font-medium text-muted-foreground">Trusted by innovative companies worldwide</p>
-                    <div className="flex flex-wrap items-center justify-center gap-8 md:gap-12 lg:gap-16">
-                        {[1, 2, 3, 4, 5].map((i) => (
-                            <Image
-                                key={i}
-                                src={`/placeholder-logo.svg`}
-                                alt={`Company logo ${i}`}
-                                width={120}
-                                height={60}
-                                className="h-8 w-auto opacity-70 grayscale transition-all hover:opacity-100 hover:grayscale-0"
-                            />
-                        ))}
-                    </div>
-                </div>
-            </div>
-        </section>
-
-    )
+export default function LogosSection() {
+  return (
+    <section className="w-full border-y border-border/40 py-8">
+      <div className="mx-auto max-w-7xl px-6">
+        <p className="mb-6 text-center text-xs font-medium uppercase tracking-widest text-muted-foreground/70">
+          Trusted by teams at
+        </p>
+        <div className="relative overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
+          <div className="animate-marquee flex w-max items-center gap-12">
+            {[...companies, ...companies].map((company, i) => (
+              <span
+                key={`${company}-${i}`}
+                className="whitespace-nowrap text-base font-semibold text-muted-foreground/40 transition-colors hover:text-muted-foreground/70"
+              >
+                {company}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  )
 }
-
-export default LogosSection

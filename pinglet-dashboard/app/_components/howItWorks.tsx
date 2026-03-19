@@ -1,69 +1,48 @@
 "use client"
-import React from 'react'
-import { motion } from 'framer-motion';
-import { Badge } from '@/components/ui/badge';
 
-const HowItWorks = () => {
+import { SectionHeader } from "./shared/section-header"
+import { FadeIn } from "./shared/fade-in"
+import { steps } from "./_data/how-it-works"
+
+export default function HowItWorksSection() {
   return (
-    <section className="w-full py-20 md:py-32 bg-muted/30 relative overflow-hidden">
-      <div className="absolute inset-0 -z-10 h-full w-full bg-white dark:bg-black bg-[linear-gradient(to_right,#f0f0f0_1px,transparent_1px),linear-gradient(to_bottom,#f0f0f0_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#1f1f1f_1px,transparent_1px),linear-gradient(to_bottom,#1f1f1f_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_50%,#000_40%,transparent_100%)]"></div>
+    <section id="how-it-works" className="relative w-full overflow-hidden bg-muted/40 py-24 md:py-32">
+      {/* Subtle radial background */}
+      <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_50%_50%,hsl(var(--primary)/0.04),transparent_70%)]" />
 
-      <div className="px-4 md:px-6 relative">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="flex flex-col items-center justify-center space-y-4 text-center mb-16"
-        >
-          <Badge className="rounded-full px-4 py-1.5 text-sm font-medium" variant="secondary">
-            How It Works
-          </Badge>
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Simple Process, Powerful Results</h2>
-          <p className="max-w-[800px] text-muted-foreground md:text-lg">
-            Get up and running with custom push notifications in minutes. Our streamlined process makes it easy to engage your users like never before.
-          </p>
-        </motion.div>
+      <div className="mx-auto max-w-7xl px-6">
+        <FadeIn>
+          <SectionHeader
+            badge="How It Works"
+            title="Up and running in minutes"
+            description="Three simple steps to start engaging your users with targeted push notifications."
+          />
+        </FadeIn>
 
-        <div className="grid md:grid-cols-3 gap-8 md:gap-12 relative">
-          <div className="hidden md:block absolute top-1/2 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-border to-transparent -translate-y-1/2 z-0"></div>
+        <div className="relative mx-auto max-w-4xl">
+          {/* Connector line (desktop) */}
+          <div className="absolute left-0 right-0 top-10 hidden h-px bg-gradient-to-r from-transparent via-border to-transparent md:block" />
 
-          {[
-            {
-              step: "01",
-              title: "Quick Integration",
-              description: "Add our lightweight SDK to your app or use our REST API. Integration takes less than 5 minutes with our comprehensive documentation.",
-            },
-            {
-              step: "02",
-              title: "Configure & Customize",
-              description: "Set up your notification templates, user segments, and targeting rules through our intuitive dashboard or programmatically via API.",
-            },
-            {
-              step: "03",
-              title: "Send & Optimize",
-              description: "aunch your campaigns and watch real-time analytics. Our AI continuously optimizes delivery times and content for maximum engagement.",
-            },
-          ].map((step, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: i * 0.1 }}
-              className="relative z-10 flex flex-col items-center text-center space-y-4"
-            >
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary/70 text-primary-foreground text-xl font-bold shadow-lg">
-                {step.step}
-              </div>
-              <h3 className="text-xl font-bold">{step.title}</h3>
-              <p className="text-muted-foreground">{step.description}</p>
-            </motion.div>
-          ))}
+          <div className="grid gap-12 md:grid-cols-3 md:gap-8">
+            {steps.map((step, i) => (
+              <FadeIn
+                key={step.step}
+                delay={i * 0.12}
+                className="relative flex flex-col items-center text-center"
+              >
+                {/* Step number */}
+                <div className="relative z-10 mb-6 flex size-20 items-center justify-center rounded-2xl bg-card shadow-lg shadow-black/[0.04] ring-1 ring-border dark:shadow-black/20">
+                  <span className="bg-gradient-to-br from-primary to-primary/70 bg-clip-text text-2xl font-bold text-transparent">
+                    {step.step}
+                  </span>
+                </div>
+                <h3 className="mb-2 text-lg font-semibold">{step.title}</h3>
+                <p className="text-sm leading-relaxed text-muted-foreground">{step.description}</p>
+              </FadeIn>
+            ))}
+          </div>
         </div>
       </div>
     </section>
   )
 }
-
-export default HowItWorks

@@ -1,90 +1,103 @@
 "use client"
 
 import Image from "next/image"
-import { motion } from "framer-motion"
-import {
-    Check,
-
-    ArrowRight,
-
-} from "lucide-react"
-import { Button } from "@/components/ui/button"
-
-import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
+import { ArrowRight, Check, Sparkles } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { FadeIn } from "./shared/fade-in"
 
-const HeroSection = () => {
-    return (
-        <section className="w-full overflow-hidden">
-            <div className="px-4 py-2 relative">
-                <div className="absolute inset-0 -z-10 h-full w-full bg-white dark:bg-black bg-[linear-gradient(to_right,#f0f0f0_1px,transparent_1px),linear-gradient(to_bottom,#f0f0f0_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#1f1f1f_1px,transparent_1px),linear-gradient(to_bottom,#1f1f1f_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_110%)]"></div>
+const stats = [
+  { value: "10K+", label: "Developers" },
+  { value: "99.9%", label: "Uptime" },
+  { value: "<40ms", label: "Delivery" },
+  { value: "300%", label: "More Engagement" },
+]
 
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                    className="text-center max-w-3xl mx-auto mb-12"
-                >
-                    <Badge className="mb-4 rounded-full px-4 py-1.5 text-sm font-medium" variant="secondary">
-                        Beta Release
-                    </Badge>
-                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
-                        Custom Push Notifications That Actually Work
-                    </h1>
-                    <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-                        Engage your users with personalized, real-time notifications across all platforms. Our custom push notification service delivers messages that drive action and boost engagement by up to 300%.
-                    </p>
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <Link href={"/auth/login"}>
-                            <Button size="lg" className="rounded-full h-12 px-8 text-base">
-                                Get Started
-                                <ArrowRight className="ml-2 size-4" />
-                            </Button>
-                        </Link>
-                        <Link href={"/demo"}>
-                            <Button size="lg" variant="outline" className="rounded-full h-12 px-8 text-base">
-                                Try a Demo
-                            </Button></Link>
-                    </div>
-                    {/* <div className="flex items-center justify-center gap-4 mt-6 text-sm text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                            <Check className="size-4 text-primary" />
-                            <span>No credit card</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                            <Check className="size-4 text-primary" />
-                            <span>14-day trial</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                            <Check className="size-4 text-primary" />
-                            <span>Cancel anytime</span>
-                        </div>
-                    </div> */}
-                </motion.div>
+export default function HeroSection() {
+  return (
+    <section className="relative w-full overflow-hidden">
+      {/* Gradient orbs */}
+      <div className="pointer-events-none absolute -top-40 left-1/2 -z-10 h-[600px] w-[600px] -translate-x-1/2 rounded-full bg-primary/8 blur-[120px]" />
+      <div className="pointer-events-none absolute -top-20 left-1/4 -z-10 h-[400px] w-[400px] rounded-full bg-primary/5 blur-[100px]" />
 
-                <motion.div
-                    initial={{ opacity: 0, y: 40 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.7, delay: 0.2 }}
-                    className="relative mx-auto max-w-5xl"
-                >
-                    <div className="rounded-xl overflow-hidden shadow-2xl border border-border/40 bg-gradient-to-b from-background to-muted/20">
-                        <Image
-                            src="https://cdn.dribbble.com/userupload/12302729/file/original-fa372845e394ee85bebe0389b9d86871.png?resize=1504x1128&vertical=center"
-                            width={1280}
-                            height={720}
-                            alt="SaaSify dashboard"
-                            className="w-full h-auto"
-                            priority
-                        />
-                        <div className="absolute inset-0 rounded-xl ring-1 ring-inset ring-black/10 dark:ring-white/10"></div>
-                    </div>
-                    <div className="absolute -bottom-6 -right-6 -z-10 h-[300px] w-[300px] rounded-full bg-gradient-to-br from-primary/30 to-secondary/30 blur-3xl opacity-70"></div>
-                    <div className="absolute -top-6 -left-6 -z-10 h-[300px] w-[300px] rounded-full bg-gradient-to-br from-secondary/30 to-primary/30 blur-3xl opacity-70"></div>
-                </motion.div>
+      <div className="mx-auto max-w-7xl px-6 pb-20 pt-24 md:pb-28 md:pt-32">
+        <FadeIn className="mx-auto max-w-4xl text-center">
+          <Badge className="mb-6 inline-flex items-center gap-1.5 rounded-full border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-primary hover:bg-primary/10">
+            <Sparkles className="size-3" />
+            Now in Beta
+          </Badge>
+
+          <h1 className="text-[2.5rem] font-extrabold leading-[1.1] tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
+            Push Notifications
+            <br />
+            <span className="bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent">
+              That Actually Work
+            </span>
+          </h1>
+
+          <p className="mx-auto mt-6 max-w-xl text-base text-muted-foreground sm:text-lg md:text-xl md:leading-relaxed">
+            Engage your users with personalized, real-time notifications.
+            Boost engagement by up to 300% with smart targeting.
+          </p>
+
+          <div className="mt-10 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+            <Link href="/auth/login">
+              <Button size="lg" className="h-12 rounded-xl px-8 text-sm font-semibold shadow-lg shadow-primary/25 transition-shadow hover:shadow-xl hover:shadow-primary/30">
+                Start for Free
+                <ArrowRight className="ml-2 size-4" />
+              </Button>
+            </Link>
+            <Link href="/demo">
+              <Button size="lg" variant="outline" className="h-12 rounded-xl px-8 text-sm font-semibold">
+                Live Demo
+              </Button>
+            </Link>
+          </div>
+
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-1.5 text-sm text-muted-foreground">
+            {["No credit card", "Free forever plan", "5-min setup"].map((t) => (
+              <span key={t} className="flex items-center gap-1.5">
+                <Check className="size-3.5 text-primary" />
+                {t}
+              </span>
+            ))}
+          </div>
+        </FadeIn>
+
+        {/* Dashboard preview */}
+        <FadeIn delay={0.15} className="relative mx-auto mt-20 max-w-5xl">
+          <div className="rounded-xl border border-border/60 bg-card p-1.5 shadow-2xl shadow-black/5 dark:shadow-black/30">
+            <div className="overflow-hidden rounded-lg">
+              <Image
+                src="https://cdn.dribbble.com/userupload/12302729/file/original-fa372845e394ee85bebe0389b9d86871.png?resize=1504x1128&vertical=center"
+                width={1280}
+                height={720}
+                alt="Pinglet dashboard preview"
+                className="h-auto w-full"
+                priority
+              />
             </div>
-        </section>
-    )
-}
+          </div>
+          <div className="pointer-events-none absolute -bottom-10 -right-10 -z-10 h-80 w-80 rounded-full bg-primary/15 blur-[80px]" />
+          <div className="pointer-events-none absolute -left-10 -top-10 -z-10 h-80 w-80 rounded-full bg-primary/10 blur-[80px]" />
+        </FadeIn>
 
-export default HeroSection
+        {/* Stats bar */}
+        <FadeIn delay={0.3} className="mx-auto mt-16 max-w-3xl">
+          <div className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-border/60 bg-border/60 sm:grid-cols-4">
+            {stats.map((stat) => (
+              <div
+                key={stat.label}
+                className="flex flex-col items-center gap-1 bg-card px-4 py-5"
+              >
+                <span className="text-xl font-bold sm:text-2xl">{stat.value}</span>
+                <span className="text-xs text-muted-foreground">{stat.label}</span>
+              </div>
+            ))}
+          </div>
+        </FadeIn>
+      </div>
+    </section>
+  )
+}

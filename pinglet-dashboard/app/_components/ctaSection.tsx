@@ -1,50 +1,51 @@
 "use client"
-import { Button } from '@/components/ui/button'
-import { ArrowRight } from 'lucide-react'
-import React from 'react'
-import { motion } from 'framer-motion';
-import Link from 'next/link';
 
-const CTASection = () => {
+import Link from "next/link"
+import { ArrowRight } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { FadeIn } from "./shared/fade-in"
+
+export default function CTASection() {
   return (
-    <section className="w-full py-20 md:py-32 bg-gradient-to-br from-primary to-primary/80 text-primary-foreground relative overflow-hidden">
-      <div className="absolute inset-0 -z-10 bg-[linear-gradient(to_right,#ffffff10_1px,transparent_1px),linear-gradient(to_bottom,#ffffff10_1px,transparent_1px)] bg-[size:4rem_4rem]"></div>
-      <div className="absolute -top-24 -left-24 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
-      <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
+    <section className="relative w-full overflow-hidden py-24 md:py-32">
+      {/* Gradient background */}
+      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-primary via-primary/90 to-primary/80" />
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_70%_30%,hsl(0_0%_100%/0.08),transparent_50%)]" />
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_20%_80%,hsl(0_0%_100%/0.06),transparent_50%)]" />
 
-      <div className="px-4 md:px-6 relative">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="flex flex-col items-center justify-center space-y-6 text-center"
-        >
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight">
-            Ready to Boost Your Engagement?
-          </h2>
-          <p className="mx-auto max-w-[700px] text-primary-foreground/80 md:text-xl">
-            Join thousands of developers who trust our custom push notification service to deliver messages that matter. Start your free trial today and see the difference personalized notifications can make.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 mt-4">
-            <Link href="/auth/login">
-              <Button size="lg" variant="secondary" className="rounded-full h-12 px-8 text-base">
-                Get Started
-                <ArrowRight className="ml-2 size-4" />
-              </Button></Link>
-            <Link href="/demo">
-              <Button
-                size="lg"
-                variant="outline"
-                className="rounded-full h-12 px-8 text-base bg-transparent border-white text-white hover:bg-white/10"
-              >
-                Try Demo
-              </Button></Link>
+      <div className="mx-auto max-w-7xl px-6">
+        <FadeIn>
+          <div className="mx-auto max-w-2xl text-center">
+            <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl">
+              Ready to boost your engagement?
+            </h2>
+            <p className="mx-auto mt-5 max-w-lg text-base text-white/70 sm:text-lg leading-relaxed">
+              Join thousands of developers who trust Pinglet to deliver
+              notifications that matter. Start free today.
+            </p>
+            <div className="mt-10 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+              <Link href="/auth/login">
+                <Button
+                  size="lg"
+                  className="h-12 rounded-xl bg-white px-8 text-sm font-semibold text-primary shadow-lg hover:bg-white/90"
+                >
+                  Start for Free
+                  <ArrowRight className="ml-2 size-4" />
+                </Button>
+              </Link>
+              <Link href="/demo">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="h-12 rounded-xl border-white/25 bg-white/5 px-8 text-sm font-semibold text-white backdrop-blur-sm hover:bg-white/10"
+                >
+                  Live Demo
+                </Button>
+              </Link>
+            </div>
           </div>
-        </motion.div>
+        </FadeIn>
       </div>
     </section>
   )
 }
-
-export default CTASection

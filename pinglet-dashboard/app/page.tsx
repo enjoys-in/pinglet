@@ -1,42 +1,26 @@
-import Features from "./_components/features"
 import HeroSection from "./_components/heroSection"
-import { Pricing } from "./_components/pricing"
-import FAQs from "./_components/faqs"
-
-import HowItWorks from "./_components/howItWorks"
+import LogosSection from "./_components/logosSection"
+import FeaturesSection from "./_components/features"
+import HowItWorksSection from "./_components/howItWorks"
+import TestimonialsSection from "./_components/testimonials"
+import PricingSection from "./_components/pricing"
+import FAQSection from "./_components/faqs"
 import CTASection from "./_components/ctaSection"
 import MainLayout from "./(extra)/layout"
 
 export default function Page() {
-
   return (
     <MainLayout>
       <main className="flex-1">
-        {/* Hero Section */}
         <HeroSection />
-
-        {/* Logos Section */}
-
-        {/* Features Section */}
-        <Features />
-
-
-        {/* How It Works Section */}
-        <HowItWorks />
-
-        {/* Testimonials Section */}
-
-
-        {/* Pricing Section */}
-        <Pricing />
-
-        {/* FAQ Section */}
-        {/* <FAQs /> */}
-
-        {/* CTA Section */}
+        <LogosSection />
+        <FeaturesSection />
+        <HowItWorksSection />
+        <TestimonialsSection />
+        <PricingSection />
+        <FAQSection />
         <CTASection />
       </main>
     </MainLayout>
-
   )
 }
