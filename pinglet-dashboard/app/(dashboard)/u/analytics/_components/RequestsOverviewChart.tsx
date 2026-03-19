@@ -1,10 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useCallback } from "react"
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart"
+import { API } from "@/lib/api/handler"
+import { Loader2 } from "lucide-react"
 
 const chartConfig = {
   requests: {
@@ -29,93 +31,36 @@ const chartConfig = {
   },
 }
 
-const generateMockData = (timeFilter: string) => {
-  const now = new Date()
-  const data = []
-
-  let intervals: number
-  let dateFormat: (date: Date) => string
-
-  switch (timeFilter) {
-    case "5min":
-      intervals = 10
-      dateFormat = (date) => date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      break
-    case "1hour":
-      intervals = 12
-      dateFormat = (date) => date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      break
-    case "daily":
-      intervals = 24
-      dateFormat = (date) => date.toLocaleTimeString([], { hour: '2-digit' })
-      break
-    case "weekly":
-      intervals = 7
-      dateFormat = (date) => date.toLocaleDateString([], { weekday: 'short' })
-      break
-    case "monthly":
-      intervals = 30
-      dateFormat = (date) => date.toLocaleDateString([], { month: 'short', day: 'numeric' })
-      break
-    default:
-      intervals = 24
-      dateFormat = (date) => date.toLocaleTimeString([], { hour: '2-digit' })
-  }
-
-  for (let i = intervals - 1; i >= 0; i--) {
-    const date = new Date(now)
-
-    switch (timeFilter) {
-      case "5min":
-        date.setMinutes(date.getMinutes() - i * 0.5)
-        break
-      case "1hour":
-        date.setMinutes(date.getMinutes() - i * 5)
-        break
-      case "daily":
-        date.setHours(date.getHours() - i)
-        break
-      case "weekly":
-        date.setDate(date.getDate() - i)
-        break
-      case "monthly":
-        date.setDate(date.getDate() - i)
-        break
-    }
-
-    const requests = Math.floor(Math.random() * 1000) + 500
-    const sent = Math.floor(requests * 0.8) + Math.floor(Math.random() * 100)
-    const failed = Math.floor(requests * 0.1) + Math.floor(Math.random() * 50)
-    const closed = Math.floor(requests * 0.05) + Math.floor(Math.random() * 25)
-    const dropped = Math.floor(requests * 0.05) + Math.floor(Math.random() * 25)
-
-    data.push({
-      time: dateFormat(date),
-      requests,
-      sent,
-      failed,
-      closed,
-      dropped,
-    })
-  }
-
-  return data
+interface Props {
+  initialData: Array<{ time: string; requests: number; sent: number; failed: number; closed: number; dropped: number }> | null
 }
 
-export function RequestsOverviewChart() {
+export function RequestsOverviewChart({ initialData }: Props) {
   const [timeFilter, setTimeFilter] = useState("daily")
-  const data = generateMockData(timeFilter)
+  const [data, setData] = useState(initialData ?? [])
+  const [loading, setLoading] = useState(false)
+
+  const handleFilterChange = useCallback(async (filter: string) => {
+    setTimeFilter(filter)
+    setLoading(true)
+    try {
+      const res = await API.getRequestsOverview(filter)
+      setData(res.data?.result ?? [])
+    } catch {
+      setData([])
+    } finally {
+      setLoading(false)
+    }
+  }, [])
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <div>
           <CardTitle>Requests Overview</CardTitle>
-          <CardDescription>
-            Track request metrics over time
-          </CardDescription>
+          <CardDescription>Track request metrics over time</CardDescription>
         </div>
-        <Select value={timeFilter} onValueChange={setTimeFilter}>
+        <Select value={timeFilter} onValueChange={handleFilterChange}>
           <SelectTrigger className="w-[140px]">
             <SelectValue />
           </SelectTrigger>
@@ -129,73 +74,25 @@ export function RequestsOverviewChart() {
         </Select>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="h-[400px] w-full">
-
-          <AreaChart
-            accessibilityLayer
-            data={data}
-            margin={{
-              left: 12,
-              right: 12,
-            }}
-          >
-            <CartesianGrid vertical={false} />
-            <XAxis
-              dataKey="time"
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-            />
-            <ChartTooltip
-              cursor={false}
-              content={<ChartTooltipContent indicator="line" />}
-            />
-            <Area
-              dataKey="requests"
- 
-              type="natural"
-              fill="transparent"        // No fill
-              strokeWidth={2}           // Optional: make the line bolder
-              dot={true}  
-              stroke="var(--color-requests)"
-              stackId="a"
-            />
-            <Area
-              dataKey="sent"
-              type="natural"
-              fill="var(--color-sent)"
-              fillOpacity={0.4}
-              stroke="var(--color-sent)"
-              stackId="b"
-            />
-            <Area
-              dataKey="failed"
-              type="natural"
-              fill="var(--color-failed)"
-              fillOpacity={0.4}
-              stroke="var(--color-failed)"
-              stackId="c"
-            />
-            <Area
-              dataKey="closed"
-              type="natural"
-              fill="var(--color-closed)"
-              fillOpacity={0.4}
-              stroke="var(--color-closed)"
-              stackId="d"
-            />
-            <Area
-              dataKey="subscribers"
-              type="natural"
-              fill="transparent"        // No fill
-              stroke="var(--color-dropped)" // Line color
-              dot={true}               // Optional: hide data point dots
-              strokeWidth={2}           // Optional: make the line bolder
-              stackId="a"
-            />
-            <ChartLegend content={<ChartLegendContent />} />
-          </AreaChart>
-        </ChartContainer>
+        {loading ? (
+          <div className="h-[400px] flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+        ) : data.length === 0 ? (
+          <div className="h-[400px] flex items-center justify-center text-sm text-muted-foreground">No data available</div>
+        ) : (
+          <ChartContainer config={chartConfig} className="h-[400px] w-full">
+            <AreaChart accessibilityLayer data={data} margin={{ left: 12, right: 12 }}>
+              <CartesianGrid vertical={false} />
+              <XAxis dataKey="time" tickLine={false} axisLine={false} tickMargin={8} />
+              <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
+              <Area dataKey="requests" type="natural" fill="transparent" strokeWidth={2} dot={true} stroke="var(--color-requests)" stackId="a" />
+              <Area dataKey="sent" type="natural" fill="var(--color-sent)" fillOpacity={0.4} stroke="var(--color-sent)" stackId="b" />
+              <Area dataKey="failed" type="natural" fill="var(--color-failed)" fillOpacity={0.4} stroke="var(--color-failed)" stackId="c" />
+              <Area dataKey="closed" type="natural" fill="var(--color-closed)" fillOpacity={0.4} stroke="var(--color-closed)" stackId="d" />
+              <Area dataKey="dropped" type="natural" fill="transparent" stroke="var(--color-dropped)" dot={true} strokeWidth={2} stackId="e" />
+              <ChartLegend content={<ChartLegendContent />} />
+            </AreaChart>
+          </ChartContainer>
+        )}
       </CardContent>
     </Card>
   )

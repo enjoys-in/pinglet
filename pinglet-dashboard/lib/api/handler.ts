@@ -190,4 +190,36 @@ export class API {
     static getTemplateById(template_id: string | number) {
         return instance.get<ApiResponse<TemplateResponse>>('/api/v1/template/' + template_id)
     }
+
+    // Dashboard & Analytics
+    static getDashboardStats() {
+        return instance.get<ApiResponse<any>>('/api/v1/dashboard/stats')
+    }
+    static getDashboardNotificationsChart(period: string = 'weekly') {
+        return instance.get<ApiResponse<any>>('/api/v1/dashboard/notifications-chart?period=' + period)
+    }
+    static getDashboardRatesChart(period: string = 'weekly') {
+        return instance.get<ApiResponse<any>>('/api/v1/dashboard/rates-chart?period=' + period)
+    }
+    static getDashboardSubscribers(limit: number = 10) {
+        return instance.get<ApiResponse<any>>('/api/v1/dashboard/subscribers?limit=' + limit)
+    }
+    static getDeliveryOverview(filter: string = 'daily') {
+        return instance.get<ApiResponse<any>>('/api/v1/analytics/delivery-overview?filter=' + filter)
+    }
+    static getEngagementRates(filter: string = 'daily') {
+        return instance.get<ApiResponse<any>>('/api/v1/analytics/engagement-rates?filter=' + filter)
+    }
+    static getNotificationTypes(filter: string = 'daily') {
+        return instance.get<ApiResponse<any>>('/api/v1/analytics/notification-types?filter=' + filter)
+    }
+    static getSubscriberGrowth(filter: string = 'monthly') {
+        return instance.get<ApiResponse<any>>('/api/v1/analytics/subscriber-growth?filter=' + filter)
+    }
+    static getRequestsOverview(filter: string = 'daily') {
+        return instance.get<ApiResponse<any>>('/api/v1/analytics/requests-overview?filter=' + filter)
+    }
+    static getProjectSubscriberTrends(filter: string = 'daily') {
+        return instance.get<ApiResponse<any>>('/api/v1/analytics/project-subscriber-trends?filter=' + filter)
+    }
 }

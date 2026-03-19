@@ -1,104 +1,54 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useCallback } from "react"
 import { Area, AreaChart, XAxis, YAxis, CartesianGrid } from "recharts"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart"
+import { API } from "@/lib/api/handler"
+import { Loader2 } from "lucide-react"
 
 const chartConfig = {
   sent: {
     label: "Sent",
-    color: "hsl(152, 69%, 47%)", // ✅ Green - success
+    color: "hsl(152, 69%, 47%)",
   },
   failed: {
     label: "Failed",
-    color: "hsl(0, 84%, 60%)", // ❌ Red - failure
+    color: "hsl(0, 84%, 60%)",
   },
-};
-
-
-const generateMockData = (timeFilter: string) => {
-  const now = new Date()
-  const data = []
-  
-  let intervals: number
-  let dateFormat: (date: Date) => string
-  
-  switch (timeFilter) {
-    case "5min":
-      intervals = 10
-      dateFormat = (date) => date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      break
-    case "1hour":
-      intervals = 12
-      dateFormat = (date) => date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      break
-    case "daily":
-      intervals = 24
-      dateFormat = (date) => date.toLocaleTimeString([], { hour: '2-digit' })
-      break
-    case "weekly":
-      intervals = 7
-      dateFormat = (date) => date.toLocaleDateString([], { weekday: 'short' })
-      break
-    case "monthly":
-      intervals = 30
-      dateFormat = (date) => date.toLocaleDateString([], { month: 'short', day: 'numeric' })
-      break
-    default:
-      intervals = 24
-      dateFormat = (date) => date.toLocaleTimeString([], { hour: '2-digit' })
-  }
-  
-  for (let i = intervals - 1; i >= 0; i--) {
-    const date = new Date(now)
-    
-    switch (timeFilter) {
-      case "5min":
-        date.setMinutes(date.getMinutes() - i * 0.5)
-        break
-      case "1hour":
-        date.setMinutes(date.getMinutes() - i * 5)
-        break
-      case "daily":
-        date.setHours(date.getHours() - i)
-        break
-      case "weekly":
-        date.setDate(date.getDate() - i)
-        break
-      case "monthly":
-        date.setDate(date.getDate() - i)
-        break
-    }
-    
-    const sent = Math.floor(Math.random() * 800) + 200
-    const failed = Math.floor(Math.random() * 100) + 10
-    
-    data.push({
-      time: dateFormat(date),
-      sent,
-      failed,
-    })
-  }
-  
-  return data
 }
 
-export function DeliveryOverviewChart() {
+interface Props {
+  initialData: Array<{ time: string; sent: number; failed: number }> | null
+}
+
+export function DeliveryOverviewChart({ initialData }: Props) {
   const [timeFilter, setTimeFilter] = useState("daily")
-  const data = generateMockData(timeFilter)
+  const [data, setData] = useState(initialData ?? [])
+  const [loading, setLoading] = useState(false)
+
+  const handleFilterChange = useCallback(async (filter: string) => {
+    setTimeFilter(filter)
+    setLoading(true)
+    try {
+      const res = await API.getDeliveryOverview(filter)
+      setData(res.data?.result ?? [])
+    } catch {
+      setData([])
+    } finally {
+      setLoading(false)
+    }
+  }, [])
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <div>
           <CardTitle>Delivery Overview</CardTitle>
-          <CardDescription>
-            Monitor delivery success and failure rates
-          </CardDescription>
+          <CardDescription>Monitor delivery success and failure rates</CardDescription>
         </div>
-        <Select value={timeFilter} onValueChange={setTimeFilter}>
+        <Select value={timeFilter} onValueChange={handleFilterChange}>
           <SelectTrigger className="w-[140px]">
             <SelectValue />
           </SelectTrigger>
@@ -112,46 +62,23 @@ export function DeliveryOverviewChart() {
         </Select>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="h-[400px] w-full">
-          <AreaChart
-            accessibilityLayer
-            data={data}
-            margin={{
-              left: 12,
-              right: 12,
-            }}
-          >
-            <CartesianGrid vertical={false} />
-            <XAxis
-              dataKey="time"
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-            />
-            <YAxis />
-            <ChartTooltip
-              cursor={false}
-              content={<ChartTooltipContent indicator="line" />}
-            />
-            <Area
-              dataKey="sent"
-              type="natural"
-              fill="var(--color-sent)"
-              fillOpacity={0.4}
-              stroke="var(--color-sent)"
-              stackId="a"
-            />
-            <Area
-              dataKey="failed"
-              type="natural"
-              fill="var(--color-failed)"
-              fillOpacity={0.4}
-              stroke="var(--color-failed)"
-              stackId="b"
-            />
-            <ChartLegend content={<ChartLegendContent />} />
-          </AreaChart>
-        </ChartContainer>
+        {loading ? (
+          <div className="h-[400px] flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+        ) : data.length === 0 ? (
+          <div className="h-[400px] flex items-center justify-center text-sm text-muted-foreground">No data available</div>
+        ) : (
+          <ChartContainer config={chartConfig} className="h-[400px] w-full">
+            <AreaChart accessibilityLayer data={data} margin={{ left: 12, right: 12 }}>
+              <CartesianGrid vertical={false} />
+              <XAxis dataKey="time" tickLine={false} axisLine={false} tickMargin={8} />
+              <YAxis />
+              <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
+              <Area dataKey="sent" type="natural" fill="var(--color-sent)" fillOpacity={0.4} stroke="var(--color-sent)" stackId="a" />
+              <Area dataKey="failed" type="natural" fill="var(--color-failed)" fillOpacity={0.4} stroke="var(--color-failed)" stackId="b" />
+              <ChartLegend content={<ChartLegendContent />} />
+            </AreaChart>
+          </ChartContainer>
+        )}
       </CardContent>
     </Card>
   )

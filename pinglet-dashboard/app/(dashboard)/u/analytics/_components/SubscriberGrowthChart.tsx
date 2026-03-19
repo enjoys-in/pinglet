@@ -1,10 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useCallback } from "react"
 import { Area, AreaChart, XAxis, YAxis, CartesianGrid } from "recharts"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart"
+import { API } from "@/lib/api/handler"
+import { Loader2 } from "lucide-react"
 
 const chartConfig = {
   subscribers: {
@@ -13,86 +15,36 @@ const chartConfig = {
   },
 }
 
-const generateMockData = (timeFilter: string) => {
-  const now = new Date()
-  const data = []
-
-  let intervals: number
-  let dateFormat: (date: Date) => string
-
-  switch (timeFilter) {
-    case "weekly":
-      intervals = 12
-      dateFormat = (date) => `Week ${Math.ceil((now.getTime() - date.getTime()) / (7 * 24 * 60 * 60 * 1000)) + 1}`
-      break
-    case "monthly":
-      intervals = 12
-      dateFormat = (date) => date.toLocaleDateString([], { month: 'short', year: 'numeric' })
-      break
-    case "3months":
-      intervals = 12
-      dateFormat = (date) => date.toLocaleDateString([], { month: 'short', day: 'numeric' })
-      break
-    case "6months":
-      intervals = 24
-      dateFormat = (date) => date.toLocaleDateString([], { month: 'short', day: 'numeric' })
-      break
-    case "yearly":
-      intervals = 12
-      dateFormat = (date) => date.toLocaleDateString([], { month: 'short', year: 'numeric' })
-      break
-    default:
-      intervals = 12
-      dateFormat = (date) => date.toLocaleDateString([], { month: 'short', year: 'numeric' })
-  }
-
-  for (let i = intervals - 1; i >= 0; i--) {
-    const date = new Date(now)
-
-    switch (timeFilter) {
-      case "weekly":
-        date.setDate(date.getDate() - i * 7)
-        break
-      case "monthly":
-        date.setMonth(date.getMonth() - i)
-        break
-      case "3months":
-        date.setDate(date.getDate() - i * 7)
-        break
-      case "6months":
-        date.setDate(date.getDate() - i * 7)
-        break
-      case "yearly":
-        date.setMonth(date.getMonth() - i)
-        break
-    }
-
-    const baseGrowth = timeFilter === "yearly" ? 1000 : timeFilter === "monthly" ? 500 : 200
-    const subscribers = Math.floor(Math.random() * baseGrowth) + baseGrowth * 0.5
-
-    data.push({
-      time: dateFormat(date),
-      subscribers,
-    })
-  }
-
-  return data
+interface Props {
+  initialData: Array<{ time: string; subscribers: number }> | null
 }
 
-export function SubscriberGrowthChart() {
+export function SubscriberGrowthChart({ initialData }: Props) {
   const [timeFilter, setTimeFilter] = useState("monthly")
-  const data = generateMockData(timeFilter)
+  const [data, setData] = useState(initialData ?? [])
+  const [loading, setLoading] = useState(false)
+
+  const handleFilterChange = useCallback(async (filter: string) => {
+    setTimeFilter(filter)
+    setLoading(true)
+    try {
+      const res = await API.getSubscriberGrowth(filter)
+      setData(res.data?.result ?? [])
+    } catch {
+      setData([])
+    } finally {
+      setLoading(false)
+    }
+  }, [])
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <div>
           <CardTitle>Subscriber Growth</CardTitle>
-          <CardDescription>
-            Track subscriber acquisition over time
-          </CardDescription>
+          <CardDescription>Track subscriber acquisition over time</CardDescription>
         </div>
-        <Select value={timeFilter} onValueChange={setTimeFilter}>
+        <Select value={timeFilter} onValueChange={handleFilterChange}>
           <SelectTrigger className="w-[140px]">
             <SelectValue />
           </SelectTrigger>
@@ -106,40 +58,22 @@ export function SubscriberGrowthChart() {
         </Select>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="h-[400px] w-full">
-
-          <AreaChart
-            accessibilityLayer
-            data={data}
-            margin={{
-              left: 12,
-              right: 12,
-            }}
-          >
-            <CartesianGrid vertical={false} />
-            <XAxis
-              dataKey="time"
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-            />
-            <YAxis />
-            <ChartTooltip
-              cursor={false}
-              content={<ChartTooltipContent indicator="line" />}
-            />
-            <Area
-              dataKey="subscribers"
-              type="natural"
-              fill="transparent"        // No fill
-              stroke="var(--color-subscribers)" // Line color
-              strokeWidth={2}           // Optional: make the line bolder
-              stackId="a"
-              dot={true}               // Optional: hide data point dots
-            />
-            <ChartLegend content={<ChartLegendContent />} />
-          </AreaChart>
-        </ChartContainer>
+        {loading ? (
+          <div className="h-[400px] flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+        ) : data.length === 0 ? (
+          <div className="h-[400px] flex items-center justify-center text-sm text-muted-foreground">No data available</div>
+        ) : (
+          <ChartContainer config={chartConfig} className="h-[400px] w-full">
+            <AreaChart accessibilityLayer data={data} margin={{ left: 12, right: 12 }}>
+              <CartesianGrid vertical={false} />
+              <XAxis dataKey="time" tickLine={false} axisLine={false} tickMargin={8} />
+              <YAxis />
+              <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
+              <Area dataKey="subscribers" type="natural" fill="transparent" stroke="var(--color-subscribers)" strokeWidth={2} stackId="a" dot={true} />
+              <ChartLegend content={<ChartLegendContent />} />
+            </AreaChart>
+          </ChartContainer>
+        )}
       </CardContent>
     </Card>
   )

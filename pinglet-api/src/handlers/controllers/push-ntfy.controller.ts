@@ -39,14 +39,17 @@ class PushNtfyController {
 			removeOnComplete: true,
 			jobId: `${body.project_id}-${body.timestamp}-${body.event}`,
 		});
-		AppEvents.emit("triggerWebhook", {
-			webhookType: WebhookType.API,
-			event: body?.event,
-			projectId: body?.project_id,
-			notificationType: body?.type,
-			notificationData: body,
-			timestamp: body?.timestamp,
-		});
+		AppEvents.emit(
+			"triggerWebhook",
+			JSON.stringify({
+				webhookType: WebhookType.API,
+				event: body?.event,
+				projectId: body?.project_id,
+				notificationType: body?.type,
+				notificationData: body,
+				timestamp: body?.timestamp,
+			}),
+		);
 		res.end();
 	};
 	loadConfig = async (req: Request, res: Response) => {
@@ -258,6 +261,7 @@ class PushNtfyController {
 					webhookType: WebhookType.API,
 					event: WebhookEvent.USER_SUBSCRIBED,
 					projectId: projectId,
+					userId: project?.user?.id,
 					notificationType: "-1",
 					notificationData: null,
 					timestamp: Date.now(),
@@ -429,6 +433,7 @@ class PushNtfyController {
 						webhookType: WebhookType.API,
 						event: WebhookEvent.NOTIFICATION_SENT,
 						projectId: projectId,
+						userId: project?.user?.id,
 						notificationType: rest.type,
 						notificationData: rest,
 						timestamp: Date.now(),
@@ -448,6 +453,7 @@ class PushNtfyController {
 					webhookType: WebhookType.API,
 					event: WebhookEvent.NOTIFICATION_SENT,
 					projectId: projectId,
+					userId: project?.user?.id,
 					notificationType: rest.type,
 					notificationData: rest,
 					timestamp: Date.now(),
