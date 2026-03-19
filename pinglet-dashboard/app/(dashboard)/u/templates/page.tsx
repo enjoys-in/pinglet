@@ -44,7 +44,7 @@ export default function TemplateManagementSystem() {
     }, [])
 
     return (
-        <div className="h-screen flex overflow-hidden bg-gradient-to-br from-background via-background to-muted/20">
+        <div className="h-[calc(100vh-7rem)] flex overflow-hidden rounded-xl border border-border/50 bg-background">
             {/* Sidebar */}
             <VerticalSidebar templateGroups={templateGroup} />
 

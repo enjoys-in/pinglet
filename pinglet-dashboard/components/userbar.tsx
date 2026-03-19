@@ -1,5 +1,4 @@
 import React from 'react'
-import { Button } from './ui/button'
 import { LogoutUser } from './server-actions/handleLogoutUser'
 import { useRouter } from 'next/navigation'
 import { LogOut } from 'lucide-react'
@@ -16,15 +15,9 @@ const Userbar = () => {
     }
 
     return (
-        <div className='w-full'>
-            <Button
-                variant="ghost"
-                onClick={handleLogoutUser}
-                className="flex gap-2 px-2 items-center w-full justify-start text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-            >
-                <LogOut className="h-4 w-4" />
-                <span className="text-sm">Logout</span>
-            </Button>
+        <div className='w-full flex gap-2 px-2 items-center cursor-pointer text-muted-foreground hover:text-destructive transition-colors' onClick={handleLogoutUser}>
+            <LogOut className="h-4 w-4" />
+            <span className="text-sm">Logout</span>
         </div>
     )
 }

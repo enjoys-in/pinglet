@@ -90,25 +90,25 @@ const ProjectDetails = ({ project }: { project: ProjectDetailsResponse }) => {
                 <MetricCard
                     icon={Globe}
                     label="Website Status"
-                    value={project.website.is_active ? "Live" : "Offline"}
+                    value={project.website?.is_active ? "Live" : "Offline"}
                     color="from-emerald-500 to-teal-600"
                 />
                 <MetricCard
                     icon={Tag}
                     label="Tags"
-                    value={project.website.tags.length}
+                    value={project.website?.tags?.length ?? 0}
                     color="from-blue-500 to-indigo-600"
                 />
                 <MetricCard
                     icon={Webhook}
                     label="Webhooks"
-                    value={project.webhooks.length}
+                    value={project.webhooks?.length ?? 0}
                     color="from-purple-500 to-pink-600"
                 />
                 <MetricCard
                     icon={Activity}
                     label="Category"
-                    value={project.category.is_active ? "Active" : "Inactive"}
+                    value={project.category?.is_active ? "Active" : "Inactive"}
                     color="from-orange-500 to-red-600"
                 />
             </div>
@@ -122,7 +122,7 @@ const ProjectDetails = ({ project }: { project: ProjectDetailsResponse }) => {
             />
 
             <TemplateCard project={project} getCategoryColor={getCategoryColor} />
-            <WebhookCard webhooks={project.webhooks||[]} />
+            <WebhookCard webhooks={project.webhooks ?? []} />
         </div>
     );
 };

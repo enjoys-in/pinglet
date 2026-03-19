@@ -1,125 +1,152 @@
-import { notFound } from 'next/navigation';
-import { Suspense } from 'react';
+import { AlertCircle, Webhook, Globe, Zap, Clock, CheckCircle, XCircle, ChevronLeft } from 'lucide-react';
+import Link from 'next/link';
+import serverAxios from '@/lib/api/server.instance';
+import { ApiResponse } from '@/lib/types';
+import { WebhookResponse } from '@/lib/interfaces/webhook.interface';
 
-// Placeholder for data fetching function
-async function getWebhookDetails(id: string) {
-    // In a real application, this would fetch data from an API
-    // For now, we'll simulate a successful fetch with dummy data
-    // or return null to trigger notFound if the ID is unknown
-    if (id === '123' || id === 'test-webhook-id') {
-        return {
-            id: id,
-            name: `Webhook ${id} Name`,
-            url: `https://api.example.com/webhooks/${id}`,
-            events: ['order.created', 'payment.succeeded'],
-            status: 'active',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            // Add more configuration details
-            config: {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer YOUR_SECRET_TOKEN',
-                },
-                payloadExample: {
-                    event: "order.created",
-                    data: { orderId: "abc-123" }
-                }
-            },
-            // Add more analytics details
-            analytics: {
-                totalCalls: 1234,
-                successfulCalls: 1200,
-                failedCalls: 34,
-                lastCall: new Date().toISOString(),
-                averageResponseTimeMs: 150,
-                recentErrors: [
-                    { timestamp: new Date().toISOString(), message: "Failed to connect", statusCode: 500 },
-                    { timestamp: new Date().toISOString(), message: "Invalid payload", statusCode: 400 },
-                ]
-            }
-        };
-    }
-    return null; // Webhook not found
+function formatDate(dateStr: string) {
+    return new Date(dateStr).toLocaleDateString('en-US', {
+        year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+    });
 }
 
-interface WebhookDetailsPageProps {
-    params: {
-        id: string;
-    };
-}
+export default async function WebhookDetailsPage({ params }: { params: any }) {
+    const { id } = await params as { id: string };
 
-export default async function WebhookDetailsPage({ params }: WebhookDetailsPageProps) {
-    const webhook = await getWebhookDetails(params.id);
+    let webhook: WebhookResponse | null = null;
+    let error = false;
 
-    if (!webhook) {
-        notFound();
+    try {
+        const { data } = await serverAxios.get<ApiResponse<WebhookResponse>>('/api/v1/webhook/' + id);
+        if (data.success) {
+            webhook = data.result;
+        } else {
+            error = true;
+        }
+    } catch {
+        error = true;
     }
+
+    if (error || !webhook) {
+        return (
+            <div className="flex items-center justify-center min-h-[60vh]">
+                <div className="text-center p-8 rounded-2xl border border-destructive/20 bg-destructive/5 backdrop-blur-sm max-w-md w-full">
+                    <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-destructive/10 mb-5">
+                        <AlertCircle className="w-7 h-7 text-destructive" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-foreground mb-2">Webhook not found</h3>
+                    <p className="text-sm text-muted-foreground mb-6">
+                        This webhook doesn&apos;t exist or couldn&apos;t be loaded.
+                    </p>
+                    <Link
+                        href="/u/webhooks"
+                        className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg border border-border bg-background text-foreground hover:bg-accent transition-colors"
+                    >
+                        Back to Webhooks
+                    </Link>
+                </div>
+            </div>
+        );
+    }
+
+    const triggers = webhook.triggers_on ?? [];
+    const config = webhook.config ?? {};
 
     return (
-        <div className="container mx-auto p-4">
-            <h1 className="text-3xl font-bold mb-6">Webhook Details: {webhook.name}</h1>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {/* Info Section */}
-                <section className="bg-white p-6 rounded-lg shadow-md">
-                    <h2 className="text-xl font-semibold mb-4">Information</h2>
-                    <p><strong>ID:</strong> {webhook.id}</p>
-                    <p><strong>URL:</strong> <code className="bg-gray-100 p-1 rounded text-sm">{webhook.url}</code></p>
-                    <p><strong>Status:</strong> <span className={`font-medium ${webhook.status === 'active' ? 'text-green-600' : 'text-red-600'}`}>{webhook.status}</span></p>
-                    <p><strong>Events:</strong> {webhook.events.join(', ')}</p>
-                    <p><strong>Created At:</strong> {new Date(webhook.createdAt).toLocaleString()}</p>
-                    <p><strong>Last Updated:</strong> {new Date(webhook.updatedAt).toLocaleString()}</p>
-                </section>
-
-                {/* Configuration Section */}
-                <section className="bg-white p-6 rounded-lg shadow-md">
-                    <h2 className="text-xl font-semibold mb-4">Configuration</h2>
-                    <p><strong>Method:</strong> {webhook.config.method}</p>
-                    <h3 className="font-medium mt-3 mb-1">Headers:</h3>
-                    <pre className="bg-gray-100 p-2 rounded text-sm overflow-x-auto">
-                        {JSON.stringify(webhook.config.headers, null, 2)}
-                    </pre>
-                    <h3 className="font-medium mt-3 mb-1">Payload Example:</h3>
-                    <pre className="bg-gray-100 p-2 rounded text-sm overflow-x-auto">
-                        {JSON.stringify(webhook.config.payloadExample, null, 2)}
-                    </pre>
-                    {/* Add more configuration specific details */}
-                </section>
-
-                {/* Analytics Section */}
-                <section className="bg-white p-6 rounded-lg shadow-md">
-                    <h2 className="text-xl font-semibold mb-4">Analytics</h2>
-                    <p><strong>Total Calls:</strong> {webhook.analytics.totalCalls}</p>
-                    <p><strong>Successful Calls:</strong> {webhook.analytics.successfulCalls}</p>
-                    <p><strong>Failed Calls:</strong> {webhook.analytics.failedCalls}</p>
-                    <p><strong>Last Call:</strong> {new Date(webhook.analytics.lastCall).toLocaleString()}</p>
-                    <p><strong>Avg. Response Time:</strong> {webhook.analytics.averageResponseTimeMs}ms</p>
-
-                    <h3 className="font-medium mt-3 mb-1">Recent Errors:</h3>
-                    {webhook.analytics.recentErrors.length > 0 ? (
-                        <ul className="list-disc pl-5 text-sm">
-                            {webhook.analytics.recentErrors.map((error, index) => (
-                                <li key={index}>
-                                    [{new Date(error.timestamp).toLocaleString()}]{' '}
-                                    <span className="font-mono text-red-600">({error.statusCode})</span> {error.message}
-                                </li>
-                            ))}
-                        </ul>
-                    ) : (
-                        <p className="text-gray-500 text-sm">No recent errors.</p>
-                    )}
-                    {/* Add more analytics specific details */}
-                </section>
+        <div className="space-y-6">
+            {/* Back link + Header */}
+            <div>
+                <Link href="/u/webhooks" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-4">
+                    <ChevronLeft className="w-4 h-4" />
+                    Back to Webhooks
+                </Link>
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center shadow-md">
+                            <Webhook className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                            <h1 className="text-2xl font-bold text-foreground">{webhook.name}</h1>
+                            {webhook.description && (
+                                <p className="text-sm text-muted-foreground">{webhook.description}</p>
+                            )}
+                        </div>
+                    </div>
+                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium ${
+                        webhook.is_active
+                            ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                            : 'bg-red-500/10 text-red-600 dark:text-red-400'
+                    }`}>
+                        {webhook.is_active ? <CheckCircle className="w-3.5 h-3.5" /> : <XCircle className="w-3.5 h-3.5" />}
+                        {webhook.is_active ? 'Active' : 'Inactive'}
+                    </span>
+                </div>
             </div>
 
-            {/* You might want to add more detailed logs or charts here */}
-            <div className="mt-8 bg-white p-6 rounded-lg shadow-md">
-                <h2 className="text-xl font-semibold mb-4">Recent Deliveries (Placeholder)</h2>
-                <p className="text-gray-500">
-                    Detailed logs of recent webhook deliveries would appear here, including status, response, and timestamps.
-                </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* Info */}
+                <div className="rounded-2xl border border-border/50 bg-card/80 backdrop-blur-sm shadow-sm p-6">
+                    <div className="flex items-center gap-2 mb-5">
+                        <Globe className="w-4 h-4 text-primary" />
+                        <h2 className="font-semibold text-foreground">Information</h2>
+                    </div>
+                    <dl className="space-y-4 text-sm">
+                        <div>
+                            <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">ID</dt>
+                            <dd className="text-foreground font-mono mt-1">{webhook.id}</dd>
+                        </div>
+                        <div>
+                            <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Type</dt>
+                            <dd className="mt-1">
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-primary/10 text-primary capitalize">
+                                    {webhook.type}
+                                </span>
+                            </dd>
+                        </div>
+                        <div>
+                            <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Created</dt>
+                            <dd className="text-foreground mt-1">{formatDate(webhook.created_at)}</dd>
+                        </div>
+                        <div>
+                            <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Updated</dt>
+                            <dd className="text-foreground mt-1">{formatDate(webhook.updated_at)}</dd>
+                        </div>
+                    </dl>
+                </div>
+
+                {/* Configuration */}
+                <div className="rounded-2xl border border-border/50 bg-card/80 backdrop-blur-sm shadow-sm p-6">
+                    <div className="flex items-center gap-2 mb-5">
+                        <Zap className="w-4 h-4 text-primary" />
+                        <h2 className="font-semibold text-foreground">Configuration</h2>
+                    </div>
+                    {Object.keys(config).length > 0 ? (
+                        <pre className="text-xs text-foreground font-mono bg-muted/50 rounded-xl p-4 border border-border/50 overflow-x-auto whitespace-pre-wrap break-all">
+                            {JSON.stringify(config, null, 2)}
+                        </pre>
+                    ) : (
+                        <p className="text-sm text-muted-foreground">No configuration set.</p>
+                    )}
+                </div>
+
+                {/* Triggers */}
+                <div className="rounded-2xl border border-border/50 bg-card/80 backdrop-blur-sm shadow-sm p-6">
+                    <div className="flex items-center gap-2 mb-5">
+                        <Clock className="w-4 h-4 text-primary" />
+                        <h2 className="font-semibold text-foreground">Event Triggers</h2>
+                    </div>
+                    {triggers.length > 0 ? (
+                        <div className="flex flex-wrap gap-2">
+                            {triggers.map((trigger, i) => (
+                                <span key={i} className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-muted/50 text-foreground border border-border/50">
+                                    {trigger}
+                                </span>
+                            ))}
+                        </div>
+                    ) : (
+                        <p className="text-sm text-muted-foreground">No triggers configured.</p>
+                    )}
+                </div>
             </div>
         </div>
     );
