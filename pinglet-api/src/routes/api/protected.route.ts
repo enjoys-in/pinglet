@@ -1,12 +1,16 @@
 import {
+	ActivityController,
 	AnalyticsController,
 	DashboardController,
+	InboxController,
 	NotificationController,
 	PlanController,
+	PresenceController,
 	ProjectController,
 	SubscriptionController,
 	TemplateCategoryController,
 	TemplateController,
+	UnsubscribeAnalyticsController,
 	UserAuthController,
 	WebhookController,
 	WebsiteController,
@@ -118,5 +122,29 @@ router.get("/analytics/notification-types", AnalyticsController.default.getNotif
 router.get("/analytics/subscriber-growth", AnalyticsController.default.getSubscriberGrowth);
 router.get("/analytics/requests-overview", AnalyticsController.default.getRequestsOverview);
 router.get("/analytics/project-subscriber-trends", AnalyticsController.default.getProjectSubscriberTrends);
+
+// Activity & Session Replay
+router.get("/activity/stats", ActivityController.default.getActivityStats);
+router.get("/activity/events", ActivityController.default.getActivityEvents);
+router.get("/activity/visitor", ActivityController.default.getVisitorActivity);
+router.get("/sessions", ActivityController.default.getSessionRecordings);
+router.get("/sessions/:id", ActivityController.default.getSessionRecording);
+router.delete("/sessions/:id", ActivityController.default.deleteSessionRecording);
+
+// Notification Inbox
+router.get("/inbox", InboxController.default.getInbox);
+router.put("/inbox/:id/read", InboxController.default.markAsRead);
+router.put("/inbox/read-all", InboxController.default.markAllAsRead);
+router.delete("/inbox/:id", InboxController.default.deleteFromInbox);
+
+// Unsubscribe Analytics
+router.get("/unsubscribe-analytics", UnsubscribeAnalyticsController.default.getReasonBreakdown);
+router.get("/unsubscribe-analytics/trend", UnsubscribeAnalyticsController.default.getUnsubscribeTrend);
+router.get("/unsubscribe-analytics/logs", UnsubscribeAnalyticsController.default.getLogs);
+router.get("/unsubscribe-analytics/summary", UnsubscribeAnalyticsController.default.getSummary);
+
+// Live Presence
+router.get("/presence/online", PresenceController.default.getOnlineCount);
+router.get("/presence/all", PresenceController.default.getAllOnlineCounts);
 
 export default router;

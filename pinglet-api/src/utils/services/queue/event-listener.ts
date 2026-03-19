@@ -62,6 +62,11 @@ export class EventListeners {
 					{
 						removeOnComplete: true,
 						jobId: `${wh.id}-${data.projectId}-${data.event}-${Date.now()}`,
+						attempts: 3,
+						backoff: {
+							type: "exponential",
+							delay: 5000, // 5s, 10s, 20s
+						},
 					},
 				);
 			}

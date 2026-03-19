@@ -16,6 +16,7 @@ import bodyParser from "body-parser";
 import { blue } from "colorette";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import { Cors } from "@/app/common/Cors";
 import express, { type Application } from "express";
 import fileUpload from "express-fileupload";
 import helmet from "helmet";
@@ -28,17 +29,7 @@ import "./handlers/cron-jobs";
 import "./utils/services/queue/event-listener";
 
 const io = getSocketIo();
-const allowedWithCreds = [
-	"http://localhost:3000",
-	"http://localhost:8888",
-	...(__CONFIG__.APP.ALLOWED_PRIMARY_DOMAINS
-		? __CONFIG__.APP.ALLOWED_PRIMARY_DOMAINS.split(",").flatMap((d) => {
-				const domain = d.trim();
-				if (!domain) return [];
-				return [`https://${domain}`, `http://${domain}`];
-			})
-		: []),
-];
+const allowedWithCreds = Cors.getAllowedOrigins();
 
 class AppServer {
 	static App: Application = express();
@@ -68,21 +59,9 @@ class AppServer {
 		Modifiers.useRoot(AppServer.App);
 		AppServer.App.use(helmet({ crossOriginResourcePolicy: false }));
 		AppServer.App.use(morgan("dev"));
-		AppServer.App.use(
-			cors({
-				origin: (origin, callback) => {
-					if (!origin) {
-						return callback(null, true);
-					}
-					if (allowedWithCreds.includes(origin)) {
-						return callback(null, origin);
-					}
-					return callback(null, false);
-				},
-				credentials: true,
-				optionsSuccessStatus: 200,
-			}),
-		);
+		// NOTE: Route-level CORS is applied in web.ts (public = *, protected = restricted).
+		// This global cors handles preflight for non-API paths (static assets, etc.).
+		AppServer.App.use(cors(Cors.protectedOptions()));
 		AppServer.App.use(cookieParser(__CONFIG__.SECRETS.COOKIE_SECRET));
 		AppServer.App.use(bodyParser.json({ limit: "1mb" }));
 		AppServer.App.use(bodyParser.urlencoded({ extended: false }));

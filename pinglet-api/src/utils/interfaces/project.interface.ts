@@ -49,3 +49,28 @@ export interface ProjectConfig {
 		height?: number;
 	};
 }
+
+export interface QuietHoursConfig {
+	enabled: boolean;
+	start: string; // HH:mm in 24h format
+	end: string;
+	timezone: string; // IANA timezone e.g. "Asia/Kolkata"
+}
+
+export interface FallbackChannelsConfig {
+	email?: {
+		enabled: boolean;
+		from_name?: string;
+		template_id?: string;
+	};
+	sms?: {
+		enabled: boolean;
+		provider?: string;
+	};
+}
+
+export interface RateLimitConfig {
+	enabled: boolean;
+	max_per_subscriber_per_hour: number;
+	max_per_subscriber_per_day: number;
+}

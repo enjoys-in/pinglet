@@ -7,7 +7,10 @@ import ProtectedRoutes from "./api/protected.route";
 
 const router = Router();
 
+// Public routes (auth + SDK) — CORS is applied per-route inside ApiRoutes
 router.use(`/api/${__CONFIG__.APP.API_VERSION}`, ApiRoutes);
+
+// Protected dashboard routes — uses global CORS (restricted origins + credentials)
 router.use(
 	`/api/${__CONFIG__.APP.API_VERSION}`,
 	JwtAuth.validateUser,

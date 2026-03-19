@@ -10,6 +10,10 @@ import {
 	WidgetErrorTemplate,
 } from "@/factory/templates/widget.template";
 import { pushSubscriptionService } from "@/handlers/services/subscription.service";
+import { notificationInboxService } from "@/handlers/services/notification-inbox.service";
+import { isInQuietHours } from "@/handlers/services/notification-guards.service";
+import { livePresenceService } from "@/handlers/services/live-presence.service";
+import { unsubscribeAnalyticsService } from "@/handlers/services/unsubscribe-analytics.service";
 import { AppEvents } from "@/utils/services/Events";
 import { QueueService } from "@/utils/services/queue";
 import { QUEUE_JOBS } from "@/utils/services/queue/name";
@@ -299,6 +303,14 @@ class PushNtfyController {
 				body.endpoint,
 				body.projectId,
 			);
+			// Log unsubscribe reason for analytics
+			unsubscribeAnalyticsService.logUnsubscribe({
+				project_id: body.projectId,
+				endpoint: body.endpoint,
+				reason: body.reason || null,
+				feedback: body.feedback || null,
+				user_agent: req.headers["user-agent"] || "",
+			}).catch(() => {});
 			AppEvents.emit(
 				"triggerWebhook",
 				JSON.stringify({
@@ -350,8 +362,20 @@ class PushNtfyController {
 		if (!clients.has(projectId)) clients.set(projectId, new Set());
 		clients.get(projectId)?.add(res);
 
+		// Track live presence
+		const connectionId = `${projectId}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+		livePresenceService.connect(projectId, connectionId).catch(() => {});
+
+		// Heartbeat to keep presence alive
+		const heartbeatInterval = setInterval(() => {
+			res.write(":heartbeat\n\n");
+			livePresenceService.heartbeat(projectId, connectionId).catch(() => {});
+		}, 30_000);
+
 		req.on("close", () => {
 			clients.get(projectId)?.delete(res);
+			clearInterval(heartbeatInterval);
+			livePresenceService.disconnect(projectId, connectionId).catch(() => {});
 		});
 	};
 	triggerNotification = async (
@@ -378,9 +402,20 @@ class PushNtfyController {
 			// --- Plan quota enforcement (notification send limit) ---
 			const project = await projectService.getSelectedProjects({
 				where: { unique_id: projectId },
-				select: { id: true, user: { id: true } },
+				select: { id: true, user: { id: true }, quiet_hours: true, rate_limit: true },
 				relations: { user: true },
 			});
+
+			// --- Quiet hours check ---
+			if (project && isInQuietHours((project as any).quiet_hours)) {
+				res.status(429).json({
+					message: "Notifications are paused during quiet hours",
+					result: null,
+					success: false,
+				}).end();
+				return;
+			}
+
 			if (project?.user?.id) {
 				const quota = await planService.canSendNotification(project.user.id);
 				if (!quota.allowed) {
@@ -449,6 +484,19 @@ class PushNtfyController {
 			clients.get(projectId)?.forEach((client) => {
 				client.write(`data: ${payload}\n\n`);
 			});
+
+			// Store in notification inbox for persistent feed
+			notificationInboxService.addToInbox({
+				project_id: projectId,
+				title: rest.data?.title || rest.body?.title || "Notification",
+				body: rest.data?.body || rest.body?.description || "",
+				icon: rest.data?.icon || rest.body?.icon || "",
+				image: rest.data?.image || "",
+				url: rest.body?.url || "",
+				type: rest.type || "0",
+				data: rest.data || rest.body || {},
+			}).catch(() => {});
+
 			AppEvents.emit(
 				"triggerWebhook",
 				JSON.stringify({
@@ -606,6 +654,26 @@ class PushNtfyController {
 		res.send(
 			`const element = [document.createElement("p")];element[0].innerText = "Right side notification!";`,
 		);
+	};
+
+	/**
+	 * GET /api/v1/inbox?projectId=xxx&subscriberId=yyy — public endpoint for SDK bell widget
+	 */
+	getPublicInbox = async (req: Request, res: Response) => {
+		try {
+			const projectId = req.query.projectId as string;
+			const subscriberId = req.query.subscriberId ? Number(req.query.subscriberId) : undefined;
+			const limit = Math.min(Number(req.query.limit) || 20, 50);
+			if (!projectId) {
+				res.status(400).json({ message: "Missing projectId", success: false });
+				return;
+			}
+			const items = await notificationInboxService.getInbox(projectId, subscriberId, limit, 0);
+			const unreadCount = await notificationInboxService.getUnreadCount(projectId, subscriberId);
+			res.json({ message: "OK", success: true, result: { items, unreadCount } });
+		} catch (error) {
+			res.json({ message: "Failed to get inbox", success: false }).end();
+		}
 	};
 }
 

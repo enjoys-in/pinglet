@@ -192,6 +192,13 @@ const templatesIds = currentScript?.dataset.templates;
       }
 
       /** @type {GlobalConfig} */
+      const mergedConfig = Object.assign({}, defaultConfig, data.result.config);
+      // Derive sound URL from endpoint if not set by server config
+      if (!mergedConfig.sound?.src) {
+        mergedConfig.sound = Object.assign({}, mergedConfig.sound, {
+          src: `${endpoint}/pinglet-sound.mp3?v=1&ext=mp3`,
+        });
+      }
       const globalConfig = {
         is_tff: data.result?.is_premium ?? false,
         templates: Object.assign(
@@ -207,7 +214,7 @@ const templatesIds = currentScript?.dataset.templates;
           allTemplates
         ),
         style: Object.assign({}, defaultStyles, data.result.template?.config),
-        config: Object.assign({}, defaultConfig, data.result.config),
+        config: mergedConfig,
       };
 
       initWidget(globalConfig);

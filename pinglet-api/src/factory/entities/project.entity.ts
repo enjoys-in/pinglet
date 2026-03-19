@@ -1,6 +1,11 @@
 import { PROJECT_DEFAULT_CONFIG } from "@/handlers/services/default/constant";
 import helpers from "@/utils/helpers";
-import type { ProjectConfig } from "@/utils/interfaces/project.interface";
+import type {
+	FallbackChannelsConfig,
+	ProjectConfig,
+	QuietHoursConfig,
+	RateLimitConfig,
+} from "@/utils/interfaces/project.interface";
 import {
 	BeforeInsert,
 	Column,
@@ -64,6 +69,18 @@ export class ProjectEntity {
 
 	@Column({ type: "boolean", default: true })
 	is_active!: boolean;
+
+	@Column("jsonb", { nullable: true, default: null })
+	quiet_hours!: QuietHoursConfig | null;
+
+	@Column("jsonb", { nullable: true, default: null })
+	fallback_channels!: FallbackChannelsConfig | null;
+
+	@Column("jsonb", {
+		nullable: true,
+		default: { enabled: false, max_per_subscriber_per_hour: 10, max_per_subscriber_per_day: 50 },
+	})
+	rate_limit!: RateLimitConfig | null;
 
 	@ManyToOne(
 		() => WebsiteEntity,

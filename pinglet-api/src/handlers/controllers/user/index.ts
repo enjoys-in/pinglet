@@ -11,3 +11,7 @@ export * as SubscriptionController from "./subscription.controller";
 export * as TemplateCategoryController from "./template-category.controller";
 export * as DashboardController from "./dashboard.controller";
 export * as AnalyticsController from "./analytics.controller";
+export * as ActivityController from "./activity.controller";
+export * as InboxController from "./inbox.controller";
+export * as UnsubscribeAnalyticsController from "./unsubscribe-analytics.controller";
+export * as PresenceController from "./presence.controller";

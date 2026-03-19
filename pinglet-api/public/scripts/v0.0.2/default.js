@@ -359,7 +359,7 @@ export const defaultConfig = {
 	},
 	sound: {
 		play: false,
-		src: "https://pinglet.enjoys.in/api/v1/pinglet-sound.mp3?v=1&ext=mp3",
+		src: "",
 		volume: 0.6,
 	},
 	duration: 2000,
