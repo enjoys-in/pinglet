@@ -294,7 +294,6 @@ export default function ProjectForm() {
               />
             </div>
           )}
-          </div>
 
           {/* Button Configuration */}
           <div className="space-y-4">
