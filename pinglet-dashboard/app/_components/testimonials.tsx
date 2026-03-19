@@ -24,9 +24,9 @@ export default function TestimonialsSection() {
       <div className="mx-auto max-w-6xl px-6">
         <FadeIn>
           <SectionHeader
-            badge="Testimonials"
-            title="Loved by developers worldwide"
-            description="See what teams are saying about Pinglet's notification platform."
+            badge="Early Feedback"
+            title="What our early users are saying"
+            description="Real feedback from developers and founders building with Pinglet."
           />
         </FadeIn>
 

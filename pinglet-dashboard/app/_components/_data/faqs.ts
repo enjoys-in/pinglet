@@ -17,12 +17,12 @@ export const faqs: FAQ[] = [
   {
     question: "Is there a limit to how many users I can add?",
     answer:
-      "User limits depend on your plan. Starter allows up to 5, Professional up to 20, and Enterprise has unlimited team members.",
+      "The free plan supports 1 team member. Starter allows up to 3, Professional up to 10, and Enterprise has unlimited team members.",
   },
   {
-    question: "Do you offer discounts for nonprofits?",
+    question: "Do you offer discounts for indie hackers or open-source?",
     answer:
-      "Yes, we offer special pricing for nonprofits, educational institutions, and open-source projects. Contact our sales team for details.",
+      "Yes! We have special discounts for open-source projects and indie hackers. Just reach out to us and we'll sort it out.",
   },
   {
     question: "How secure is my data?",
@@ -32,6 +32,6 @@ export const faqs: FAQ[] = [
   {
     question: "What kind of support do you offer?",
     answer:
-      "All plans include email support. Professional includes priority support, and Enterprise includes 24/7 phone and email support plus a dedicated account manager.",
+      "All plans include email support. Professional includes priority responses, and Enterprise gets dedicated Slack or Discord support.",
   },
 ]

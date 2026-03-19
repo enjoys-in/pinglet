@@ -11,37 +11,37 @@ export const features: Feature[] = [
   {
     title: "Smart Targeting",
     description:
-      "Advanced user segmentation and behavioral targeting ensures messages reach the right people at the perfect moment.",
+      "Segment users by behavior, location, or custom attributes. Send the right message to the right person at the right time.",
     icon: Zap,
   },
   {
     title: "Lightning Fast Delivery",
     description:
-      "Global infrastructure delivers notifications in under 5–40ms with 99.9% uptime guarantee.",
+      "Optimized infrastructure delivers notifications in under 40ms. Built for speed from day one.",
     icon: Rocket,
   },
   {
-    title: "Deep Analytics",
+    title: "Real-time Analytics",
     description:
-      "Comprehensive real-time analytics and A/B testing tools. Track opens, clicks, conversions, and lifetime value.",
+      "Track opens, clicks, and engagement in real-time. Understand what's working and iterate fast.",
     icon: BarChart3,
   },
   {
-    title: "Enterprise Security",
+    title: "Secure by Default",
     description:
-      "End-to-end encryption and compliance features. Your data and your users' privacy are our top priority.",
+      "HTTPS everywhere, encrypted storage, and privacy-first design. Your users' data stays safe.",
     icon: Shield,
   },
   {
-    title: "Custom Integration",
+    title: "Easy Integration",
     description:
-      "Seamlessly integrate with your existing systems. SDKs for iOS, Android, Web, and custom solutions.",
+      "Drop-in JavaScript SDK and REST API. Get push notifications working in your web app in under 5 minutes.",
     icon: Layers,
   },
   {
-    title: "24/7 Support",
+    title: "Developer Support",
     description:
-      "Dedicated support team available around the clock to help you succeed with your notification strategy.",
+      "Responsive email support, detailed docs, and an active community. We're here when you need help.",
     icon: Headphones,
   },
 ]

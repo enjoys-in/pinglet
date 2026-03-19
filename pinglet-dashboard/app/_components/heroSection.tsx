@@ -6,10 +6,10 @@ import { Button } from "@/components/ui/button"
 import { FadeIn } from "./shared/fade-in"
 
 const metrics = [
-  { value: "10K+", label: "Active developers", color: "text-purple-500" },
+  { value: "500+", label: "Early adopters", color: "text-purple-500" },
   { value: "99.9%", label: "Uptime SLA", color: "text-emerald-500" },
   { value: "<40ms", label: "Avg. latency", color: "text-blue-500" },
-  { value: "2B+", label: "Notifications sent", color: "text-pink-500" },
+  { value: "1M+", label: "Notifications sent", color: "text-pink-500" },
 ]
 
 export default function HeroSection() {
@@ -44,9 +44,8 @@ export default function HeroSection() {
             </h1>
 
             <p className="mt-5 text-base leading-relaxed text-muted-foreground sm:text-lg">
-              The developer-first push notification platform. Send targeted,
-              real-time messages across web and mobile — with analytics that
-              matter.
+              The simple push notification platform for startups. Send targeted,
+              real-time web notifications — with analytics built in.
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -85,7 +84,7 @@ export default function HeroSection() {
                   <div>
                     <p className="text-sm font-semibold">Campaign delivered</p>
                     <p className="mt-0.5 text-xs text-muted-foreground">
-                      24,891 users reached — <span className="text-emerald-500 font-medium">89.2% open rate</span>
+                      1,247 users reached — <span className="text-emerald-500 font-medium">72.4% open rate</span>
                     </p>
                   </div>
                 </div>
@@ -113,9 +112,9 @@ export default function HeroSection() {
                     <Globe className="size-4" />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold">Global delivery</p>
+                    <p className="text-sm font-semibold">Fast delivery</p>
                     <p className="mt-0.5 text-xs text-muted-foreground">
-                      <span className="text-blue-500 font-medium">38ms</span> avg. across 5 regions
+                      <span className="text-blue-500 font-medium">~38ms</span> avg. response time
                     </p>
                   </div>
                 </div>

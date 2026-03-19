@@ -27,8 +27,8 @@ export default function CTASection() {
               Ready to <span className="gradient-text-animated">boost your engagement</span>?
             </h2>
             <p className="mx-auto mt-4 max-w-md text-base leading-relaxed text-muted-foreground">
-              Join thousands of developers who trust Pinglet to deliver
-              notifications that matter.
+              Join hundreds of early adopters building better notification
+              experiences with Pinglet.
             </p>
             <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
               <Link href="/auth/login">

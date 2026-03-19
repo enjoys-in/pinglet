@@ -25,8 +25,8 @@ export default function FeaturesSection() {
         <FadeIn>
           <SectionHeader
             badge="Features"
-            title="Everything you need to engage users"
-            description="Powerful tools to craft, target, and optimize your notification strategy — all in one platform."
+            title="Everything you need, nothing you don't"
+            description="Simple but powerful tools to send, target, and track push notifications — built for startups."
           />
         </FadeIn>
 

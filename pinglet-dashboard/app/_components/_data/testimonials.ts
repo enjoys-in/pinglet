@@ -8,44 +8,44 @@ export interface Testimonial {
 export const testimonials: Testimonial[] = [
   {
     quote:
-      "Pinglet has transformed how we engage our users. The targeting features alone increased our click-through rates by 250%.",
-    author: "Sarah Johnson",
-    role: "Product Manager, TechCorp",
+      "Pinglet made push notifications super easy to set up. We had it running in our SaaS app within 15 minutes — no complex configs needed.",
+    author: "Arjun Mehta",
+    role: "Indie Hacker, ShipFast",
     rating: 5,
   },
   {
     quote:
-      "The analytics dashboard provides insights we never had before. Data-driven decisions have significantly improved our ROI.",
-    author: "Michael Chen",
-    role: "Marketing Director, GrowthLabs",
+      "The free tier is perfect for our MVP. We're sending notifications to our first 200 users without paying a dime. Will definitely upgrade as we grow.",
+    author: "Priya Sharma",
+    role: "Co-founder, DevPulse",
     rating: 5,
   },
   {
     quote:
-      "Implementation was seamless and the ROI was almost immediate. We reduced operational costs by 30% since switching.",
-    author: "Emily Rodriguez",
-    role: "Operations Lead, StartupX",
+      "Clean API, simple dashboard, and it just works. Exactly what a small team needs — no bloated enterprise features getting in the way.",
+    author: "Rahul Verma",
+    role: "Full-stack Dev, BuildCraft",
+    rating: 4,
+  },
+  {
+    quote:
+      "We switched from Firebase Cloud Messaging and the developer experience is night and day. Pinglet's widget builder saved us hours.",
+    author: "Sneha Kapoor",
+    role: "Frontend Lead, PixelForge",
     rating: 5,
   },
   {
     quote:
-      "Best notification platform we've used. The API is clean, the docs are great, and the delivery speed is unmatched.",
-    author: "David Kim",
-    role: "CTO, InnovateNow",
-    rating: 5,
+      "Love the analytics — finally I can see which notifications my users actually engage with. Super helpful for a bootstrapped product.",
+    author: "Vikram Joshi",
+    role: "Solo Founder, TaskLoop",
+    rating: 4,
   },
   {
     quote:
-      "Our team was up and running in under 10 minutes. The customization options are exactly what we needed for our app.",
-    author: "Lisa Patel",
-    role: "Engineering Lead, RemoteFirst",
-    rating: 5,
-  },
-  {
-    quote:
-      "Switched from a legacy provider and immediately saw 3x better delivery rates. The free tier is incredibly generous.",
-    author: "James Wilson",
-    role: "Founder, ScaleUp",
-    rating: 5,
+      "Still early but very promising. The team ships fast and the support was quick to respond when I had integration questions.",
+    author: "Ananya Reddy",
+    role: "CTO, NoteStack",
+    rating: 4,
   },
 ]
