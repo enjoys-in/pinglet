@@ -8,16 +8,15 @@ import type {
 	GoogleAuthProviderResponse,
 	ID_TOKEN,
 } from "@/utils/interfaces/provider.interface";
-import { AppEvents } from "@/utils/services/Events";
 import { MailService } from "@/utils/services/mail/mailService";
 import { Cache } from "@/utils/services/redis/cacheService";
 import type { Request, Response } from "express";
 const emailSvc = MailService.createInstance();
 const provider = AuthProviderFactory.createProvider(
 	"google",
-	process.env.GOOGLE_CLIENT_ID || "",
-	process.env.GOOGLE_CLIENT_SECRET || "",
-	process.env.GOOGLE_REDIRECT_URI || "",
+	process.env.GOOGLE_CLIENT_ID || "test-client-id",
+	process.env.GOOGLE_CLIENT_SECRET || "test-client-secret",
+	process.env.GOOGLE_REDIRECT_URI || "http://localhost:3000/auth/callback",
 );
 
 const RESET_TOKEN_PREFIX = "reset-token:";
