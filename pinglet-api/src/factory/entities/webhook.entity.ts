@@ -81,6 +81,15 @@ export class WebhookEntity {
 	@Column({ default: true })
 	is_active!: boolean;
 
+	@Column({ type: "int", default: 0 })
+	success_count!: number;
+
+	@Column({ type: "int", default: 0 })
+	failure_count!: number;
+
+	@Column({ type: "timestamp", nullable: true })
+	last_triggered_at!: Date | null;
+
 	@CreateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
 	created_at!: Date;
 

@@ -202,6 +202,24 @@ class NotificationController {
 				.end();
 		}
 	};
+
+	getNotificationStats = async (req: Request, res: Response) => {
+		try {
+			const userId = req.user?.id!;
+			const stats = await cached(
+				`user:${userId}:notification-stats`,
+				CacheTTL.SHORT,
+				() => notificationService.getStatsByUserId(userId),
+			);
+			res.json({ message: "Notification Stats", result: stats, success: true }).end();
+		} catch (error) {
+			if (error instanceof Error) {
+				res.json({ message: error.message, result: null, success: false }).end();
+				return;
+			}
+			res.json({ message: "Something went wrong", result: null, success: false }).end();
+		}
+	};
 }
 
 export default new NotificationController();

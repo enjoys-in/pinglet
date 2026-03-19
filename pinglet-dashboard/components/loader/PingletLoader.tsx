@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bell, Zap } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 
 interface PingletLoaderProps {
     variant?: 'page' | 'component' | 'small';
@@ -9,90 +9,64 @@ interface PingletLoaderProps {
 
 const PingletLoader: React.FC<PingletLoaderProps> = ({
     variant = 'component',
-    message = 'Loading notifications...',
+    message = 'Loading...',
     showBrand = true
 }) => {
-    const getContainerClasses = () => {
-        switch (variant) {
-            case 'page':
-                return 'fixed inset-0 bg-white bg-opacity-95 dark:bg-opacity-90 dark:bg-gray-900 backdrop-blur-sm flex items-center justify-center z-50';
-            case 'small':
-                return 'flex items-center justify-center p-4';
-            default:
-                return 'flex items-center justify-center p-8';
-        }
-    };
+    const isPage = variant === 'page';
+    const isSmall = variant === 'small';
 
-    const getLoaderSize = () => {
-        switch (variant) {
-            case 'page':
-                return 'w-16 h-16';
-            case 'small':
-                return 'w-6 h-6';
-            default:
-                return 'w-12 h-12';
-        }
-    };
+    const containerCls = isPage
+        ? 'fixed inset-0 bg-background/80 backdrop-blur-md flex items-center justify-center z-50'
+        : isSmall
+            ? 'flex items-center justify-center p-4'
+            : 'flex items-center justify-center p-8';
 
-    const getTextSize = () => {
-        switch (variant) {
-            case 'page':
-                return 'text-xl';
-            case 'small':
-                return 'text-sm';
-            default:
-                return 'text-lg';
-        }
-    };
+    const ringSize = isPage ? 'w-14 h-14' : isSmall ? 'w-6 h-6' : 'w-10 h-10';
+    const iconSize = isPage ? 'w-5 h-5' : isSmall ? 'w-3 h-3' : 'w-4 h-4';
 
     return (
-        <div className={getContainerClasses()}>
-            <div className="flex flex-col items-center space-y-4">
-                {/* Main loader animation */}
+        <div className={containerCls}>
+            <div className="flex flex-col items-center gap-5">
+                {/* Spinner */}
                 <div className="relative">
-                    {/* Outer rotating ring */}
-                    <div className={`${getLoaderSize()} relative`}>
-                        <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-blue-500 border-r-purple-500 animate-spin"></div>
-                        <div className="absolute inset-2 rounded-full border-2 border-transparent border-b-blue-400 border-l-purple-400 animate-spin animation-delay-150" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}></div>
+                    <div className={`${ringSize} relative`}>
+                        <div className="absolute inset-0 rounded-full border-2 border-primary/10" />
+                        <div
+                            className="absolute inset-0 rounded-full border-2 border-transparent border-t-primary animate-spin"
+                            style={{ animationDuration: '0.8s' }}
+                        />
+                        {!isSmall && (
+                            <div
+                                className="absolute inset-[4px] rounded-full border-[1.5px] border-transparent border-b-primary/40 animate-spin"
+                                style={{ animationDirection: 'reverse', animationDuration: '1.2s' }}
+                            />
+                        )}
                     </div>
-
-                    {/* Center icon */}
                     <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="relative">
-                            <Bell className={`${variant === 'small' ? 'w-3 h-3' : variant === 'page' ? 'w-8 h-8' : 'w-6 h-6'} text-blue-600 animate-pulse`} />
-                            <Zap className={`absolute -top-1 -right-1 ${variant === 'small' ? 'w-2 h-2' : variant === 'page' ? 'w-4 h-4' : 'w-3 h-3'} text-yellow-500 animate-bounce`} />
-                        </div>
+                        <Sparkles className={`${iconSize} text-primary animate-pulse`} style={{ animationDuration: '2s' }} />
                     </div>
                 </div>
 
-                {/* Brand and message */}
-                {showBrand && (
+                {/* Brand + message */}
+                {showBrand && !isSmall && (
                     <div className="text-center space-y-2">
-                        <div className="flex items-center space-x-2">
-                            <span className={`font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent ${variant === 'small' ? 'text-lg' : variant === 'page' ? 'text-2xl' : 'text-xl'}`}>
-                                Pinglet
-                            </span>
-                            {variant !== 'small' && (
-                                <span className={`text-gray-500 ${variant === 'page' ? 'text-lg' : 'text-base'}`}>
-                                    Push Notifications
-                                </span>
-                            )}
-                        </div>
-
-                        {message && variant !== 'small' && (
-                            <p className={`text-gray-600 ${getTextSize()} animate-pulse`}>
+                        <span className="font-semibold text-foreground/90 text-sm tracking-wide">
+                            Pinglet
+                        </span>
+                        {message && (
+                            <p className="text-xs text-muted-foreground/70">
                                 {message}
                             </p>
                         )}
                     </div>
                 )}
 
-                {/* Loading dots indicator */}
-                {variant !== 'small' && (
-                    <div className="flex space-x-1">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
-                        <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce animation-delay-100"></div>
-                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce animation-delay-200"></div>
+                {/* Progress bar */}
+                {!isSmall && (
+                    <div className="w-24 h-[2px] rounded-full bg-primary/10 overflow-hidden">
+                        <div
+                            className="h-full w-2/5 rounded-full bg-primary/50 animate-[shimmer_1.5s_ease-in-out_infinite]"
+                        />
                     </div>
                 )}
             </div>

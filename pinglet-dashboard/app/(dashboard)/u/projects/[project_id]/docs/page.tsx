@@ -6,18 +6,21 @@ import {
     TabsList,
     TabsTrigger,
 } from "@/components/ui/tabs";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Copy, Check, BookOpen, Send, Code2, ChevronLeft, Zap } from "lucide-react";
+import Link from "next/link";
+import { useParams } from "next/navigation";
 
 const examples = {
     "-1": {
-        label: "Browser Push Service Worker - (Upcoming)",
+        label: "Browser Push",
+        tag: "Upcoming",
         description:
-            "Triggers native browser push notifications. Works even if browser/tab is closed (requires service worker).",
+            "Triggers native browser push notifications. Works even if the browser/tab is closed (requires service worker).",
         endpoint: "https://pinglet.enjoys.in/api/v1/notifications/send",
+        method: "POST",
         headers: {
             "x-project-id": "your-project-id",
-            // "x-pinglet-id": "your-pinglet-id",
             "x-pinglet-version": "1.0.5",
         },
         request: {
@@ -31,21 +34,44 @@ const examples = {
             },
         },
         response: {
-            "message": "OK",
-            "result": "Notification Sent",
-            "success": true,
-            "X-API-PLATFORM STATUS": "OK"
-        }
+            message: "OK",
+            result: "Notification Sent",
+            success: true,
+            "X-API-PLATFORM STATUS": "OK",
+        },
+        schema: [
+            { name: "project_id", type: "string", required: true, desc: "Your project unique ID" },
+            { name: "type", type: "number", required: true, desc: "Set to -1 for browser push" },
+            { name: "variant", type: "string", required: false, desc: '"default"' },
+            { name: "data.title", type: "string", required: true, desc: "Notification title" },
+            { name: "data.description", type: "string", required: false, desc: "Notification body text" },
+            { name: "data.badge", type: "string", required: false, desc: "Badge URL" },
+            { name: "data.icon", type: "string", required: true, desc: "Icon URL" },
+            { name: "data.image", type: "string", required: false, desc: "Image URL" },
+            { name: "data.timestamp", type: "number", required: false, desc: "Milliseconds timestamp" },
+            { name: "data.requireInteraction", type: "boolean", required: false, desc: "Require user click to dismiss" },
+            { name: "data.vibrate", type: "number[]", required: false, desc: "Vibration pattern e.g. [200, 100, 200]" },
+            { name: "data.data", type: "object", required: false, desc: "Payload sent to client-side handler" },
+            { name: "data.data.duration", type: "number", required: false, desc: "Auto dismiss after ms" },
+            { name: "data.data.url", type: "string", required: false, desc: "Open URL on click" },
+            { name: "data.data.func", type: "string", required: false, desc: "Custom function as string" },
+            { name: "data.data.payload", type: "object", required: false, desc: "Custom payload for func" },
+            { name: "data.actions[]", type: "array", required: false, desc: "Action buttons" },
+            { name: "data.actions[].text", type: "string", required: true, desc: "Button label" },
+            { name: "data.actions[].action", type: "string", required: true, desc: '"view" | "dismiss" | custom event name' },
+            { name: "data.actions[].icon", type: "string", required: false, desc: "Button icon URL" },
+            { name: "data.actions[].data", type: "any", required: false, desc: "Custom event data" },
+        ],
     },
     "0": {
-        label: "In-Tab Notification",
+        label: "In-Tab",
+        tag: "Live",
         description:
             "Custom styled notifications shown inside open tabs. No service worker needed.",
         endpoint: "https://pinglet.enjoys.in/api/v1/notifications/send",
-
+        method: "POST",
         headers: {
             "x-project-id": "your-project-id",
-            // "x-pinglet-id": "your-pinglet-id",
             "x-pinglet-version": "1.0.5",
         },
         request: {
@@ -55,42 +81,76 @@ const examples = {
             body: {
                 title: "Hello from Pinglet",
                 description: "New design incoming!",
-                media: {
-                    type: "icon",
-                    src: "🔥",
-                },
+                media: { type: "icon", src: "\uD83D\uDD25" },
                 buttons: [
-                    {
-                        text: "Fix Now",
-                        action: "link",
-                        src: "https://example.com/action",
-                    },
-                    {
-                        text: "Dismiss",
-                        action: "close",
-                    },
+                    { text: "Fix Now", action: "link", src: "https://example.com/action" },
+                    { text: "Dismiss", action: "close" },
                 ],
             },
-            overrides: {
-                auto_dismiss: false,
-            },
+            overrides: { auto_dismiss: false },
         },
         response: {
-            "message": "OK",
-            "result": "Notification Sent",
-            "success": true,
-            "X-API-PLATFORM STATUS": "OK"
-        }
+            message: "OK",
+            result: "Notification Sent",
+            success: true,
+            "X-API-PLATFORM STATUS": "OK",
+        },
+        schema: [
+            { name: "project_id", type: "string", required: true, desc: "Your project unique ID" },
+            { name: "type", type: "number", required: true, desc: "Set to 0 for in-tab" },
+            { name: "variant", type: "string", required: false, desc: '"default"' },
+            { name: "body.title", type: "string", required: true, desc: "Notification title" },
+            { name: "body.description", type: "string", required: false, desc: "Notification body" },
+            { name: "body.icon", type: "string", required: false, desc: "Emoji / text / SVG / base64" },
+            { name: "body.logo", type: "string", required: false, desc: "URL or base64" },
+            { name: "body.url", type: "string", required: false, desc: "Open URL on click" },
+            { name: "body.media.type", type: "string", required: false, desc: '"image" | "audio" | "video" | "iframe"' },
+            { name: "body.media.src", type: "string", required: false, desc: "Must be a valid URL" },
+            { name: "body.buttons[]", type: "array", required: false, desc: "Action buttons" },
+            { name: "body.buttons[].text", type: "string", required: true, desc: "Button label" },
+            { name: "body.buttons[].action", type: "string", required: true, desc: '"reload" | "close" | "redirect" | "link" | "alert" | "event"' },
+            { name: "body.buttons[].src", type: "string", required: false, desc: "URL or message for redirect/link/alert" },
+            { name: "body.buttons[].event", type: "string", required: false, desc: 'Event name (when action="event")' },
+            { name: "body.buttons[].data", type: "any", required: false, desc: "Custom event data" },
+            { name: "overrides.position", type: "string", required: false, desc: '"top-right" | "top-left" | "bottom-right" | "bottom-left"' },
+            { name: "overrides.transition", type: "string", required: false, desc: '"fade" | "slide" | "zoom"' },
+            { name: "overrides.duration", type: "number", required: false, desc: "Auto dismiss after ms" },
+            { name: "overrides.auto_dismiss", type: "boolean", required: false, desc: "Enable auto dismiss" },
+            { name: "overrides.maxVisible", type: "number", required: false, desc: "Max visible notifications" },
+            { name: "overrides.stacking", type: "boolean", required: false, desc: "Stack multiple notifications" },
+            { name: "overrides.dismissible", type: "boolean", required: false, desc: "Allow manual dismiss" },
+            { name: "overrides.pauseOnHover", type: "boolean", required: false, desc: "Pause timer on hover" },
+            { name: "overrides.sound.play", type: "boolean", required: false, desc: "Play notification sound" },
+            { name: "overrides.sound.src", type: "string", required: false, desc: "Sound URL" },
+            { name: "overrides.sound.volume", type: "number", required: false, desc: "0 to 1" },
+            { name: "overrides.branding.show", type: "boolean", required: false, desc: "Show branding" },
+            { name: "overrides.branding.once", type: "boolean", required: false, desc: "Show only once" },
+            { name: "overrides.branding.html", type: "string", required: false, desc: "Custom branding HTML" },
+            { name: "overrides.theme.mode", type: "string", required: false, desc: '"light" | "dark" | "auto"' },
+            { name: "overrides.theme.customClass", type: "string", required: false, desc: "Custom CSS class" },
+            { name: "overrides.theme.rounded", type: "boolean", required: false, desc: "Rounded corners" },
+            { name: "overrides.theme.shadow", type: "boolean", required: false, desc: "Drop shadow" },
+            { name: "overrides.theme.border", type: "boolean", required: false, desc: "Show border" },
+            { name: "overrides.progressBar.show", type: "boolean", required: false, desc: "Show progress bar" },
+            { name: "overrides.progressBar.color", type: "string", required: false, desc: "Hex/RGB color" },
+            { name: "overrides.progressBar.height", type: "number", required: false, desc: "Height in px" },
+            { name: "overrides.iconDefaults.show", type: "boolean", required: false, desc: "Show icon" },
+            { name: "overrides.iconDefaults.size", type: "number", required: false, desc: "Icon size in px" },
+            { name: "overrides.iconDefaults.position", type: "string", required: false, desc: '"left" | "right" | "top"' },
+            { name: "overrides.website", type: "string", required: false, desc: "Target website URL" },
+            { name: "overrides.time", type: "boolean", required: false, desc: "Show timestamp" },
+            { name: "overrides.favicon", type: "boolean", required: false, desc: "Show favicon" },
+        ],
     },
     "1": {
-        label: "Custom HTML/CSS - (Upcoming)",
+        label: "Custom Template",
+        tag: "Upcoming",
         description:
-            "Fully custom template with HTML, CSS, variables. Perfect for SaaS branding and marketing.",
+            "Fully custom template with HTML, CSS, and variables. Perfect for SaaS branding and marketing.",
         endpoint: "https://pinglet.enjoys.in/api/v1/notifications/send",
-
+        method: "POST",
         headers: {
             "x-project-id": "your-project-id",
-            // "x-pinglet-id": "your-pinglet-id",
             "x-pinglet-version": "1.0.0",
         },
         request: {
@@ -99,355 +159,173 @@ const examples = {
             type: 1,
             variant: "promo",
             data: {
-                title: "Welcome to Pinglet", // used inside custom template
+                title: "Welcome to Pinglet",
             },
         },
         response: {
-            "message": "OK",
-            "result": "Notification Sent",
-            "success": true,
-            "X-API-PLATFORM STATUS": "OK"
-        }
+            message: "OK",
+            result: "Notification Sent",
+            success: true,
+            "X-API-PLATFORM STATUS": "OK",
+        },
+        schema: [
+            { name: "project_id", type: "string", required: true, desc: "Your project unique ID" },
+            { name: "template_id", type: "string", required: true, desc: "Template ID to render" },
+            { name: "type", type: "number", required: true, desc: "Set to 1 for custom" },
+            { name: "variant", type: "string", required: false, desc: "Template variant name" },
+            { name: "data", type: "object", required: false, desc: "Variables used inside the template" },
+        ],
     },
 };
 
+type ExampleKey = keyof typeof examples;
+
+function CodeBlock({ code, lang }: { code: string; lang?: string }) {
+    const [copied, setCopied] = useState(false);
+    const handleCopy = () => {
+        navigator.clipboard.writeText(code);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
+    return (
+        <div className="relative group">
+            <button
+                onClick={handleCopy}
+                className="absolute top-3 right-3 p-1.5 rounded-md bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-all z-10"
+            >
+                {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+            </button>
+            <pre className="bg-[hsl(240,10%,6%)] text-[hsl(0,0%,85%)] p-4 rounded-xl text-xs font-mono overflow-x-auto leading-relaxed border border-border/30">
+                {lang && <span className="text-muted-foreground/50 text-[10px] uppercase tracking-wider block mb-2">{lang}</span>}
+                {code}
+            </pre>
+        </div>
+    );
+}
+
 const PingletApiUsage = () => {
-    const [activeTab, setActiveTab] = useState("0");
+    const [activeTab, setActiveTab] = useState<ExampleKey>("0");
+    const params = useParams();
+    const projectId = params?.project_id;
+
+    const current = examples[activeTab];
 
     return (
-        <div className="  p-6">
-            <h1 className="text-3xl font-bold mb-2">🔔 Pinglet API Usage Guide</h1>
-            <p className="text-gray-500 mb-6">
-                Select a notification type below to view sample request, headers, and
-                response formats.
-            </p>
+        <div className="space-y-6">
+            {/* Back + Header */}
+            <div>
+                <Link href={`/u/projects/${projectId}`} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-4">
+                    <ChevronLeft className="w-4 h-4" />
+                    Back to Project
+                </Link>
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center shadow-md">
+                        <BookOpen className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                        <h1 className="text-2xl font-bold text-foreground">API Documentation</h1>
+                        <p className="text-sm text-muted-foreground">Send notifications via the Pinglet API</p>
+                    </div>
+                </div>
+            </div>
 
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="mb-4 flex space-x-2">
-                    {Object.entries(examples).map(([key, val]) => (
-                        <TabsTrigger key={key} value={key}>
+            {/* Tabs */}
+            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as ExampleKey)} className="w-full">
+                <TabsList className="bg-muted/50 border border-border/50 p-1 rounded-xl">
+                    {(Object.entries(examples) as [ExampleKey, typeof examples[ExampleKey]][]).map(([key, val]) => (
+                        <TabsTrigger
+                            key={key}
+                            value={key}
+                            className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm text-sm gap-2"
+                        >
                             {val.label}
+                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
+                                val.tag === "Live"
+                                    ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                                    : "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                            }`}>
+                                {val.tag}
+                            </span>
                         </TabsTrigger>
                     ))}
                 </TabsList>
 
-                {Object.entries(examples).map(([key, val]) => (
-                    <TabsContent key={key} value={key}>
-                        <Card className="shadow-lg border rounded-2xl bg-white dark:bg-zinc-900">
-                            <CardContent className="p-6 space-y-5">
-                                <div className="space-y-2">
-                                    <h2 className="text-xl font-semibold">{val.label}</h2>
-                                    <p className="text-gray-500">{val.description}</p>
+                {(Object.entries(examples) as [ExampleKey, typeof examples[ExampleKey]][]).map(([key, val]) => (
+                    <TabsContent key={key} value={key} className="mt-6 space-y-6">
+                        {/* Description card */}
+                        <div className="rounded-2xl border border-border/50 bg-card/80 backdrop-blur-sm p-6">
+                            <div className="flex items-start gap-3 mb-4">
+                                <div className="p-2 rounded-lg bg-primary/10 shrink-0">
+                                    <Zap className="w-4 h-4 text-primary" />
+                                </div>
+                                <div>
+                                    <h2 className="text-lg font-semibold text-foreground">{val.label}</h2>
+                                    <p className="text-sm text-muted-foreground mt-1">{val.description}</p>
+                                </div>
+                            </div>
+
+                            {/* Endpoint */}
+                            <div className="flex items-center gap-2 bg-muted/50 rounded-lg px-4 py-2.5 border border-border/50">
+                                <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">
+                                    {val.method}
+                                </span>
+                                <code className="text-sm font-mono text-foreground break-all">{val.endpoint}</code>
+                            </div>
+                        </div>
+
+                        {/* Headers + Request + Response */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            {/* Left: Headers + Request */}
+                            <div className="space-y-6">
+                                <div className="rounded-2xl border border-border/50 bg-card/80 backdrop-blur-sm p-6 space-y-4">
+                                    <div className="flex items-center gap-2">
+                                        <Code2 className="w-4 h-4 text-primary" />
+                                        <h3 className="text-sm font-semibold text-foreground">Headers</h3>
+                                    </div>
+                                    <CodeBlock code={JSON.stringify(val.headers, null, 2)} lang="json" />
                                 </div>
 
-                                <div className="space-y-3">
-                                    <div>
-                                        <h3 className="text-sm font-semibold text-gray-400 uppercase">
-                                            Endpoint
-                                        </h3>
-                                        <code className="block bg-zinc-100 dark:bg-zinc-800 rounded-md p-2 text-blue-600">
-                                            {val.endpoint}
-                                        </code>
-                                    </div>
-
-                                    <div>
-                                        <h3 className="text-sm font-semibold text-gray-400 uppercase mb-1">
-                                            Headers
-                                        </h3>
-                                        <pre className="bg-zinc-950 text-yellow-400 p-4 rounded-xl text-sm overflow-x-auto">
-                                            {JSON.stringify(val.headers, null, 2)}
-                                        </pre>
-                                    </div>
-
-                                    <div className="flex flex-col md:flex-row gap-4 w-full">
-                                        <div className="w-1/2">
-                                            <h3 className="text-sm font-semibold text-gray-400 uppercase mb-1">
-                                                Request Payload
-                                            </h3>
-                                            <pre className="bg-zinc-950 text-green-400 p-4 rounded-xl text-sm overflow-x-auto">
-                                                {JSON.stringify(val.request, null, 2)}
-                                            </pre>
+                                <div className="rounded-2xl border border-border/50 bg-card/80 backdrop-blur-sm p-6 space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <Send className="w-4 h-4 text-primary" />
+                                            <h3 className="text-sm font-semibold text-foreground">Request Body</h3>
                                         </div>
-                                        <div className="w-1/2">
-                                            Schema
-                                            <div className="bg-white dark:bg-zinc-900 border rounded-xl p-6 text-sm space-y-4">
-                                                <div>
-                                                    <div className="font-semibold text-gray-700 dark:text-gray-200">project_id</div>
-                                                    <div className="text-blue-600 break-all">"your-project-id"</div>
-                                                </div>
+                                    </div>
+                                    <CodeBlock code={JSON.stringify(val.request, null, 2)} lang="json" />
+                                </div>
 
-                                                <div className="grid grid-cols-2 gap-4">
-                                                    <div>
-                                                        <div className="font-semibold text-gray-700 dark:text-gray-200">type</div>
-                                                        <div className="text-green-500">0</div>
-                                                    </div>
-                                                    <div>
-                                                        <div className="font-semibold text-gray-700 dark:text-gray-200">variant</div>
-                                                        <div className="text-blue-500">"default"</div>
-                                                    </div>
-                                                </div>
-                                                {
-                                                    activeTab === "-1" && (
-                                                        <div>
-                                                            <div className="font-semibold text-gray-700 dark:text-gray-200 mb-1">body</div>
-                                                            <div className="bg-zinc-100 dark:bg-zinc-800 rounded-md p-4 space-y-2">
-                                                                <div><span className="text-gray-400">title*:</span> <span className="text-green-400">"Hello from Pinglet" // string</span></div>
-                                                                <div><span className="text-gray-400">description:</span> <span className="text-pink-400">"New design incoming!"  // string</span></div>
-                                                                <div><span className="text-gray-400">badge:</span> <span className="text-orange-400">"🔥" (must be valid URL)</span></div>
-                                                                <div><span className="text-gray-400">icon*:</span> <span className="text-purple-400">(must be valid URL)</span></div>
-                                                                <div><span className="text-gray-400">timestamp:</span> <span className="text-indigo-400">number of milliseconds</span></div>
-                                                                <div><span className="text-blue-400">image:</span> <span className="text-green-400">(must be valid URL)</span></div>
-                                                                <div><span className="text-gray-400">requireInteraction:</span> <span className="text-yellow-400"> boolean (Require User Click)</span></div>
-                                                                <div><span className="text-gray-400">vibrate:</span> <span className="text-yellow-400"> array of number [200, 100, 200], // Vibration pattern for mobile devices</span></div>
-                                                                <div>
-                                                                    <div className="text-gray-400">data: <span className="text-teal-400"> (object) payload send to function executed in client side </span></div>
-                                                                    <div className="bg-white dark:bg-zinc-900 border rounded-xl p-6 text-sm space-y-6 h-96 overflow-y-auto">
-                                                                        <div>
-                                                                            <div className="font-semibold text-gray-800 dark:text-gray-100">🔁 Options</div>
-                                                                            <div className="ml-4 mt-2 space-y-1">
-                                                                                <div><span className="text-gray-400">duration:</span> <span className="text-slate-400"> auto dismiss toast after ms</span></div>
-                                                                                <div><span className="text-gray-400">url:</span> <span className="text-yellow-400">when click on toast, open new tab</span></div>
-                                                                                <div><span className="text-gray-400">func:</span> <span className="text-blue-400">custom function wrapped in string</span></div>
-                                                                                <div><span className="text-gray-400">payload:</span> <span className="text-blue-400">custom object payload sent to function wrapped in string</span></div>
+                                <div className="rounded-2xl border border-border/50 bg-card/80 backdrop-blur-sm p-6 space-y-4">
+                                    <div className="flex items-center gap-2">
+                                        <Check className="w-4 h-4 text-emerald-500" />
+                                        <h3 className="text-sm font-semibold text-foreground">Response</h3>
+                                    </div>
+                                    <CodeBlock code={JSON.stringify(val.response, null, 2)} lang="json" />
+                                </div>
+                            </div>
 
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-
-
-                                                                </div>
-
-
-
-
-                                                                <div>
-                                                                    <div className="text-gray-400">actions:</div>
-                                                                    <div className="bg-white dark:bg-zinc-900 border rounded-xl p-6 text-sm space-y-6 h-96 overflow-y-auto">
-
-                                                                        {/* Variant 1 */}
-                                                                        <div>
-                                                                            <div className="font-semibold text-gray-800 dark:text-gray-100">🔁 View / Close Button</div>
-                                                                            <div className="ml-4 mt-2 space-y-1">
-                                                                                <div><span className="text-gray-500">text*:</span> <span className="text-yellow-500">string</span></div>
-                                                                                <div><span className="text-gray-500">action*:</span> <span className="text-blue-500">"view" | "dismiss"</span></div>
-                                                                                <div><span className="text-gray-500">icon:</span> <span className="text-blue-500"> (must be valid URL)(optional)</span></div>
-                                                                            </div>
-                                                                        </div>
-
-                                                                        {/* Variant 3 */}
-                                                                        <div>
-                                                                            <div className="font-semibold text-gray-800 dark:text-gray-100">📡 Custom Event Button</div>
-                                                                            <div className="ml-4 mt-2 space-y-1">
-                                                                                <div><span className="text-gray-500">text:</span> <span className="text-yellow-500">string</span></div>
-                                                                                <div><span className="text-gray-500">action:</span> <span className="text-blue-500">"eventname"</span></div>
-                                                                                <div><span className="text-gray-500">data?:</span> <span className="text-purple-500">any</span></div>
-                                                                            </div>
-                                                                        </div>
-
-                                                                    </div>
-
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    )
-                                                }
-                                                {
-                                                    activeTab === "0" && (
-                                                        <>
-                                                            <div>
-                                                                <div className="font-semibold text-gray-700 dark:text-gray-200 mb-1">body</div>
-                                                                <div className="bg-zinc-100 dark:bg-zinc-800 rounded-md p-4 space-y-2">
-                                                                    <div><span className="text-gray-400">title:</span> <span className="text-green-400">"Hello from Pinglet"</span></div>
-                                                                    <div><span className="text-gray-400">description:</span> <span className="text-green-400">"New design incoming!"</span></div>
-                                                                    <div><span className="text-gray-400">icon:</span> <span className="text-green-400">"🔥" (emoji/text/svg/base64)</span></div>
-                                                                    <div><span className="text-gray-400">logo:</span> <span className="text-green-400">"url/base64"</span></div>
-                                                                    <div><span className="text-gray-400">url:</span> <span className="text-green-400">"url" (optional, when click on toast, open new tab)</span></div>
-
-                                                                    <div>
-                                                                        <div className="text-gray-400">media:</div>
-                                                                        <div className="ml-4 space-y-1">
-                                                                            <div><span className="text-gray-500">type:</span>
-                                                                                <span className="text-purple-400">"image"</span>
-                                                                                <span className="text-gray-400 ml-2 italic">(image | audio | video | iframe)</span>
-                                                                            </div>
-                                                                            <div><span className="text-gray-500">src:</span>
-                                                                                <span className="text-yellow-400">"🔥"</span>
-                                                                                <span className="text-gray-400 ml-2 italic">(  must be valid URL)</span>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-
-                                                                    <div>
-                                                                        <div className="text-gray-400">buttons:</div>
-                                                                        <div className="bg-white dark:bg-zinc-900 border rounded-xl p-6 text-sm space-y-6 h-96 overflow-y-auto">
-
-                                                                            {/* Variant 1 */}
-                                                                            <div>
-                                                                                <div className="font-semibold text-gray-800 dark:text-gray-100">🔁 Reload / Close Button</div>
-                                                                                <div className="ml-4 mt-2 space-y-1">
-                                                                                    <div><span className="text-gray-500">text:</span> <span className="text-yellow-500">string</span></div>
-                                                                                    <div><span className="text-gray-500">action:</span> <span className="text-blue-500">"reload" | "close"</span></div>
-                                                                                </div>
-                                                                            </div>
-
-                                                                            {/* Variant 2 */}
-                                                                            <div>
-                                                                                <div className="font-semibold text-gray-800 dark:text-gray-100">🔗 Redirect / Link / Alert Button</div>
-                                                                                <div className="ml-4 mt-2 space-y-1">
-                                                                                    <div><span className="text-gray-500">text:</span> <span className="text-yellow-500">string</span></div>
-                                                                                    <div><span className="text-gray-500">action:</span> <span className="text-blue-500">"redirect" | "link" | "alert"</span></div>
-                                                                                    <div><span className="text-gray-500">src:</span> <span className="text-green-500">string (URL/message)</span></div>
-                                                                                </div>
-                                                                            </div>
-
-                                                                            {/* Variant 3 */}
-                                                                            <div>
-                                                                                <div className="font-semibold text-gray-800 dark:text-gray-100">📡 Custom Event Button</div>
-                                                                                <div className="ml-4 mt-2 space-y-1">
-                                                                                    <div><span className="text-gray-500">text:</span> <span className="text-yellow-500">string</span></div>
-                                                                                    <div><span className="text-gray-500">action:</span> <span className="text-blue-500">"event"</span></div>
-                                                                                    <div><span className="text-gray-500">event:</span> <span className="text-green-500">string</span></div>
-                                                                                    <div><span className="text-gray-500">data?:</span> <span className="text-purple-500">any</span></div>
-                                                                                </div>
-                                                                            </div>
-
-
-                                                                        </div>
-
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-
-                                                            <div className="">
-                                                                <div className="font-semibold text-gray-700 dark:text-gray-200 mb-1">overrides</div>
-                                                                <div className=" h-96 overflow-y-auto bg-white dark:bg-zinc-900 border rounded-xl p-6 text-sm space-y-4">
-                                                                    <div>
-                                                                        <div className="font-semibold text-gray-700 dark:text-gray-200">position</div>
-                                                                        <div className="text-blue-500">"top-right" | "top-left" | "bottom-right" | "bottom-left"</div>
-                                                                    </div>
-
-                                                                    <div>
-                                                                        <div className="font-semibold text-gray-700 dark:text-gray-200">transition</div>
-                                                                        <div className="text-purple-500">"fade" | "slide" | "zoom"</div>
-                                                                    </div>
-
-                                                                    <div>
-                                                                        <div className="font-semibold text-gray-700 dark:text-gray-200">branding</div>
-                                                                        <div className="ml-4 space-y-1">
-                                                                            <div><span className="text-gray-500">show:</span> <span className="text-green-500">boolean</span></div>
-                                                                            <div><span className="text-gray-500">once:</span> <span className="text-green-500">boolean</span></div>
-                                                                            <div><span className="text-gray-500">html:</span> <span className="text-yellow-500">string</span></div>
-                                                                        </div>
-                                                                    </div>
-
-                                                                    <div>
-                                                                        <div className="font-semibold text-gray-700 dark:text-gray-200">sound</div>
-                                                                        <div className="ml-4 space-y-1">
-                                                                            <div><span className="text-gray-500">play:</span> <span className="text-green-500">boolean</span></div>
-                                                                            <div><span className="text-gray-500">src:</span> <span className="text-yellow-500">string (URL)</span></div>
-                                                                            <div><span className="text-gray-500">volume:</span> <span className="text-blue-500">number (0-1)</span></div>
-                                                                        </div>
-                                                                    </div>
-
-                                                                    <div className="grid grid-cols-2 gap-4">
-                                                                        <div>
-                                                                            <div className="font-semibold text-gray-700 dark:text-gray-200">duration</div>
-                                                                            <div className="text-blue-500">number (ms)</div>
-                                                                        </div>
-                                                                        <div>
-                                                                            <div className="font-semibold text-gray-700 dark:text-gray-200">auto_dismiss</div>
-                                                                            <div className="text-green-500">boolean</div>
-                                                                        </div>
-                                                                        <div>
-                                                                            <div className="font-semibold text-gray-700 dark:text-gray-200">maxVisible</div>
-                                                                            <div className="text-blue-500">number</div>
-                                                                        </div>
-                                                                        <div>
-                                                                            <div className="font-semibold text-gray-700 dark:text-gray-200">stacking</div>
-                                                                            <div className="text-green-500">boolean</div>
-                                                                        </div>
-                                                                        <div>
-                                                                            <div className="font-semibold text-gray-700 dark:text-gray-200">dismissible</div>
-                                                                            <div className="text-green-500">boolean</div>
-                                                                        </div>
-                                                                        <div>
-                                                                            <div className="font-semibold text-gray-700 dark:text-gray-200">pauseOnHover</div>
-                                                                            <div className="text-green-500">boolean</div>
-                                                                        </div>
-                                                                    </div>
-
-                                                                    <div>
-                                                                        <div className="font-semibold text-gray-700 dark:text-gray-200">website</div>
-                                                                        <div className="text-yellow-500">string (URL)</div>
-                                                                    </div>
-
-                                                                    <div>
-                                                                        <div className="font-semibold text-gray-700 dark:text-gray-200">time</div>
-                                                                        <div className="text-green-500">boolean</div>
-                                                                    </div>
-
-                                                                    <div>
-                                                                        <div className="font-semibold text-gray-700 dark:text-gray-200">favicon</div>
-                                                                        <div className="text-green-500">boolean</div>
-                                                                    </div>
-
-                                                                    <div>
-                                                                        <div className="font-semibold text-gray-700 dark:text-gray-200">theme</div>
-                                                                        <div className="ml-4 space-y-1">
-                                                                            <div><span className="text-gray-500">mode:</span> <span className="text-purple-400">"light" | "dark" | "auto"</span></div>
-                                                                            <div><span className="text-gray-500">customClass:</span> <span className="text-yellow-500">string</span></div>
-                                                                            <div><span className="text-gray-500">rounded:</span> <span className="text-green-500">boolean</span></div>
-                                                                            <div><span className="text-gray-500">shadow:</span> <span className="text-green-500">boolean</span></div>
-                                                                            <div><span className="text-gray-500">border:</span> <span className="text-green-500">boolean</span></div>
-                                                                        </div>
-                                                                    </div>
-
-                                                                    <div>
-                                                                        <div className="font-semibold text-gray-700 dark:text-gray-200">iconDefaults</div>
-                                                                        <div className="ml-4 space-y-1">
-                                                                            <div><span className="text-gray-500">show:</span> <span className="text-green-500">boolean</span></div>
-                                                                            <div><span className="text-gray-500">size:</span> <span className="text-blue-500">number (px)</span></div>
-                                                                            <div><span className="text-gray-500">position:</span> <span className="text-purple-400">"left" | "right" | "top"</span></div>
-                                                                        </div>
-                                                                    </div>
-
-                                                                    <div>
-                                                                        <div className="font-semibold text-gray-700 dark:text-gray-200">progressBar</div>
-                                                                        <div className="ml-4 space-y-1">
-                                                                            <div><span className="text-gray-500">show:</span> <span className="text-green-500">boolean</span></div>
-                                                                            <div><span className="text-gray-500">color:</span> <span className="text-yellow-500">string (hex/rgb)</span></div>
-                                                                            <div><span className="text-gray-500">height:</span> <span className="text-blue-500">number (px)</span></div>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-
-                                                            </div>
-                                                        </>
-                                                    )
-                                                }
-
+                            {/* Right: Schema */}
+                            <div className="rounded-2xl border border-border/50 bg-card/80 backdrop-blur-sm p-6">
+                                <div className="flex items-center gap-2 mb-5">
+                                    <BookOpen className="w-4 h-4 text-primary" />
+                                    <h3 className="text-sm font-semibold text-foreground">Request Schema</h3>
+                                </div>
+                                <div className="space-y-0 divide-y divide-border/40 max-h-[calc(100vh-16rem)] overflow-y-auto pr-1">
+                                    {val.schema.map((field, i) => (
+                                        <div key={i} className="py-3 first:pt-0">
+                                            <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                                <code className="text-xs font-mono font-medium text-foreground">{field.name}</code>
+                                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">{field.type}</span>
+                                                {field.required && (
+                                                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-500/10 text-red-500 font-medium">required</span>
+                                                )}
                                             </div>
-
+                                            <p className="text-xs text-muted-foreground">{field.desc}</p>
                                         </div>
-                                    </div>
-
-                                    <div>
-                                        <h3 className="text-sm font-semibold text-gray-400 uppercase mb-1">
-                                            Sample Response
-                                        </h3>
-                                        <pre className="bg-zinc-950 text-cyan-400 p-4 rounded-xl text-sm overflow-x-auto">
-                                            {JSON.stringify(val.response, null, 2)}
-                                        </pre>
-                                    </div>
+                                    ))}
                                 </div>
-
-                                <div className="pt-4">
-                                    <Button variant="outline" className="text-sm">
-                                        Copy Example JSON
-                                    </Button>
-                                </div>
-                            </CardContent>
-                        </Card>
+                            </div>
+                        </div>
                     </TabsContent>
                 ))}
             </Tabs>

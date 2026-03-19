@@ -10,6 +10,7 @@ import { Cache } from "../redis/cacheService";
 import { QUEUE_NAME } from "./name";
 
 import { WebhookEvent, WebhookType } from "@/factory/entities/webhook.entity";
+import { webhookService } from "@/handlers/services/webhook.service";
 import { KafkaNotificationLogger } from "../kafka/notificationLogger";
 import { KafkaNotificationProducer } from "../kafka/producer";
 const kafkaProducer = new KafkaNotificationProducer([
@@ -248,20 +249,115 @@ export class ListenWorkers extends QueueService {
 			QUEUE_NAME.TRIGGER_WEBHOOK,
 			async (job) => {
 				const {
+					webhookId,
 					webhookType,
 					event,
+					config,
 					projectId,
 					notificationType,
 					notificationData,
 					timestamp,
 				} = job.data as {
-					webhookType: WebhookType.API;
+					webhookId: number;
+					webhookType: string;
 					event: WebhookEvent;
+					config: Record<string, any>;
 					projectId: string;
 					notificationType: "1" | "0" | "-1";
 					notificationData: Record<string, any>;
 					timestamp: number;
 				};
+
+				const payload = {
+					event,
+					projectId,
+					notificationType,
+					notificationData,
+					timestamp,
+				};
+
+				try {
+					switch (webhookType) {
+						case WebhookType.API: {
+							const url = config?.api?.url;
+							if (!url) throw new Error("Webhook API URL not configured");
+							const resp = await fetch(url, {
+								method: "POST",
+								headers: { "Content-Type": "application/json" },
+								body: JSON.stringify(payload),
+								signal: AbortSignal.timeout(10000),
+							});
+							if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+							break;
+						}
+						case WebhookType.TELEGRAM: {
+							const botToken = config?.telegram?.botToken;
+							const chatId = config?.telegram?.chatId;
+							if (!botToken || !chatId) throw new Error("Telegram config missing");
+							const text = `*${event}*\nProject: ${projectId}\nType: ${notificationType}\nTime: ${new Date(timestamp).toISOString()}`;
+							const resp = await fetch(
+								`https://api.telegram.org/bot${encodeURIComponent(botToken)}/sendMessage`,
+								{
+									method: "POST",
+									headers: { "Content-Type": "application/json" },
+									body: JSON.stringify({ chat_id: chatId, text, parse_mode: "Markdown" }),
+									signal: AbortSignal.timeout(10000),
+								},
+							);
+							if (!resp.ok) throw new Error(`Telegram API ${resp.status}`);
+							break;
+						}
+						case WebhookType.SLACK: {
+							const url = config?.slack?.url;
+							if (!url) throw new Error("Slack webhook URL not configured");
+							const resp = await fetch(url, {
+								method: "POST",
+								headers: { "Content-Type": "application/json" },
+								body: JSON.stringify({
+									text: `[${event}] Project: ${projectId} | Type: ${notificationType} | ${new Date(timestamp).toISOString()}`,
+								}),
+								signal: AbortSignal.timeout(10000),
+							});
+							if (!resp.ok) throw new Error(`Slack ${resp.status}`);
+							break;
+						}
+						case WebhookType.DISCORD: {
+							const url = config?.discord?.url;
+							if (!url) throw new Error("Discord webhook URL not configured");
+							const resp = await fetch(url, {
+								method: "POST",
+								headers: { "Content-Type": "application/json" },
+								body: JSON.stringify({
+									content: `**${event}**\nProject: ${projectId}\nType: ${notificationType}\nTime: ${new Date(timestamp).toISOString()}`,
+								}),
+								signal: AbortSignal.timeout(10000),
+							});
+							if (!resp.ok) throw new Error(`Discord ${resp.status}`);
+							break;
+						}
+						case WebhookType.TEAMS: {
+							const url = config?.teams?.url;
+							if (!url) throw new Error("Teams webhook URL not configured");
+							const resp = await fetch(url, {
+								method: "POST",
+								headers: { "Content-Type": "application/json" },
+								body: JSON.stringify({
+									text: `**${event}** | Project: ${projectId} | Type: ${notificationType} | ${new Date(timestamp).toISOString()}`,
+								}),
+								signal: AbortSignal.timeout(10000),
+							});
+							if (!resp.ok) throw new Error(`Teams ${resp.status}`);
+							break;
+						}
+						default:
+							throw new Error(`Unsupported webhook type: ${webhookType}`);
+					}
+					await webhookService.recordSuccess(webhookId);
+				} catch (err) {
+					console.error(`Webhook ${webhookId} dispatch failed:`, err);
+					await webhookService.recordFailure(webhookId);
+					throw err;
+				}
 			},
 			{
 				connection: ListenWorkers.connection,
@@ -270,10 +366,10 @@ export class ListenWorkers extends QueueService {
 			},
 		);
 		worker.on("completed", async (job) => {
-			console.log("Completed", job);
+			console.log(`Webhook job ${job.id} completed`);
 		});
 		worker.on("error", async (error: Error) => {
-			console.log("error", error);
+			console.log("Webhook worker error:", error);
 		});
 	}
 }

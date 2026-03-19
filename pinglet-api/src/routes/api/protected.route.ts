@@ -56,6 +56,10 @@ router.delete("/widget/:id", WidgetController.default.deleteWidget);
 
 // Notification
 router.get(
+	"/notification-stats",
+	NotificationController.default.getNotificationStats,
+);
+router.get(
 	"/my-notifications",
 	NotificationController.default.getAllNotifications,
 );
@@ -82,6 +86,7 @@ router.get("/webhook/:id", WebhookController.default.getWebhook);
 router.post("/webhook", checkPlanQuota("webhook"), WebhookController.default.createNewWebhook);
 router.put("/webhook/:id", WebhookController.default.updateWebhook);
 router.delete("/webhook/:id", WebhookController.default.deleteWebhook);
+router.post("/webhook/:id/test", WebhookController.default.testWebhook);
 // Template
 router.get("/template", TemplateController.default.getTemplates);
 router.get("/template/:id", TemplateController.default.getTemplateById);

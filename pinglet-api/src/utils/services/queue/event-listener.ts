@@ -2,6 +2,7 @@ import type {
 	WebhookEvent,
 	WebhookType,
 } from "@/factory/entities/webhook.entity";
+import { webhookService } from "@/handlers/services/webhook.service";
 import { OnEvent } from "@/utils/decorators";
 import { MailService } from "@/utils/services/mail/mailService";
 import { QueueService } from ".";
@@ -17,18 +18,38 @@ export class EventListeners {
 	// and had JSON.parse on non-string payload, undefined adminEmail, and decorator registration issues
 	@OnEvent("triggerWebhook", { async: true })
 	private async triggerWebhook(payload: any) {
-		console.log("first");
 		const data = JSON.parse(payload) as {
-			webhookType: WebhookType.API;
-			event: WebhookEvent.NOTIFICATION_SENT;
+			webhookType: WebhookType;
+			event: WebhookEvent;
 			projectId: string;
+			userId: number;
 			notificationType: "1" | "0" | "-1";
 			notificationData: Record<string, any>;
 		};
-		console.log(data);
-		// await triggerWebhookQueue.add(QUEUE_JOBS.TRIGGER_WEBHOOK, data, {
-		//     removeOnComplete: true,
-		//     jobId: `${data.projectId}-${data.event}`
-		// })
+
+		const webhooks = await webhookService.getWebhooksByEvent(
+			data.userId,
+			data.event,
+		);
+
+		for (const wh of webhooks) {
+			await triggerWebhookQueue.add(
+				QUEUE_JOBS.TRIGGER_WEBHOOK,
+				{
+					webhookId: wh.id,
+					webhookType: wh.type,
+					event: data.event,
+					config: wh.config,
+					projectId: data.projectId,
+					notificationType: data.notificationType,
+					notificationData: data.notificationData,
+					timestamp: Date.now(),
+				},
+				{
+					removeOnComplete: true,
+					jobId: `${wh.id}-${data.projectId}-${data.event}-${Date.now()}`,
+				},
+			);
+		}
 	}
 }

@@ -1,4 +1,4 @@
-import { WebhookEntity } from "@/factory/entities/webhook.entity";
+import { WebhookEntity, type WebhookEvent } from "@/factory/entities/webhook.entity";
 import { InjectRepository } from "@/factory/typeorm";
 import type { DeepPartial, FindManyOptions, Repository } from "typeorm";
 class WebhookService {
@@ -23,6 +23,36 @@ class WebhookService {
 	}
 	deleteWebhook(id: number) {
 		return this.webhookRepo.softDelete(id);
+	}
+	getWebhooksByEvent(userId: number, event: WebhookEvent) {
+		return this.webhookRepo
+			.createQueryBuilder("webhook")
+			.where("webhook.user_id = :userId", { userId })
+			.andWhere("webhook.is_active = true")
+			.andWhere(":event = ANY(webhook.triggers_on)", { event })
+			.getMany();
+	}
+	async recordSuccess(id: number) {
+		await this.webhookRepo
+			.createQueryBuilder()
+			.update(WebhookEntity)
+			.set({
+				success_count: () => "success_count + 1",
+				last_triggered_at: new Date(),
+			})
+			.where("id = :id", { id })
+			.execute();
+	}
+	async recordFailure(id: number) {
+		await this.webhookRepo
+			.createQueryBuilder()
+			.update(WebhookEntity)
+			.set({
+				failure_count: () => "failure_count + 1",
+				last_triggered_at: new Date(),
+			})
+			.where("id = :id", { id })
+			.execute();
 	}
 }
 

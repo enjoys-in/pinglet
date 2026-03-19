@@ -1,7 +1,12 @@
+import { WebhookEvent } from "@/factory/entities/webhook.entity";
 import { webhookService } from "@/handlers/services/webhook.service";
 import { cached, invalidateCache } from "@/utils/helpers/cache";
 import { CacheInvalidation, CacheKeys, CacheTTL } from "@/utils/types/cache";
+import { QueueService } from "@/utils/services/queue";
+import { QUEUE_JOBS } from "@/utils/services/queue/name";
 import type { Request, Response } from "express";
+
+const triggerWebhookQueue = QueueService.createQueue("TRIGGER_WEBHOOK");
 
 class WebhookController {
 	async getAllWebhooks(req: Request, res: Response) {
@@ -195,6 +200,45 @@ class WebhookController {
 	async handleWebhook(req: Request, res: Response) {
 		// Implement webhook handling logic here
 		res.status(200).send("Webhook received successfully");
+	}
+
+	async testWebhook(req: Request, res: Response) {
+		try {
+			const id = +req.params.id;
+			const webhook = await webhookService.getWebhookById(id);
+			if (!webhook) {
+				res.json({ message: "Webhook not found", result: null, success: false }).end();
+				return;
+			}
+			if (webhook.user_id !== (req.user?.id as number)) {
+				res.json({ message: "Unauthorized", result: null, success: false }).end();
+				return;
+			}
+			await triggerWebhookQueue.add(
+				QUEUE_JOBS.TRIGGER_WEBHOOK,
+				{
+					webhookId: webhook.id,
+					webhookType: webhook.type,
+					event: WebhookEvent.NOTIFICATION_SENT,
+					config: webhook.config,
+					projectId: "test",
+					notificationType: "1",
+					notificationData: { test: true, message: "This is a test webhook" },
+					timestamp: Date.now(),
+				},
+				{
+					removeOnComplete: true,
+					jobId: `test-${webhook.id}-${Date.now()}`,
+				},
+			);
+			res.json({ message: "Test webhook dispatched", result: { id }, success: true }).end();
+		} catch (error) {
+			if (error instanceof Error) {
+				res.json({ message: error.message, result: null, success: false }).end();
+				return;
+			}
+			res.json({ message: "Something went wrong", result: null, success: false }).end();
+		}
 	}
 }
 
