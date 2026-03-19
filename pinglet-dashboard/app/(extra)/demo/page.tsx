@@ -52,9 +52,13 @@ const actionLabels: Record<ButtonsData['action'], string> = {
   onClick: 'onClick',
 };
 const formSchema = z.object({
-  title: z.string().min(1, "Title is required"),
-  description: z.string().min(1, "Description is required"),
-  mediaType: z.enum(["icon", "logo", "image", "audio", "video"], {
+  notificationType: z.enum(["0", "2"], { required_error: "Select notification type" }),
+  title: z.string().min(3, "Title must be at least 3 characters"),
+  description: z.string().optional(),
+  icon: z.string().optional(),
+  url: z.string().optional(),
+  tag: z.string().optional(),
+  mediaType: z.enum(["icon", "logo", "image", "audio", "video", "iframe", "none"], {
     required_error: "Please select a media type"
   }),
   buttons: z.array(
@@ -65,16 +69,20 @@ const formSchema = z.object({
       event: z.string().optional(),
       data: z.any().optional(),
     })
-  ).max(2, "Maximum 2 buttons allowed"),
+  ).max(3, "Maximum 3 buttons allowed"),
 });
 
 export default function ProjectForm() {
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      notificationType: "0" as const,
       title: "",
       description: "",
-      mediaType: "icon",
+      icon: "",
+      url: "",
+      tag: "",
+      mediaType: "icon" as const,
       buttons: []
     },
   });
@@ -83,64 +91,65 @@ export default function ProjectForm() {
   const { fields: buttonsFields, append, remove } = useFieldArray({ control: form.control, name: "buttons" });
 
   const selectedMedia = watch("mediaType");
+  const selectedType = watch("notificationType");
   const PID =
     __config.APP.APP_ENV == "DEV"
       ? "0e5c2a5f527acdbe13791234"
       : "84d5cbb85cf887d76b55492f";
   const onSubmit = async (data: any) => {
+    const isType2 = data.notificationType === "2";
 
     const payload: any = {
-      "projectId": PID,
-      "variant": "default",
-      "type": "0",
-      "body": {
-        "title": data.title || "Hello From Pinglet",
-        "description": data.description || "This is Demo Version of Pinglet, New Design are upcoming!",
+      projectId: PID,
+      type: data.notificationType,
+      ...(isType2 ? {} : { variant: "default" }),
+      ...(isType2 && data.tag ? { tag: data.tag } : {}),
+      body: {
+        title: data.title || "Hello From Pinglet",
+        ...(data.description ? { description: data.description } : {}),
       },
-    }
-    switch (selectedMedia) {
-      case "icon":
-        payload.body["media"] = {
-          "type": "icon",
-          "src": DEFAULT_IMAGE
-        }
-        break;
-      case "logo":
-        payload.body["media"] = {
-          "type": "logo",
-          "src": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSWAwm5b7x7MIs4curvY6G94PKiyQB8-gBONg&s"
-        }
-        break;
-      case "image":
-        payload.body["media"] = {
-          "type": "image",
-          "src": "https://www.fsbondtec.at/wp-content/themes/financepro/assets/img/noimage_370X270.jpg"
-        }
-        break;
-      case "video":
-        payload.body["media"] = {
-          "type": "video",
-          "src": "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
-        }
-        break;
-      case "audio":
-        payload.body["media"] = {
-          "type": "audio",
-          "src": "http://commondatastorage.googleapis.com/codeskulptor-assets/Evillaugh.ogg"
-        }
-        break;
-      default:
-        payload.body["media"] = {
-          "type": "icon",
-          "src": "🤣"
-        }
-        break;
+    };
+
+    if (isType2) {
+      // Type 2: icon/logo go directly on body, media is image/video/audio/iframe
+      if (data.icon) payload.body.icon = data.icon;
+      if (data.url) payload.body.url = data.url;
+
+      if (selectedMedia && selectedMedia !== "none" && selectedMedia !== "icon" && selectedMedia !== "logo") {
+        const mediaSrcMap: Record<string, string> = {
+          image: "https://www.fsbondtec.at/wp-content/themes/financepro/assets/img/noimage_370X270.jpg",
+          video: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+          audio: "http://commondatastorage.googleapis.com/codeskulptor-assets/Evillaugh.ogg",
+          iframe: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+        };
+        payload.body.media = { type: selectedMedia, src: mediaSrcMap[selectedMedia] || mediaSrcMap.image };
+      }
+    } else {
+      // Type 0: original media handling
+      switch (selectedMedia) {
+        case "icon":
+          payload.body.media = { type: "icon", src: DEFAULT_IMAGE };
+          break;
+        case "logo":
+          payload.body.media = { type: "logo", src: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSWAwm5b7x7MIs4curvY6G94PKiyQB8-gBONg&s" };
+          break;
+        case "image":
+          payload.body.media = { type: "image", src: "https://www.fsbondtec.at/wp-content/themes/financepro/assets/img/noimage_370X270.jpg" };
+          break;
+        case "video":
+          payload.body.media = { type: "video", src: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" };
+          break;
+        case "audio":
+          payload.body.media = { type: "audio", src: "http://commondatastorage.googleapis.com/codeskulptor-assets/Evillaugh.ogg" };
+          break;
+        default:
+          payload.body.media = { type: "icon", src: "\uD83E\uDD23" };
+          break;
+      }
     }
 
     if (data.buttons.length > 0) {
-
-      payload.body["buttons"] = data.buttons
-
+      payload.body.buttons = data.buttons;
     }
     const res = await API.demoNotification(payload);
     showToast({
@@ -151,19 +160,63 @@ export default function ProjectForm() {
 
   };
 
-  const mediaOptions = [
-    { id: "icon", label: "Icon", icon: ShieldCheck },
-    { id: "logo", label: "Logo", icon: FileText },
-    { id: "image", label: "Image", icon: Image },
-    { id: "video", label: "Video", icon: Video },
-    { id: "audio", label: "Audio", icon: Volume2 },
-  ];
+  const mediaOptions = selectedType === "2"
+    ? [
+        { id: "none", label: "None", icon: ShieldCheck },
+        { id: "image", label: "Image", icon: Image },
+        { id: "video", label: "Video", icon: Video },
+        { id: "audio", label: "Audio", icon: Volume2 },
+        { id: "iframe", label: "Iframe", icon: FileText },
+      ]
+    : [
+        { id: "icon", label: "Icon", icon: ShieldCheck },
+        { id: "logo", label: "Logo", icon: FileText },
+        { id: "image", label: "Image", icon: Image },
+        { id: "video", label: "Video", icon: Video },
+        { id: "audio", label: "Audio", icon: Volume2 },
+      ];
   const buttonWatch = watch('buttons')
 
   return (
     <div className="p-6">
       <Form {...form}>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 w-full max-w-4xl mx-auto">
+          {/* Notification Type Selector */}
+          <FormField
+            control={form.control}
+            name="notificationType"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Notification Type</FormLabel>
+                <div className="grid grid-cols-2 gap-4 pt-2">
+                  {[
+                    { id: "0", label: "In-Tab (Type 0)", desc: "Custom styled toast inside open tabs" },
+                    { id: "2", label: "Glassmorphism HTML (Type 2)", desc: "Modern glassmorphism card overlay" },
+                  ].map((opt) => (
+                    <Card
+                      key={opt.id}
+                      onClick={() => field.onChange(opt.id)}
+                      className={`cursor-pointer p-4 border-2 rounded-xl transition-all duration-200 hover:shadow-lg ${
+                        field.value === opt.id
+                          ? "border-purple-500 bg-purple-50 dark:bg-purple-500/10"
+                          : "border-gray-300 dark:border-gray-700"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className={`text-sm font-medium ${field.value === opt.id ? "text-purple-700 dark:text-purple-300" : "text-gray-800 dark:text-gray-200"}`}>{opt.label}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">{opt.desc}</p>
+                        </div>
+                        {field.value === opt.id && <Check className="w-4 h-4 text-purple-600" />}
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
           {/* Title & Description */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Title */}
@@ -172,9 +225,9 @@ export default function ProjectForm() {
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Project Title</FormLabel>
+                  <FormLabel>Title</FormLabel>
                   <FormControl>
-                    <Input placeholder="My Amazing Project" {...field} />
+                    <Input placeholder="Hello from Pinglet" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -187,14 +240,60 @@ export default function ProjectForm() {
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Project Description</FormLabel>
+                  <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="Tell us more about your project..." rows={4} {...field} />
+                    <Textarea placeholder="Notification body text..." rows={4} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+          </div>
+
+          {/* Type 2 extra fields */}
+          {selectedType === "2" && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <FormField
+                control={form.control}
+                name="icon"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Icon URL</FormLabel>
+                    <FormControl>
+                      <Input placeholder="https://cdn.example.com/icon.png" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="url"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Click-Through URL</FormLabel>
+                    <FormControl>
+                      <Input placeholder="https://example.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="tag"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tag (dedup key)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="optional-dedup-tag" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          )}
           </div>
 
           {/* Button Configuration */}
@@ -274,7 +373,7 @@ export default function ProjectForm() {
                 </div>
               }
             </div>
-            {buttonsFields.length < 2 && (
+            {buttonsFields.length < 3 && (
               <Button type="button" onClick={() => append({ text: "", action: "close" })} className="mt-4">
                 Add More Button
               </Button>
