@@ -1,14 +1,20 @@
 import { projectService } from "@/handlers/services/project.service";
 import { websiteService } from "@/handlers/services/website.service";
+import { cached, invalidateCache } from "@/utils/helpers/cache";
+import { CacheInvalidation, CacheKeys, CacheTTL } from "@/utils/types/cache";
 import type { Request, Response } from "express";
 class WebsiteController {
 	async getWebsites(req: Request, res: Response) {
 		try {
 			const userId = req.user?.id;
 
-			const websites = await websiteService.getAllWebsites({
-				where: { user: { id: userId } },
-			});
+			const websites = await cached(
+				CacheKeys.userWebsites(userId!),
+				CacheTTL.LONG,
+				() => websiteService.getAllWebsites({
+					where: { user: { id: userId } },
+				}),
+			);
 			res
 				.json({
 					message: "All Websites",
@@ -37,7 +43,11 @@ class WebsiteController {
 			if (!req.params?.id) {
 				throw new Error("Invalid Request");
 			}
-			const website = await websiteService.getWebsiteById(+req.params.id);
+			const website = await cached(
+				CacheKeys.website(+req.params.id),
+				CacheTTL.LONG,
+				() => websiteService.getWebsiteById(+req.params.id),
+			);
 			res
 				.json({
 					message: "Logged In",
@@ -96,6 +106,7 @@ class WebsiteController {
 					id: userID,
 				},
 			});
+			await invalidateCache(CacheInvalidation.website(userID!));
 			res
 				.json({
 					message: "Website Created",
@@ -128,6 +139,8 @@ class WebsiteController {
 			if (!website) {
 				throw new Error("Website not found");
 			}
+			const userId = req.user?.id;
+			await invalidateCache(CacheInvalidation.website(userId!, id));
 			// if (body?.favicon) {
 			// 	await websiteService.updateFavicon(id, body.favicon);
 			// }
@@ -166,6 +179,8 @@ class WebsiteController {
 			if (result?.affected && result?.affected > 0) {
 				await projectService.deleteProjectByWebsiteId(id);
 			}
+			const userId = req.user?.id;
+			await invalidateCache(CacheInvalidation.website(userId!, id));
 			res
 				.json({
 					message: "Website Deleted",

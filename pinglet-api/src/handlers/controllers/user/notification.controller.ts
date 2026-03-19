@@ -1,4 +1,6 @@
 import { notificationService } from "@/handlers/services/notifications.service";
+import { cached } from "@/utils/helpers/cache";
+import { CacheKeys, CacheTTL } from "@/utils/types/cache";
 import type { Request, Response } from "express";
 
 class NotificationController {
@@ -9,7 +11,11 @@ class NotificationController {
 			const query = req.query;
 			if (query?.page || query?.limit) {
 			}
-			const subscriptions = await notificationService.getNotifications({
+			const userId = req.user?.id!;
+			const subscriptions = await cached(
+				CacheKeys.userNotifications(userId),
+				CacheTTL.BRIEF,
+				() => notificationService.getNotifications({
 				where: {
 					project: {
 						user: {
@@ -44,7 +50,8 @@ class NotificationController {
 				},
 				order: isLatest ? { created_at: "DESC" } : { created_at: "ASC" },
 				take: limited ? 10 : 100,
-			});
+				}),
+			);
 
 			res
 				.json({

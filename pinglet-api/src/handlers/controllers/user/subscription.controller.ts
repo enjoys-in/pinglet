@@ -1,4 +1,6 @@
 import { pushSubscriptionService } from "@/handlers/services/subscription.service";
+import { cached } from "@/utils/helpers/cache";
+import { CacheKeys, CacheTTL } from "@/utils/types/cache";
 import type { Request, Response } from "express";
 
 class SubscriptionController {
@@ -42,7 +44,11 @@ class SubscriptionController {
 		try {
 			const isLatest = req.query?.latest === "true";
 			const limited = req.query?.limited === "true";
-			const subscriptions = await pushSubscriptionService.getSubscriptions({
+			const userId = req.user?.id!;
+			const subscriptions = await cached(
+				CacheKeys.userSubscriptions(userId),
+				CacheTTL.BRIEF,
+				() => pushSubscriptionService.getSubscriptions({
 				where: {
 					project: {
 						user: {
@@ -52,7 +58,8 @@ class SubscriptionController {
 				},
 				order: isLatest ? { created_at: "DESC" } : { created_at: "ASC" },
 				take: limited ? 10 : 100,
-			});
+				}),
+			);
 
 			res
 				.json({

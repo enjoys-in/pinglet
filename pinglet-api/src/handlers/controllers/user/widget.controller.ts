@@ -1,10 +1,16 @@
 import { WidgetService } from "@/handlers/services/widget.service";
+import { cached, invalidateCache } from "@/utils/helpers/cache";
+import { CacheInvalidation, CacheKeys, CacheTTL } from "@/utils/types/cache";
 import type { Request, Response } from "express";
 
 class WidgetController {
 	async getWidgets(req: Request, res: Response) {
 		try {
-			const Widgets = await WidgetService.getAllWidgets({
+			const userId = req.user?.id;
+			const Widgets = await cached(
+				CacheKeys.userWidgets(userId!),
+				CacheTTL.LONG,
+				() => WidgetService.getAllWidgets({
 				where: { user: { id: req.user?.id } },
 				select: [
 					"id",
@@ -15,7 +21,8 @@ class WidgetController {
 					"updated_at",
 				],
 				order: { created_at: "DESC" },
-			});
+				}),
+			);
 			res
 				.json({
 					message: "All Widgets",
@@ -79,6 +86,7 @@ class WidgetController {
 					id: userID,
 				},
 			});
+			await invalidateCache(CacheInvalidation.widget(userID!));
 			res
 				.json({
 					message: "Widget  Created",
@@ -103,7 +111,7 @@ class WidgetController {
 				.end();
 		}
 	}
-	async updateWidget(req: Request, res: Response) {
+		async updateWidget(req: Request, res: Response) {
 		try {
 			const id = +req.params.id;
 			const body = req.body;
@@ -111,6 +119,8 @@ class WidgetController {
 			if (!website) {
 				throw new Error(" Widget not found");
 			}
+			const userId = req.user?.id;
+			await invalidateCache(CacheInvalidation.widget(userId!, id));
 			// if (body?.favicon) {
 			// 	await websiteService.updateFavicon(id, body.favicon);
 			// }
@@ -141,10 +151,12 @@ class WidgetController {
 				.end();
 		}
 	}
-	async deleteWidget(req: Request, res: Response) {
+		async deleteWidget(req: Request, res: Response) {
 		try {
 			const id = +req.params.id;
 			await WidgetService.deleteWidget(id);
+			const userId = req.user?.id;
+			await invalidateCache(CacheInvalidation.widget(userId!, id));
 			res
 				.json({
 					message: "Widget Deleted",

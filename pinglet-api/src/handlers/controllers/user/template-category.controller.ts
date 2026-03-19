@@ -1,12 +1,17 @@
 import { templateCategoryService } from "@/handlers/services/template-category.service";
+import { cached } from "@/utils/helpers/cache";
+import { CacheKeys, CacheTTL } from "@/utils/types/cache";
 import type { Request, Response } from "express";
 import { IsNull } from "typeorm";
 
 class TemplateCategoryController {
 	async getTemplateCategories(req: Request, res: Response) {
 		try {
-			const websites =
-				await templateCategoryService.getAllTemplatesCategoryWithTemplatesCount();
+			const websites = await cached(
+				CacheKeys.templateCategories(),
+				CacheTTL.LONG,
+				() => templateCategoryService.getAllTemplatesCategoryWithTemplatesCount(),
+			);
 			res
 				.json({
 					message: "All Templates Categories",
@@ -32,8 +37,12 @@ class TemplateCategoryController {
 	}
 	async getTemplatesByCategory(req: Request, res: Response) {
 		try {
-			const websites =
-				await templateCategoryService.getTemplateCategoryWithTemplatesById({
+			const userId = req.user?.id;
+			const categoryId = +req.params.id;
+			const websites = await cached(
+				CacheKeys.userCategoryTemplates(userId!, categoryId),
+				CacheTTL.LONG,
+				() => templateCategoryService.getTemplateCategoryWithTemplatesById({
 					where: {
 						id: +req.params.id,
 						user: [{ id: req.user?.id }, { id: IsNull() }],
@@ -69,7 +78,8 @@ class TemplateCategoryController {
 							variants: true,
 						},
 					},
-				});
+				}),
+			);
 			res
 				.json({
 					message: "Templates By Category",

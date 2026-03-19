@@ -2,12 +2,18 @@ import { TemplateCategoryEntity } from "@/factory/entities/template-category.ent
 import { UserEntity } from "@/factory/entities/users.entity";
 import { getMistralCompletion } from "@/handlers/services/ai/mysteral";
 import { templateService } from "@/handlers/services/template.service";
+import { cached, invalidateCache } from "@/utils/helpers/cache";
+import { CacheInvalidation, CacheKeys, CacheTTL } from "@/utils/types/cache";
 import type { Request, Response } from "express";
 
 class TemplateController {
 	async getTemplates(req: Request, res: Response) {
 		try {
-			const websites = await templateService.getAllTemplates();
+			const websites = await cached(
+				CacheKeys.templates(),
+				CacheTTL.LONG,
+				() => templateService.getAllTemplates(),
+			);
 			res
 				.json({
 					message: "All Templates",
@@ -59,6 +65,7 @@ class TemplateController {
 				parent: req.body?.parent || null,
 				variables: parsedResult.variables,
 			});
+			await invalidateCache(CacheInvalidation.template(req.user?.id!));
 			res
 				.status(201)
 				.json({
@@ -89,7 +96,10 @@ class TemplateController {
 	async getTemplateById(req: Request, res: Response) {
 		try {
 			const { id } = req.params;
-			const template = await templateService.getTemplateByOpts({
+			const template = await cached(
+				CacheKeys.template(+id),
+				CacheTTL.LONG,
+				() => templateService.getTemplateByOpts({
 				where: { id: +id, user: { id: req.user?.id } },
 				select: {
 					id: true,
@@ -117,7 +127,8 @@ class TemplateController {
 					category: true,
 					user: true,
 				},
-			});
+			}),
+			);
 			if (!template) {
 				throw new Error("Template not found");
 			}
@@ -180,6 +191,7 @@ class TemplateController {
 			if (updatedTemplate.affected === 0) {
 				throw new Error("Template not found");
 			}
+			await invalidateCache(CacheInvalidation.template(req.user?.id!, +id));
 
 			res
 				.json({
@@ -218,6 +230,7 @@ class TemplateController {
 					.end();
 				return;
 			}
+			await invalidateCache(CacheInvalidation.template(req.user?.id!, +id));
 			res
 				.json({
 					message: "Template deleted successfully",

@@ -1,5 +1,7 @@
 import { planService } from "@/handlers/services/plan.service";
 import { projectService } from "@/handlers/services/project.service";
+import { cached, invalidateCache } from "@/utils/helpers/cache";
+import { CacheInvalidation, CacheKeys, CacheTTL } from "@/utils/types/cache";
 import type { Request, Response } from "express";
 
 class ProjectController {
@@ -7,8 +9,11 @@ class ProjectController {
 		try {
 			const userId = req.user?.id;
 
-			const projects =
-				await projectService.getAllProjectWithSubsAndNotificationCount(userId);
+			const projects = await cached(
+				CacheKeys.userProjects(userId!),
+				CacheTTL.SHORT,
+				() => projectService.getAllProjectWithSubsAndNotificationCount(userId),
+			);
 			res
 				.json({
 					message: "All Projects",
@@ -35,7 +40,11 @@ class ProjectController {
 	async getProject(req: Request, res: Response) {
 		try {
 			const id = +req.params.id;
-			const project = await projectService.getProjectById(id);
+			const project = await cached(
+				CacheKeys.project(id),
+				CacheTTL.MEDIUM,
+				() => projectService.getProjectById(id),
+			);
 			res
 				.json({
 					message: "Project Details",
@@ -69,6 +78,7 @@ class ProjectController {
 					id: userId,
 				},
 			});
+			await invalidateCache(CacheInvalidation.project(userId!));
 			res
 				.json({
 					message: "Project Created",
@@ -98,6 +108,8 @@ class ProjectController {
 		try {
 			const id = +req.params.id;
 			await projectService.deleteProject(id);
+			const userId = req.user?.id;
+			await invalidateCache(CacheInvalidation.project(userId!, id));
 			res
 				.json({
 					message: "Project Deleted",
@@ -149,6 +161,7 @@ class ProjectController {
 					id: userId,
 				},
 			});
+			await invalidateCache(CacheInvalidation.project(userId!, id));
 			res
 				.json({
 					message: "Project Updated",

@@ -4,6 +4,8 @@ import {
 } from "@/factory/entities/plan.entity";
 import { planService } from "@/handlers/services/plan.service";
 import { userService } from "@/handlers/services/users.service";
+import { cached, invalidateCache } from "@/utils/helpers/cache";
+import { CacheInvalidation, CacheKeys, CacheTTL } from "@/utils/types/cache";
 import type { Request, Response } from "express";
 
 class PlanController {
@@ -12,7 +14,7 @@ class PlanController {
 	 */
 	async getPlans(_req: Request, res: Response) {
 		try {
-			const plans = [
+			const plans = await cached(CacheKeys.plans(), CacheTTL.STATIC, async () => [
 				{
 					name: PlanType.FREE,
 					display_name: "Free",
@@ -81,7 +83,7 @@ class PlanController {
 						"Custom HTML templates",
 					],
 				},
-			];
+			]);
 
 			res.json({ message: "Available plans", result: plans, success: true });
 		} catch (error) {
@@ -99,7 +101,11 @@ class PlanController {
 				res.status(401).json({ message: "Unauthorized", result: null, success: false });
 				return;
 			}
-			const summary = await planService.getUserPlanSummary(userId);
+			const summary = await cached(
+				CacheKeys.userPlanSummary(userId),
+				CacheTTL.SHORT,
+				() => planService.getUserPlanSummary(userId),
+			);
 			res.json({ message: "Current plan", result: summary, success: true });
 		} catch (error) {
 			if (error instanceof Error) {
@@ -168,6 +174,7 @@ class PlanController {
 				plan_expires_at: expiresAt,
 			});
 
+			await invalidateCache(CacheInvalidation.plan(userId));
 			const summary = await planService.getUserPlanSummary(userId);
 			res.json({ message: "Plan updated successfully", result: summary, success: true });
 		} catch (error) {
@@ -191,7 +198,11 @@ class PlanController {
 			}
 
 			const feature = req.params.feature as keyof (typeof PLAN_LIMITS)[PlanType.FREE]["features"];
-			const hasAccess = await planService.hasFeature(userId, feature);
+			const hasAccess = await cached(
+				CacheKeys.userFeature(userId, feature),
+				CacheTTL.SHORT,
+				() => planService.hasFeature(userId, feature),
+			);
 
 			res.json({
 				message: hasAccess ? "Feature available" : "Feature not available on your plan",

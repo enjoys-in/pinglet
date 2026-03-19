@@ -1,4 +1,6 @@
 import { webhookService } from "@/handlers/services/webhook.service";
+import { cached, invalidateCache } from "@/utils/helpers/cache";
+import { CacheInvalidation, CacheKeys, CacheTTL } from "@/utils/types/cache";
 import type { Request, Response } from "express";
 
 class WebhookController {
@@ -60,7 +62,11 @@ class WebhookController {
 	async getWebhooksByUserId(req: Request, res: Response) {
 		try {
 			const userId = req.user?.id as number;
-			const webhooks = await webhookService.getWebhooksByUserId(userId);
+			const webhooks = await cached(
+				CacheKeys.userWebhooks(userId),
+				CacheTTL.LONG,
+				() => webhookService.getWebhooksByUserId(userId),
+			);
 			res
 				.json({
 					message: "User Webhooks",
@@ -98,6 +104,7 @@ class WebhookController {
 				name: body.name,
 				description: body?.description,
 			});
+			await invalidateCache(CacheInvalidation.webhook(req.user?.id as number));
 			res
 				.json({
 					message: "Webhook Created",
@@ -129,6 +136,7 @@ class WebhookController {
 			const id = +req.params.id;
 			const body = req.body;
 			await webhookService.updateWebhook(id, body);
+			await invalidateCache(CacheInvalidation.webhook(req.user?.id as number, id));
 			res
 				.json({
 					message: "Webhook Updated",
@@ -159,6 +167,7 @@ class WebhookController {
 		try {
 			const id = +req.params.id;
 			await webhookService.deleteWebhook(id);
+			await invalidateCache(CacheInvalidation.webhook(req.user?.id as number, id));
 			res
 				.json({
 					message: "Webhook Deleted",
