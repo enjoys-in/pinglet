@@ -4,21 +4,45 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts"
-import { Bell, Users, Globe, TrendingUp, TrendingDown, Calendar, Edit, MapPin, Monitor, Clock } from "lucide-react"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, LineChart, Line, Area, AreaChart } from "recharts"
+import { Bell, Users, Globe, TrendingUp, TrendingDown, Calendar, MapPin, Monitor, Clock, ArrowUpRight, ArrowDownRight, Activity, FolderOpen } from "lucide-react"
+
+// Gradient color sets for stat cards
+const cardGradients = [
+  "from-violet-500/10 to-purple-500/10 dark:from-violet-500/20 dark:to-purple-500/20",
+  "from-blue-500/10 to-cyan-500/10 dark:from-blue-500/20 dark:to-cyan-500/20",
+  "from-emerald-500/10 to-green-500/10 dark:from-emerald-500/20 dark:to-green-500/20",
+  "from-amber-500/10 to-orange-500/10 dark:from-amber-500/20 dark:to-orange-500/20",
+  "from-rose-500/10 to-pink-500/10 dark:from-rose-500/20 dark:to-pink-500/20",
+  "from-red-500/10 to-rose-500/10 dark:from-red-500/20 dark:to-rose-500/20",
+  "from-indigo-500/10 to-blue-500/10 dark:from-indigo-500/20 dark:to-blue-500/20",
+  "from-teal-500/10 to-emerald-500/10 dark:from-teal-500/20 dark:to-emerald-500/20",
+  "from-purple-500/10 to-fuchsia-500/10 dark:from-purple-500/20 dark:to-fuchsia-500/20",
+]
+
+const iconColors = [
+  "text-violet-500",
+  "text-blue-500",
+  "text-emerald-500",
+  "text-amber-500",
+  "text-rose-500",
+  "text-red-500",
+  "text-indigo-500",
+  "text-teal-500",
+  "text-purple-500",
+]
 
 // Mock data
 const statsData = [
   {
-    title: "Total Requests Sent",
+    title: "Total Requests",
     value: "345",
     change: "+2%",
     trend: "up",
-    icon: Bell,
+    icon: Activity,
   },
   {
-    title: "Total Notifications Sent",
+    title: "Notifications Sent",
     value: "12,345",
     change: "+12%",
     trend: "up",
@@ -39,14 +63,14 @@ const statsData = [
     icon: TrendingDown,
   },
   {
-    title: "Closed Notifications",
+    title: "Closed",
     value: "4",
     change: "0%",
     trend: "down",
     icon: Bell,
   },
   {
-    title: "Failed Notifications",
+    title: "Failed",
     value: "234",
     change: "-15%",
     trend: "down",
@@ -64,7 +88,7 @@ const statsData = [
     value: "15",
     change: "+3",
     trend: "up",
-    icon: Calendar,
+    icon: FolderOpen,
   },
   {
     title: "Subscribed Users",
@@ -131,71 +155,186 @@ const rateChartData = [
 export default function DashboardPage() {
   return (
     <div className="space-y-6">
+      {/* Page Header */}
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">Overview of your notification analytics and performance</p>
+        <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+        <p className="text-sm text-muted-foreground">Overview of your notification analytics and performance</p>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 stagger-children">
         {statsData.map((stat, index) => (
-          <Card key={index}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-              <stat.icon className="h-4 w-4 text-muted-foreground" />
+          <Card key={index} className={`glass-card card-shadow hover-lift overflow-hidden bg-gradient-to-br ${cardGradients[index % cardGradients.length]} border-border/40`}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 pt-4 px-4">
+              <CardTitle className="text-xs font-medium text-muted-foreground">{stat.title}</CardTitle>
+              <div className={`p-1.5 rounded-md bg-background/60 ${iconColors[index % iconColors.length]}`}>
+                <stat.icon className="h-3.5 w-3.5" />
+              </div>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
-              <p className={`text-xs ${stat.trend === "up" ? "text-green-600" : "text-red-600"}`}>
-                {stat.change} from last month
-              </p>
+            <CardContent className="px-4 pb-4">
+              <div className="text-xl font-bold tracking-tight">{stat.value}</div>
+              <div className="flex items-center gap-1 mt-1">
+                {stat.trend === "up" ? (
+                  <ArrowUpRight className="h-3 w-3 text-emerald-500" />
+                ) : (
+                  <ArrowDownRight className="h-3 w-3 text-rose-500" />
+                )}
+                <span className={`text-xs font-medium ${stat.trend === "up" ? "text-emerald-500" : "text-rose-500"}`}>
+                  {stat.change}
+                </span>
+                <span className="text-[10px] text-muted-foreground">vs last month</span>
+              </div>
             </CardContent>
           </Card>
         ))}
       </div>
-      <Card>
+
+      {/* Charts Section */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        {/* Notifications Chart */}
+        <Card className="glass-card card-shadow border-border/40">
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-sm font-semibold">Notifications Overview</CardTitle>
+                <CardDescription className="text-xs">Sent vs failed this week</CardDescription>
+              </div>
+              <Badge variant="outline" className="text-xs font-normal">Weekly</Badge>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <ResponsiveContainer width="100%" height={240}>
+              <AreaChart data={notificationChartData}>
+                <defs>
+                  <linearGradient id="sentGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="hsl(262, 83%, 58%)" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="hsl(262, 83%, 58%)" stopOpacity={0} />
+                  </linearGradient>
+                  <linearGradient id="failedGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="hsl(0, 84%, 60%)" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="hsl(0, 84%, 60%)" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.5} />
+                <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
+                <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
+                <RechartsTooltip
+                  contentStyle={{
+                    backgroundColor: "hsl(var(--card))",
+                    border: "1px solid hsl(var(--border))",
+                    borderRadius: "8px",
+                    fontSize: "12px",
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                  }}
+                />
+                <Area type="monotone" dataKey="sent" stroke="hsl(262, 83%, 58%)" strokeWidth={2} fill="url(#sentGradient)" />
+                <Area type="monotone" dataKey="failed" stroke="hsl(0, 84%, 60%)" strokeWidth={2} fill="url(#failedGradient)" />
+              </AreaChart>
+            </ResponsiveContainer>
+            <div className="flex items-center justify-center gap-6 mt-2">
+              <div className="flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-primary" />
+                <span className="text-xs text-muted-foreground">Sent</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-destructive" />
+                <span className="text-xs text-muted-foreground">Failed</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Rate Chart */}
+        <Card className="glass-card card-shadow border-border/40">
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-sm font-semibold">Click & Drop Rate</CardTitle>
+                <CardDescription className="text-xs">Performance trends this week</CardDescription>
+              </div>
+              <Badge variant="outline" className="text-xs font-normal">Weekly</Badge>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <ResponsiveContainer width="100%" height={240}>
+              <LineChart data={rateChartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.5} />
+                <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
+                <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
+                <RechartsTooltip
+                  contentStyle={{
+                    backgroundColor: "hsl(var(--card))",
+                    border: "1px solid hsl(var(--border))",
+                    borderRadius: "8px",
+                    fontSize: "12px",
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                  }}
+                />
+                <Line type="monotone" dataKey="clickRate" stroke="hsl(142, 71%, 45%)" strokeWidth={2} dot={{ fill: "hsl(142, 71%, 45%)", r: 3 }} activeDot={{ r: 5 }} />
+                <Line type="monotone" dataKey="dropRate" stroke="hsl(38, 92%, 50%)" strokeWidth={2} dot={{ fill: "hsl(38, 92%, 50%)", r: 3 }} activeDot={{ r: 5 }} />
+              </LineChart>
+            </ResponsiveContainer>
+            <div className="flex items-center justify-center gap-6 mt-2">
+              <div className="flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                <span className="text-xs text-muted-foreground">Click Rate</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-amber-500" />
+                <span className="text-xs text-muted-foreground">Drop Rate</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Subscribers Table */}
+      <Card className="glass-card card-shadow border-border/40">
         <CardHeader>
-          <CardTitle>Recent Subscribers</CardTitle>
-          <CardDescription>Manage your notification subscribers</CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-sm font-semibold">Recent Subscribers</CardTitle>
+              <CardDescription className="text-xs">Manage your notification subscribers</CardDescription>
+            </div>
+            <Badge variant="secondary" className="text-xs">{subscribersData.length} subscribers</Badge>
+          </div>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Subscriber ID</TableHead>
-                <TableHead>Device Type</TableHead>
-                <TableHead>Notifications Sent</TableHead>
-                <TableHead>Actions</TableHead>
+              <TableRow className="hover:bg-transparent border-border/40">
+                <TableHead className="text-xs font-medium">Subscriber ID</TableHead>
+                <TableHead className="text-xs font-medium">Device</TableHead>
+                <TableHead className="text-xs font-medium">Country</TableHead>
+                <TableHead className="text-xs font-medium">Browser</TableHead>
+                <TableHead className="text-xs font-medium text-right">Notifications</TableHead>
+                <TableHead className="text-xs font-medium">Subscribed</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {subscribersData.map((subscriber) => (
-                <TableRow key={subscriber.id}>
-                  <TableCell className="font-medium">{subscriber.id}</TableCell>
+                <TableRow key={subscriber.id} className="border-border/30 hover:bg-muted/40 transition-colors">
+                  <TableCell className="font-mono text-xs font-medium text-primary">{subscriber.id}</TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Monitor className="h-4 w-4" />
-                      <Badge variant="outline">{subscriber.deviceType}</Badge>
+                    <div className="flex items-center gap-1.5">
+                      <Monitor className="h-3.5 w-3.5 text-muted-foreground" />
+                      <Badge variant="outline" className="text-[10px] font-normal">{subscriber.deviceType}</Badge>
                     </div>
                   </TableCell>
-                  <TableCell>{subscriber.notificationsSent}</TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Button variant="ghost" size="sm" title={`Created: ${subscriber.createdOn}`}>
-                        <Calendar className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm" title={`Updated: ${subscriber.updatedOn}`}>
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm" title={`Country: ${subscriber.country}`}>
-                        <MapPin className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm" title={`Browser: ${subscriber.browser}`}>
-                        <Monitor className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm" title={`Subscribed: ${subscriber.subscribedTime}`}>
-                        <Clock className="h-4 w-4" />
-                      </Button>
+                    <div className="flex items-center gap-1.5">
+                      <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
+                      <span className="text-xs">{subscriber.country}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-xs">{subscriber.browser}</TableCell>
+                  <TableCell className="text-right">
+                    <Badge variant="secondary" className="text-[10px] font-medium">{subscriber.notificationsSent}</Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1.5">
+                      <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground">{subscriber.createdOn}</span>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -204,11 +343,6 @@ export default function DashboardPage() {
           </Table>
         </CardContent>
       </Card>
-
-
-
-
-
     </div>
   )
 }

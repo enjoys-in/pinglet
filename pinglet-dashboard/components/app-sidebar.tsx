@@ -10,11 +10,11 @@ import {
   Webhook,
   GitBranch,
   Settings,
-  Heart, 
+  Heart,
   Globe2,
   WalletCards,
   HeartHandshake,
-  
+  Sparkles,
 } from "lucide-react"
 
 import {
@@ -59,7 +59,6 @@ const data = {
           url: "/u/websites",
           icon: Globe2,
         },
-
         {
           title: "Projects",
           url: "/u/projects",
@@ -119,13 +118,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <Link href="/dashboard" className="cursor-pointer">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                  <span className="font-bold text-lg">P</span>
+              <Link href="/u/dashboard" className="cursor-pointer group/brand">
+                <div className="flex aspect-square size-8 items-center justify-center rounded-lg gradient-primary text-white shadow-md shadow-primary/25 transition-shadow duration-300 group-hover/brand:shadow-lg group-hover/brand:shadow-primary/30">
+                  <Sparkles className="h-4 w-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">Pinglet</span>
-                  <span className="truncate text-xs">Push Notifications</span>
+                  <span className="truncate font-bold bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">Pinglet</span>
+                  <span className="truncate text-xs text-muted-foreground">Push Notifications</span>
                 </div>
               </Link>
             </SidebarMenuButton>
@@ -136,19 +135,40 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         {data.navMain.map((group) => (
           <SidebarGroup key={group.title}>
-            <SidebarGroupLabel>{group.title}</SidebarGroupLabel>
+            <SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-muted-foreground/70 font-semibold">{group.title}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {group.items.map((item) => (
-                  <SidebarMenuItem key={item.title} className={`${pathname === item.url && "bg-zinc-800"} hover:bg-zinc-100  dark:hover:bg-zinc-800/30`}>
-                    <SidebarMenuButton asChild isActive={pathname === item.url} tooltip={item.title}>
-                      <Link href={item.url}>
-                        <item.icon />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
+                {group.items.map((item) => {
+                  const isActive = pathname === item.url
+                  return (
+                    <SidebarMenuItem
+                      key={item.title}
+                      className={`transition-all duration-200 rounded-md ${
+                        isActive
+                          ? "bg-sidebar-accent shadow-sm"
+                          : "hover:bg-sidebar-accent/50"
+                      }`}
+                    >
+                      <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
+                        <Link href={item.url} className="group/nav-item">
+                          <item.icon className={`transition-colors duration-200 ${
+                            isActive
+                              ? "text-primary"
+                              : "text-muted-foreground group-hover/nav-item:text-primary/70"
+                          }`} />
+                          <span className={`transition-colors duration-200 ${
+                            isActive
+                              ? "text-sidebar-accent-foreground font-medium"
+                              : "group-hover/nav-item:text-foreground"
+                          }`}>{item.title}</span>
+                          {isActive && (
+                            <span className="ml-auto h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                          )}
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )
+                })}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
@@ -164,14 +184,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             >
               <Userbar />
             </SidebarMenuButton>
-
           </SidebarMenuItem>
         </SidebarMenu>
 
         <div className="px-2 py-1">
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+          <div className="flex items-center gap-1 text-[10px] text-muted-foreground/60">
             <span>Made with</span>
-            <Heart className="h-3 w-3 fill-red-500 text-red-500" />
+            <Heart className="h-2.5 w-2.5 fill-red-500 text-red-500" />
             <span>by Enjoys</span>
           </div>
         </div>
