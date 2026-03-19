@@ -68,7 +68,7 @@ class Helpers {
 	 * @return {string} - The generated token as a base64-encoded string.
 	 */
 	GenerateToken(byteLength = 48): string {
-		return crypto.randomBytes(byteLength).toString("base64");
+		return crypto.randomBytes(byteLength).toString("hex");
 	}
 	/**
 	 * Generates a refresh token of a specified length.

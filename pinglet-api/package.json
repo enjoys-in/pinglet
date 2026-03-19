@@ -22,7 +22,8 @@
 		"lint": "biome check .",
 		"lint:fix": "biome check --write . --ignore build ",
 		"format": "biome format .",
-		"format:fix": "biome check --fix --unsafe"
+		"format:fix": "biome check --fix --unsafe",
+		"postinstall": "node scripts/patch-deps.js"
 	},
 	"lint-staged": {
 		"*.{js,jsx,ts,tsx}": [

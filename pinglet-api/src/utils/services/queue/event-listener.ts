@@ -13,21 +13,8 @@ export class EventListeners {
 		console.log("EventListeners");
 	}
 
-	@OnEvent("resetPassword", { async: false })
-	private sendResetPassEmail(payload: any) {
-		const data = JSON.parse(payload) as {
-			name: string;
-			email: string;
-			adminEmail: string;
-			password: string;
-		};
-		mailer.SendTemplate({
-			to: [data.adminEmail],
-			subject: "Password Reset",
-			template: "reset-password",
-			context: { name: data.name, email: data.email, password: data.password },
-		});
-	}
+	// Removed broken resetPassword event listener — was emailing plain-text passwords
+	// and had JSON.parse on non-string payload, undefined adminEmail, and decorator registration issues
 	@OnEvent("triggerWebhook", { async: true })
 	private async triggerWebhook(payload: any) {
 		console.log("first");

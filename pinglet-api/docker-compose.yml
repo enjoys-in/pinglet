@@ -11,7 +11,7 @@ services:
     ports:
       - "8888:8888"
     env_file:
-      - .env   
+      - .env
     networks:
       - pinglet-network
 
@@ -41,8 +41,6 @@ services:
     networks:
       - pinglet-network
 
- 
- 
 
 networks:
   pinglet-network:

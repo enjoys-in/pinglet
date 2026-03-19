@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import { __CONFIG__ } from "@/app/config";
 import { AuthProviderFactory } from "@/app/modules/oauth2/oauth2factory";
 import { userService } from "@/handlers/services/users.service";
@@ -9,6 +10,7 @@ import type {
 } from "@/utils/interfaces/provider.interface";
 import { AppEvents } from "@/utils/services/Events";
 import { MailService } from "@/utils/services/mail/mailService";
+import { Cache } from "@/utils/services/redis/cacheService";
 import type { Request, Response } from "express";
 const emailSvc = MailService.createInstance();
 const provider = AuthProviderFactory.createProvider(
@@ -17,53 +19,59 @@ const provider = AuthProviderFactory.createProvider(
 	process.env.GOOGLE_CLIENT_SECRET || "",
 	process.env.GOOGLE_REDIRECT_URI || "",
 );
-const tokenStore = new Map();
+
+const RESET_TOKEN_PREFIX = "reset-token:";
+const RESET_TOKEN_TTL = 15 * 60; // 15 minutes
 class AuthController {
 	async ResetPassword(req: Request, res: Response) {
 		try {
-			const { password, confirmPassword } = req.body;
-			const { token, email } = req.query;
+			const { password, confirmPassword, token, email } = req.body;
 
 			if (!password || !confirmPassword || password !== confirmPassword) {
-				throw new Error("Passwords do not match or are invalid.");
+				res.status(400).json({ message: "Passwords do not match or are invalid.", result: null, success: false });
+				return;
+			}
+
+			if (typeof password !== "string" || password.length < 8) {
+				res.status(400).json({ message: "Password must be at least 8 characters.", result: null, success: false });
+				return;
 			}
 
 			if (!token || !email) {
-				throw new Error("Invalid reset link.");
+				res.status(400).json({ message: "Invalid reset link.", result: null, success: false });
+				return;
 			}
 
-			if (
-				!tokenStore.has(email as string) ||
-				tokenStore.get(email as string) !== token
-			) {
-				throw new Error("Invalid or expired token.");
+			const storedToken = await Cache.cache.get(`${RESET_TOKEN_PREFIX}${email}`);
+			if (!storedToken) {
+				res.status(400).json({ message: "Invalid or expired token.", result: null, success: false });
+				return;
+			}
+
+			// Timing-safe comparison to prevent timing attacks
+			const tokenBuf = Buffer.from(String(token));
+			const storedBuf = Buffer.from(storedToken);
+			if (tokenBuf.length !== storedBuf.length || !crypto.timingSafeEqual(tokenBuf, storedBuf)) {
+				res.status(400).json({ message: "Invalid or expired token.", result: null, success: false });
+				return;
 			}
 
 			const user = await userService.getUserBy({
-				where: {
-					email: email as string,
-				},
-				select: {
-					id: true,
-					email: true,
-					first_name: true,
-					last_name: true,
-					password: true,
-				},
+				where: { email: String(email) },
+				select: { id: true, email: true },
 			});
 			if (!user) {
-				throw new Error("User not found.");
+				res.status(400).json({ message: "Invalid or expired token.", result: null, success: false });
+				return;
 			}
-			AppEvents.emit("resetPassword", {
-				email: user.email,
-				name: user?.first_name ? user?.first_name : "User",
-				password: req.body.password,
-			});
+
 			await userService.updateUserPassword(
-				email as string,
-				await utils.HashPassword(req.body.password),
+				String(email),
+				await utils.HashPassword(password),
 			);
-			tokenStore.delete(email as string); // Invalidate the token after use
+
+			// Invalidate the token after successful reset
+			await Cache.cache.del(`${RESET_TOKEN_PREFIX}${email}`);
 
 			res.json({
 				result: null,
@@ -88,40 +96,39 @@ class AuthController {
 	}
 	async ForgotPassword(req: Request, res: Response) {
 		try {
-			const email = req.query?.email as string;
-			if (!email) {
-				throw new Error("Email not found");
+			const email = req.body?.email as string;
+			if (!email || typeof email !== "string") {
+				res.status(400).json({ message: "Email is required", result: null, success: false });
+				return;
 			}
+
+			// Always return same message to prevent user enumeration
+			const successMsg = "If an account with that email exists, a reset link has been sent.";
+
 			const is_user = await userService.exists(email);
 			if (!is_user) {
-				throw new Error("Invalid Credentials");
+				res.json({ message: successMsg, result: null, success: true });
+				return;
 			}
-			if (tokenStore.has(email)) {
-				tokenStore.delete(email);
-			}
+
 			const token = helpers.GenerateToken();
+			await Cache.cache.set(`${RESET_TOKEN_PREFIX}${email}`, token, { EX: RESET_TOKEN_TTL });
 
-			tokenStore.set(email, token);
-
+			const resetUrl = `${__CONFIG__.APP.APP_URL}/reset-password?token=${token}&email=${encodeURIComponent(email)}`;
 			await emailSvc.SendMail({
 				to: email,
-				subject: "Forgot Password",
+				subject: "Reset Your Password",
 				html: `
 					<p>Hello,</p>
-					<p>You have requested to reset your password. Please click on the following link to reset your password:</p>
-					<p><a href="https://pinglet.enjoys.in/reset-password?token=${token}&email=${email}">Reset Password</a></p>
-					<p>If you did not request a password reset, please ignore this email.</p>
+					<p>You have requested to reset your password. Click the link below to set a new password:</p>
+					<p><a href="${resetUrl}">Reset Password</a></p>
+					<p>This link expires in 15 minutes. If you did not request this, please ignore this email.</p>
 					<p>Thank you,</p>
 					<p>The Pinglet Team - Powered by ENJOYS</p>
 				`,
 			});
-			res
-				.json({
-					message: "An Email has been sent to your email address",
-					result: null,
-					success: true,
-				})
-				.end();
+
+			res.json({ message: successMsg, result: null, success: true });
 		} catch (error: any) {
 			if (error instanceof Error) {
 				res

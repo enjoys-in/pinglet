@@ -11,8 +11,26 @@ router.post("/auth/google", UserAuthController.default.GoogleLogin);
 router.post("/auth/register", UserAuthController.default.Register);
 router.get("/auth/callback", UserAuthController.default.Callback);
 router.post("/auth/logout", UserAuthController.default.Logout);
-router.get("/auth/forget-password", UserAuthController.default.ForgotPassword);
-router.post("/auth/reset-password", UserAuthController.default.ResetPassword);
+router.post(
+	"/auth/forget-password",
+	Limiter.forRoute("/auth/forget-password", {
+		windowMs: 15 * 60 * 1000,
+		max: 5,
+		standardHeaders: "draft-7",
+		legacyHeaders: false,
+	}),
+	UserAuthController.default.ForgotPassword,
+);
+router.post(
+	"/auth/reset-password",
+	Limiter.forRoute("/auth/reset-password", {
+		windowMs: 15 * 60 * 1000,
+		max: 10,
+		standardHeaders: "draft-7",
+		legacyHeaders: false,
+	}),
+	UserAuthController.default.ResetPassword,
+);
 router.get("/auth/profile", JwtAuth.Me);
 // SSE endpoint
 router.get("/notifications/load/templates", pushNtfyController.loadTemplates);
