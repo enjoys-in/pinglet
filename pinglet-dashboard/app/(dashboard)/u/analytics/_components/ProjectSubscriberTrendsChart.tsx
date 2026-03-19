@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart"
 import { API } from "@/lib/api/handler"
+import { fillTimeBuckets } from "@/lib/helper"
 import { Loader2 } from "lucide-react"
 
 const defaultColors = [
@@ -33,7 +34,7 @@ export function ProjectSubscriberTrendsChart({ initialData }: Props) {
   const [loading, setLoading] = useState(false)
 
   const projects = rawData?.projects ?? []
-  const data = rawData?.data ?? []
+  const data = fillTimeBuckets(rawData?.data ?? [], timeFilter)
 
   const chartConfig = useMemo(() => {
     const cfg: Record<string, { label: string; color: string }> = {}

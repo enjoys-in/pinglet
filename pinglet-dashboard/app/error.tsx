@@ -1,15 +1,24 @@
 "use client"
 
-import Link from "next/link"
+import { useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Home, ArrowLeft, Sparkles } from "lucide-react"
+import { RefreshCw, ArrowLeft, Sparkles, AlertTriangle } from "lucide-react"
 
-export default function NotFound() {
+export default function GlobalError({
+    error,
+    reset,
+}: {
+    error: Error & { digest?: string }
+    reset: () => void
+}) {
+    useEffect(() => {
+        console.error("Global error:", error)
+    }, [error])
+
     return (
         <div className="min-h-screen w-full flex items-center justify-center p-4 bg-background">
             {/* Subtle grid background */}
             <div className="fixed inset-0 bg-[linear-gradient(to_right,hsl(var(--border)/0.3)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border)/0.3)_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none" />
-            <div className="fixed inset-0 bg-gradient-to-b from-transparent via-transparent to-background pointer-events-none" />
 
             <div className="relative flex flex-col items-center text-center max-w-lg">
                 {/* Brand icon */}
@@ -17,18 +26,24 @@ export default function NotFound() {
                     <Sparkles className="w-6 h-6 text-white" />
                 </div>
 
-                {/* 404 */}
-                <h1 className="text-[120px] md:text-[160px] font-extrabold leading-none tracking-tighter gradient-text select-none">
-                    404
-                </h1>
+                {/* Error icon */}
+                <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mb-6">
+                    <AlertTriangle className="w-8 h-8 text-destructive" />
+                </div>
 
                 {/* Message */}
-                <p className="text-xl font-semibold text-foreground mt-2">
-                    Page not found
-                </p>
+                <h1 className="text-2xl font-bold text-foreground">
+                    Something went wrong
+                </h1>
                 <p className="text-sm text-muted-foreground mt-2 max-w-sm">
-                    The page you&apos;re looking for doesn&apos;t exist or has been moved to a different URL.
+                    An unexpected error occurred. Our team has been notified. You can try again or go back.
                 </p>
+
+                {error.digest && (
+                    <p className="text-xs text-muted-foreground/60 mt-3 font-mono">
+                        Error ID: {error.digest}
+                    </p>
+                )}
 
                 {/* Actions */}
                 <div className="flex gap-3 mt-8">
@@ -40,12 +55,10 @@ export default function NotFound() {
                         <ArrowLeft className="w-4 h-4" />
                         Go Back
                     </Button>
-                    <Link href="/">
-                        <Button className="gap-2">
-                            <Home className="w-4 h-4" />
-                            Home
-                        </Button>
-                    </Link>
+                    <Button onClick={reset} className="gap-2">
+                        <RefreshCw className="w-4 h-4" />
+                        Try Again
+                    </Button>
                 </div>
             </div>
         </div>

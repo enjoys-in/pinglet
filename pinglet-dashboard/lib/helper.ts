@@ -68,3 +68,40 @@ export function triggerNotification(title: string, options: { body: string; }) {
     }
 }
 
+const WEEKLY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+const DAILY_LABELS = Array.from({ length: 24 }, (_, i) => {
+    const h = i % 12 || 12
+    const ampm = i < 12 ? "AM" : "PM"
+    return `${String(h).padStart(2, "0")} ${ampm}`
+})
+
+/**
+ * Fill missing time buckets with zeros for better chart appearance.
+ * Only fills for known fixed-label sets (weekly, daily).
+ */
+export function fillTimeBuckets<T extends Record<string, any>>(
+    data: T[],
+    filter: string,
+    timeKey: string = "time"
+): T[] {
+    let labels: string[] | null = null
+    if (filter === "weekly") labels = WEEKLY_LABELS
+    else if (filter === "daily") labels = DAILY_LABELS
+
+    if (!labels || data.length === 0) return data
+
+    // Build defaults from first data item's numeric keys
+    const sample = data[0]
+    const defaults: Record<string, number> = {}
+    for (const key of Object.keys(sample)) {
+        if (key !== timeKey && typeof sample[key] === "number") {
+            defaults[key] = 0
+        }
+    }
+
+    const dataMap = new Map(data.map(d => [d[timeKey], d]))
+    return labels.map(label =>
+        dataMap.get(label) ?? ({ [timeKey]: label, ...defaults } as T)
+    )
+}
+

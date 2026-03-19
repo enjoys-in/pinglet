@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart"
 import { API } from "@/lib/api/handler"
+import { fillTimeBuckets } from "@/lib/helper"
 import { Loader2 } from "lucide-react"
 
 const chartConfig = {
@@ -37,17 +38,19 @@ interface Props {
 
 export function RequestsOverviewChart({ initialData }: Props) {
   const [timeFilter, setTimeFilter] = useState("daily")
-  const [data, setData] = useState(initialData ?? [])
+  const [rawData, setRawData] = useState(initialData ?? [])
   const [loading, setLoading] = useState(false)
+
+  const data = fillTimeBuckets(rawData, timeFilter)
 
   const handleFilterChange = useCallback(async (filter: string) => {
     setTimeFilter(filter)
     setLoading(true)
     try {
       const res = await API.getRequestsOverview(filter)
-      setData(res.data?.result ?? [])
+      setRawData(res.data?.result ?? [])
     } catch {
-      setData([])
+      setRawData([])
     } finally {
       setLoading(false)
     }

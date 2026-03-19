@@ -4,8 +4,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, LineChart, Line, Area, AreaChart } from "recharts"
-import { Bell, Users, Globe, TrendingUp, TrendingDown, MapPin, Monitor, Clock, ArrowUpRight, ArrowDownRight, Activity, FolderOpen } from "lucide-react"
+import { Bell, Users, Globe, TrendingUp, TrendingDown, MapPin, Monitor, Clock, ArrowUpRight, ArrowDownRight, Minus, Activity, FolderOpen } from "lucide-react"
 import { type LucideIcon } from "lucide-react"
+import { fillTimeBuckets } from "@/lib/helper"
 
 const cardGradients = [
   "from-violet-500/10 to-purple-500/10 dark:from-violet-500/20 dark:to-purple-500/20",
@@ -50,27 +51,42 @@ const statConfigs: StatConfig[] = [
   { key: "subscribed_users", title: "Subscribed Users", icon: Users, format: (v) => v.toLocaleString() },
 ]
 
+interface Subscriber {
+  id: string
+  deviceType: string
+  country: string
+  browser: string
+  notificationsSent: number
+  createdOn: string
+  updatedOn?: string
+  subscribedTime?: string
+}
+
 interface DashboardData {
   stats: Record<string, any> | null
   notificationChart: Array<{ name: string; sent: number; failed: number }>
   ratesChart: Array<{ name: string; clickRate: number; dropRate: number }>
-  subscribers: Array<{
-    id: string
-    deviceType: string
-    notificationsSent: number
-    createdOn: string
-    country: string
-    browser: string
-  }>
+  subscribers: Subscriber[]
+}
+
+function getTrend(change: string): "up" | "down" | "neutral" {
+  const trimmed = change.replace(/[^\d.-]/g, "")
+  const num = parseFloat(trimmed)
+  if (isNaN(num) || num === 0) return "neutral"
+  return change.startsWith("-") ? "down" : "up"
 }
 
 export default function DashboardClient({ initialData }: { initialData: DashboardData }) {
-  const { stats, notificationChart, ratesChart, subscribers } = initialData
+  const { stats, notificationChart: rawNotifChart, ratesChart: rawRatesChart, subscribers } = initialData
+
+  // Fill missing time buckets for weekly charts
+  const notificationChart = fillTimeBuckets(rawNotifChart, "weekly", "name")
+  const ratesChart = fillTimeBuckets(rawRatesChart, "weekly", "name")
 
   const statsData = statConfigs.map((cfg) => {
     const value = stats?.[cfg.key] ?? 0
     const change = stats?.[cfg.key + "_change"] ?? "0%"
-    const trend = typeof change === "string" && change.startsWith("-") ? "down" : "up"
+    const trend = getTrend(typeof change === "string" ? change : String(change))
     return {
       ...cfg,
       value: cfg.format ? cfg.format(value) : String(value),
@@ -101,10 +117,14 @@ export default function DashboardClient({ initialData }: { initialData: Dashboar
               <div className="flex items-center gap-1 mt-1">
                 {stat.trend === "up" ? (
                   <ArrowUpRight className="h-3 w-3 text-emerald-500" />
-                ) : (
+                ) : stat.trend === "down" ? (
                   <ArrowDownRight className="h-3 w-3 text-rose-500" />
+                ) : (
+                  <Minus className="h-3 w-3 text-muted-foreground" />
                 )}
-                <span className={`text-xs font-medium ${stat.trend === "up" ? "text-emerald-500" : "text-rose-500"}`}>
+                <span className={`text-xs font-medium ${
+                  stat.trend === "up" ? "text-emerald-500" : stat.trend === "down" ? "text-rose-500" : "text-muted-foreground"
+                }`}>
                   {stat.change}
                 </span>
                 <span className="text-[10px] text-muted-foreground">vs last month</span>
