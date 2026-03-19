@@ -251,8 +251,10 @@ class PushNtfyController {
 				}
 			}
 
+			const ua = req.headers["user-agent"] || "";
 			await pushSubscriptionService.handleSubscription({
 				project_id: projectId,
+				info: ua,
 				...req.body,
 			});
 			AppEvents.emit(

@@ -1,4 +1,6 @@
 import {
+	AnalyticsController,
+	DashboardController,
 	NotificationController,
 	PlanController,
 	ProjectController,
@@ -102,5 +104,19 @@ router.get(
 	"/template-categories/:id/templates",
 	TemplateCategoryController.default.getTemplatesByCategory,
 );
+
+// Dashboard
+router.get("/dashboard/stats", DashboardController.default.getStats);
+router.get("/dashboard/notifications-chart", DashboardController.default.getNotificationsChart);
+router.get("/dashboard/rates-chart", DashboardController.default.getRatesChart);
+router.get("/dashboard/subscribers", DashboardController.default.getSubscribers);
+
+// Analytics
+router.get("/analytics/delivery-overview", AnalyticsController.default.getDeliveryOverview);
+router.get("/analytics/engagement-rates", AnalyticsController.default.getEngagementRates);
+router.get("/analytics/notification-types", AnalyticsController.default.getNotificationTypes);
+router.get("/analytics/subscriber-growth", AnalyticsController.default.getSubscriberGrowth);
+router.get("/analytics/requests-overview", AnalyticsController.default.getRequestsOverview);
+router.get("/analytics/project-subscriber-trends", AnalyticsController.default.getProjectSubscriberTrends);
 
 export default router;

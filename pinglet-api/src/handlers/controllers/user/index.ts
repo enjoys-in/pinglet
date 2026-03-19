@@ -9,3 +9,5 @@ export * as PlanController from "./plan.controller";
 
 export * as SubscriptionController from "./subscription.controller";
 export * as TemplateCategoryController from "./template-category.controller";
+export * as DashboardController from "./dashboard.controller";
+export * as AnalyticsController from "./analytics.controller";
