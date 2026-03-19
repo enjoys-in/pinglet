@@ -15,6 +15,10 @@ import {
   WalletCards,
   HeartHandshake,
   Sparkles,
+  Activity,
+  Video,
+  Inbox,
+  UserMinus,
 } from "lucide-react"
 
 import {
@@ -49,6 +53,16 @@ const data = {
           url: "/u/analytics",
           icon: BarChart3,
         },
+        {
+          title: "Activity",
+          url: "/u/activity",
+          icon: Activity,
+        },
+        {
+          title: "Sessions",
+          url: "/u/sessions",
+          icon: Video,
+        },
       ],
     },
     {
@@ -80,6 +94,11 @@ const data = {
           icon: Bell,
         },
         {
+          title: "Inbox",
+          url: "/u/inbox",
+          icon: Inbox,
+        },
+        {
           title: "Domains",
           url: "/u/domains",
           icon: Globe,
@@ -93,6 +112,11 @@ const data = {
           title: "Webhooks",
           url: "/u/webhooks",
           icon: Webhook,
+        },
+        {
+          title: "Unsubscribes",
+          url: "/u/unsubscribe-analytics",
+          icon: UserMinus,
         },
       ],
     },

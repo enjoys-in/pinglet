@@ -1,9 +1,10 @@
 "use client";
 import { ProjectDetailsResponse } from "@/lib/interfaces/project.interface";
-import React, { useState } from "react";
-import { Globe, Tag, Activity, Webhook } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { Globe, Tag, Activity, Webhook, Users } from "lucide-react";
 
 import { toast } from "@/hooks/use-toast";
+import { API } from "@/lib/api/handler";
 import { TemplateCard } from "./integrationCard";
 import WebhookCard from "./webhookCard";
 import ProjectHeader from "./projectHeader";
@@ -11,6 +12,19 @@ import ProjectWebsiteInfoCard from "./projectWebsiteInfoCard";
 
 const ProjectDetails = ({ project }: { project: ProjectDetailsResponse }) => {
     const [copiedId, setCopiedId] = useState<string | null>(null);
+    const [onlineCount, setOnlineCount] = useState<number | null>(null);
+
+    useEffect(() => {
+        const fetchPresence = async () => {
+            try {
+                const res = await API.getPresenceOnline(project.unique_id.toString());
+                setOnlineCount(res.data?.result?.online ?? null);
+            } catch { /* ignore */ }
+        };
+        fetchPresence();
+        const interval = setInterval(fetchPresence, 30000);
+        return () => clearInterval(interval);
+    }, [project.unique_id]);
 
     const copyToClipboard = (text: string, type: string) => {
         navigator.clipboard.writeText(text);
@@ -86,7 +100,25 @@ const ProjectDetails = ({ project }: { project: ProjectDetailsResponse }) => {
             />
 
             {/* Metrics Overview */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+                {onlineCount !== null && (
+                    <div className="group relative overflow-hidden rounded-2xl p-6 border border-emerald-500/30 bg-card/80 backdrop-blur-sm shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
+                        <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-teal-600 opacity-[0.06]" />
+                        <div className="relative">
+                            <div className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-md mb-4">
+                                <Users className="w-5 h-5 text-white" />
+                            </div>
+                            <div className="flex items-center gap-2 mb-1">
+                                <span className="relative flex h-2.5 w-2.5">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
+                                </span>
+                                <span className="text-2xl font-bold text-foreground">{onlineCount}</span>
+                            </div>
+                            <div className="text-sm text-muted-foreground">Users Online</div>
+                        </div>
+                    </div>
+                )}
                 <MetricCard
                     icon={Globe}
                     label="Website Status"

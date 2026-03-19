@@ -12,6 +12,34 @@ export interface ProjectDetailsResponse {
   website: Website;
   webhooks: any[];
   category: Category;
+  quiet_hours?: QuietHours | null;
+  rate_limit?: RateLimit | null;
+  fallback_channels?: FallbackChannels | null;
+}
+
+export interface QuietHours {
+  enabled: boolean;
+  start: string;
+  end: string;
+  timezone: string;
+}
+
+export interface RateLimit {
+  enabled: boolean;
+  max_per_subscriber_per_hour: number;
+  max_per_subscriber_per_day: number;
+}
+
+export interface FallbackChannels {
+  email?: {
+    enabled: boolean;
+    from_name?: string;
+    template_id?: string;
+  };
+  sms?: {
+    enabled: boolean;
+    provider?: string;
+  };
 }
 
 

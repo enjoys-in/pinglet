@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -7,6 +8,7 @@ import { XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveCont
 import { Bell, Users, Globe, TrendingUp, TrendingDown, MapPin, Monitor, Clock, ArrowUpRight, ArrowDownRight, Minus, Activity, FolderOpen } from "lucide-react"
 import { type LucideIcon } from "lucide-react"
 import { fillTimeBuckets } from "@/lib/helper"
+import { API } from "@/lib/api/handler"
 
 const cardGradients = [
   "from-violet-500/10 to-purple-500/10 dark:from-violet-500/20 dark:to-purple-500/20",
@@ -79,6 +81,27 @@ function getTrend(change: string): "up" | "down" | "neutral" {
 export default function DashboardClient({ initialData }: { initialData: DashboardData }) {
   const { stats, notificationChart: rawNotifChart, ratesChart: rawRatesChart, subscribers } = initialData
 
+  const [onlineCount, setOnlineCount] = useState<number | null>(null)
+
+  useEffect(() => {
+    let mounted = true
+    const fetchPresence = async () => {
+      try {
+        const res = await API.getPresenceAll()
+        if (mounted) {
+          const data = res.data?.result
+          const total = Array.isArray(data)
+            ? data.reduce((sum: number, p: any) => sum + (p.online_count ?? 0), 0)
+            : (data?.total_online ?? null)
+          setOnlineCount(total)
+        }
+      } catch {}
+    }
+    fetchPresence()
+    const interval = setInterval(fetchPresence, 30000)
+    return () => { mounted = false; clearInterval(interval) }
+  }, [])
+
   // Fill missing time buckets for weekly charts
   const notificationChart = fillTimeBuckets(rawNotifChart, "weekly", "name")
   const ratesChart = fillTimeBuckets(rawRatesChart, "weekly", "name")
@@ -97,9 +120,20 @@ export default function DashboardClient({ initialData }: { initialData: Dashboar
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-sm text-muted-foreground">Overview of your notification analytics and performance</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+          <p className="text-sm text-muted-foreground">Overview of your notification analytics and performance</p>
+        </div>
+        {onlineCount !== null && (
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+            </span>
+            <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">{onlineCount} online now</span>
+          </div>
+        )}
       </div>
 
       {/* Stats Cards */}

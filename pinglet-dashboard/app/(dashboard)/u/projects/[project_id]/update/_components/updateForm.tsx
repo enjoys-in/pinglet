@@ -9,6 +9,9 @@ import {
     Sparkles,
     Zap,
     Settings,
+    Clock,
+    Shield,
+    Mail,
 } from "lucide-react";
 
 import { FileUpload } from "./fileUpload";
@@ -53,6 +56,7 @@ export function UpdateProjectForm({
         handleSubmit,
         control,
         reset,
+        watch,
         formState: { errors, isDirty },
     } = useForm<Partial<ProjectDetailsResponse>>({
         defaultValues: {
@@ -63,6 +67,9 @@ export function UpdateProjectForm({
             website: { id: 0 },
             category: { id: 0 },
             is_active: true,
+            quiet_hours: { enabled: false, start: "22:00", end: "08:00", timezone: "Asia/Kolkata" },
+            rate_limit: { enabled: false, max_per_subscriber_per_hour: 10, max_per_subscriber_per_day: 50 },
+            fallback_channels: { email: { enabled: false, from_name: "", template_id: "" } },
         },
     });
 
@@ -92,6 +99,9 @@ export function UpdateProjectForm({
                     id: project?.category?.id,
                 },
                 is_active: project.is_active,
+                quiet_hours: project.quiet_hours ?? { enabled: false, start: "22:00", end: "08:00", timezone: "Asia/Kolkata" },
+                rate_limit: project.rate_limit ?? { enabled: false, max_per_subscriber_per_hour: 10, max_per_subscriber_per_day: 50 },
+                fallback_channels: project.fallback_channels ?? { email: { enabled: false, from_name: "", template_id: "" } },
             });
         }
         fetchLocalData();
@@ -115,6 +125,9 @@ export function UpdateProjectForm({
                 category: {
                     id: data?.category?.id,
                 },
+                quiet_hours: data.quiet_hours,
+                rate_limit: data.rate_limit,
+                fallback_channels: data.fallback_channels,
             };
             const { data: response } = await API.updateProject(project.id, payload);
 
@@ -350,6 +363,186 @@ export function UpdateProjectForm({
                                         />
                                     )}
                                 />
+                            </div>
+                        </div>
+
+                        {/* Quiet Hours */}
+                        <div className="space-y-8">
+                            <div className="flex items-center space-x-3">
+                                <div className="p-2 bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl">
+                                    <Clock className="w-5 h-5 text-white" />
+                                </div>
+                                <h2 className="text-2xl font-bold text-slate-300">
+                                    Quiet Hours
+                                </h2>
+                            </div>
+
+                            <div className="space-y-6 p-6 rounded-2xl border">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <Label className="text-sm font-semibold text-slate-300">Enable Quiet Hours</Label>
+                                        <p className="text-xs text-muted-foreground mt-1">Suppress notifications during specified hours</p>
+                                    </div>
+                                    <Controller
+                                        control={control}
+                                        name="quiet_hours.enabled"
+                                        render={({ field }) => (
+                                            <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                        )}
+                                    />
+                                </div>
+
+                                {watch("quiet_hours.enabled") && (
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t">
+                                        <div className="space-y-2">
+                                            <Label className="text-sm font-semibold text-slate-300">Start Time</Label>
+                                            <Input type="time" {...register("quiet_hours.start")} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="text-sm font-semibold text-slate-300">End Time</Label>
+                                            <Input type="time" {...register("quiet_hours.end")} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="text-sm font-semibold text-slate-300">Timezone</Label>
+                                            <Controller
+                                                control={control}
+                                                name="quiet_hours.timezone"
+                                                render={({ field }) => (
+                                                    <Select onValueChange={field.onChange} value={field.value}>
+                                                        <SelectTrigger>
+                                                            <SelectValue placeholder="Select timezone" />
+                                                        </SelectTrigger>
+                                                        <SelectContent className="max-h-60">
+                                                            {Intl.supportedValuesOf("timeZone").map((tz) => (
+                                                                <SelectItem key={tz} value={tz}>{tz}</SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                )}
+                                            />
+                                        </div>
+                                        <p className="col-span-full text-xs text-muted-foreground">
+                                            Notifications will be suppressed from {watch("quiet_hours.start") || "22:00"} to {watch("quiet_hours.end") || "08:00"} {watch("quiet_hours.timezone") || ""}
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Rate Limiting */}
+                        <div className="space-y-8">
+                            <div className="flex items-center space-x-3">
+                                <div className="p-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl">
+                                    <Shield className="w-5 h-5 text-white" />
+                                </div>
+                                <h2 className="text-2xl font-bold text-slate-300">
+                                    Rate Limiting
+                                </h2>
+                            </div>
+
+                            <div className="space-y-6 p-6 rounded-2xl border">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <Label className="text-sm font-semibold text-slate-300">Enable Rate Limiting</Label>
+                                        <p className="text-xs text-muted-foreground mt-1">Prevents notification fatigue by capping sends per subscriber</p>
+                                    </div>
+                                    <Controller
+                                        control={control}
+                                        name="rate_limit.enabled"
+                                        render={({ field }) => (
+                                            <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                        )}
+                                    />
+                                </div>
+
+                                {watch("rate_limit.enabled") && (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t">
+                                        <div className="space-y-2">
+                                            <Label className="text-sm font-semibold text-slate-300">Max per subscriber / hour</Label>
+                                            <Input
+                                                type="number"
+                                                min={1}
+                                                {...register("rate_limit.max_per_subscriber_per_hour", { valueAsNumber: true })}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="text-sm font-semibold text-slate-300">Max per subscriber / day</Label>
+                                            <Input
+                                                type="number"
+                                                min={1}
+                                                {...register("rate_limit.max_per_subscriber_per_day", { valueAsNumber: true })}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Fallback Channels */}
+                        <div className="space-y-8">
+                            <div className="flex items-center space-x-3">
+                                <div className="p-2 bg-gradient-to-r from-rose-500 to-pink-500 rounded-xl">
+                                    <Mail className="w-5 h-5 text-white" />
+                                </div>
+                                <h2 className="text-2xl font-bold text-slate-300">
+                                    Fallback Channels
+                                </h2>
+                            </div>
+
+                            <div className="space-y-6 p-6 rounded-2xl border">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <Label className="text-sm font-semibold text-slate-300">Enable Email Fallback</Label>
+                                        <p className="text-xs text-muted-foreground mt-1">Send email when push notification delivery fails</p>
+                                    </div>
+                                    <Controller
+                                        control={control}
+                                        name="fallback_channels.email.enabled"
+                                        render={({ field }) => (
+                                            <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                        )}
+                                    />
+                                </div>
+
+                                {watch("fallback_channels.email.enabled") && (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t">
+                                        <div className="space-y-2">
+                                            <Label className="text-sm font-semibold text-slate-300">From Name</Label>
+                                            <Input
+                                                type="text"
+                                                placeholder="Pinglet Notifications"
+                                                {...register("fallback_channels.email.from_name")}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="text-sm font-semibold text-slate-300">Template</Label>
+                                            <Controller
+                                                control={control}
+                                                name="fallback_channels.email.template_id"
+                                                render={({ field }) => (
+                                                    <Select onValueChange={field.onChange} value={field.value}>
+                                                        <SelectTrigger>
+                                                            <SelectValue placeholder="Select template" />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            {templateCategories.flatMap(c => c.templates || []).map((t: any) => (
+                                                                <SelectItem key={t.id} value={t.id.toString()}>{t.name || `Template ${t.id}`}</SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                )}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="flex items-center justify-between pt-4 border-t opacity-50">
+                                    <div>
+                                        <Label className="text-sm font-semibold text-slate-300">Enable SMS Fallback</Label>
+                                        <p className="text-xs text-muted-foreground mt-1">Coming soon</p>
+                                    </div>
+                                    <Switch disabled checked={false} />
+                                </div>
                             </div>
                         </div>
 

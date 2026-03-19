@@ -222,4 +222,62 @@ export class API {
     static getProjectSubscriberTrends(filter: string = 'daily') {
         return instance.get<ApiResponse<any>>('/api/v1/analytics/project-subscriber-trends?filter=' + filter)
     }
+
+    // Activity Tracking
+    static getActivityStats(projectId: string) {
+        return instance.get<ApiResponse<any>>('/api/v1/activity/stats?projectId=' + projectId)
+    }
+    static getActivityEvents(projectId: string, limit: number = 50, offset: number = 0) {
+        return instance.get<ApiResponse<any>>(`/api/v1/activity/events?projectId=${projectId}&limit=${limit}&offset=${offset}`)
+    }
+    static getVisitorEvents(projectId: string, visitorId: string) {
+        return instance.get<ApiResponse<any>>(`/api/v1/activity/visitor?projectId=${projectId}&visitorId=${visitorId}`)
+    }
+
+    // Session Recordings
+    static getSessionRecordings(projectId: string, limit: number = 20, offset: number = 0) {
+        return instance.get<ApiResponse<any>>(`/api/v1/sessions?projectId=${projectId}&limit=${limit}&offset=${offset}`)
+    }
+    static getSessionById(id: string) {
+        return instance.get<ApiResponse<any>>('/api/v1/sessions/' + id)
+    }
+    static deleteSession(id: string) {
+        return instance.delete<ApiResponse<any>>('/api/v1/sessions/' + id)
+    }
+
+    // Notification Inbox
+    static getInbox(projectId: string, subscriberId: string, limit: number = 30, offset: number = 0) {
+        return instance.get<ApiResponse<any>>(`/api/v1/inbox?projectId=${projectId}&subscriberId=${subscriberId}&limit=${limit}&offset=${offset}`)
+    }
+    static markInboxRead(id: string) {
+        return instance.put<ApiResponse<any>>('/api/v1/inbox/' + id + '/read')
+    }
+    static markAllInboxRead(projectId: string, subscriberId: string) {
+        return instance.put<ApiResponse<any>>(`/api/v1/inbox/read-all?projectId=${projectId}&subscriberId=${subscriberId}`)
+    }
+    static deleteInboxItem(id: string) {
+        return instance.delete<ApiResponse<any>>('/api/v1/inbox/' + id)
+    }
+
+    // Unsubscribe Analytics
+    static getUnsubscribeReasons(projectId: string) {
+        return instance.get<ApiResponse<any>>('/api/v1/unsubscribe-analytics?projectId=' + projectId)
+    }
+    static getUnsubscribeTrend(projectId: string, days: number = 30) {
+        return instance.get<ApiResponse<any>>(`/api/v1/unsubscribe-analytics/trend?projectId=${projectId}&days=${days}`)
+    }
+    static getUnsubscribeLogs(projectId: string, limit: number = 50, offset: number = 0) {
+        return instance.get<ApiResponse<any>>(`/api/v1/unsubscribe-analytics/logs?projectId=${projectId}&limit=${limit}&offset=${offset}`)
+    }
+    static getUnsubscribeSummary() {
+        return instance.get<ApiResponse<any>>('/api/v1/unsubscribe-analytics/summary')
+    }
+
+    // Live Presence
+    static getPresenceOnline(projectId: string) {
+        return instance.get<ApiResponse<any>>('/api/v1/presence/online?projectId=' + projectId)
+    }
+    static getPresenceAll() {
+        return instance.get<ApiResponse<any>>('/api/v1/presence/all')
+    }
 }
