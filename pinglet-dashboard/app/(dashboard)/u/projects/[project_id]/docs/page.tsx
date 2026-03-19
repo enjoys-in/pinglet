@@ -176,6 +176,72 @@ const examples = {
             { name: "data", type: "object", required: false, desc: "Variables used inside the template" },
         ],
     },
+    "2": {
+        label: "Glassmorphism HTML",
+        tag: "Live",
+        description:
+            "Modern glassmorphism card notification rendered as an HTML overlay. Supports rich media, action buttons, tag-based deduplication, and config overrides.",
+        endpoint: "https://pinglet.enjoys.in/api/v1/notifications/send",
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-Project-ID": "your-project-id",
+            "X-Pinglet-Id": "your-pinglet-id",
+        },
+        request: {
+            projectId: "your-project-id",
+            type: "2",
+            tag: "promo-summer-2026",
+            body: {
+                title: "Summer Sale — Upgrade Now",
+                description:
+                    "Get 60% off Professional plan for a limited time. Includes analytics, webhooks, and priority support.",
+                icon: "https://cdn.example.com/icons/sale.png",
+                logo: "https://pinglet.enjoys.in/logo-full.png",
+                url: "https://pinglet.enjoys.in/pricing?promo=summer2026",
+                media: {
+                    type: "image",
+                    src: "https://cdn.example.com/banners/summer-sale.jpg",
+                },
+                buttons: [
+                    { text: "Upgrade Now", action: "redirect", src: "https://pinglet.enjoys.in/pricing?promo=summer2026" },
+                    { text: "Learn More", action: "link", src: "https://pinglet.enjoys.in/blog/summer-sale" },
+                    { text: "Not Now", action: "close" },
+                ],
+            },
+        },
+        response: {
+            message: "OK",
+            result: "Notification Sent",
+            success: true,
+            "X-API-PLATFORM STATUS": "OK",
+        },
+        schema: [
+            { name: "projectId", type: "string", required: true, desc: "Your project unique ID (exactly 24 characters)" },
+            { name: "type", type: "string", required: true, desc: 'Set to "2" for glassmorphism HTML' },
+            { name: "tag", type: "string", required: false, desc: "Dedup key — replaces existing notification with same tag" },
+            { name: "body.title", type: "string", required: true, desc: "Notification title (min 3 characters)" },
+            { name: "body.description", type: "string", required: false, desc: "Notification body text" },
+            { name: "body.icon", type: "string", required: false, desc: "URL or base64 for small icon (top-left)" },
+            { name: "body.logo", type: "string", required: false, desc: "URL or base64, used as fallback if no icon" },
+            { name: "body.url", type: "string", required: false, desc: "Click-through URL when user clicks the notification body" },
+            { name: "body.media.type", type: "string", required: false, desc: '"image" | "video" | "audio" | "iframe"' },
+            { name: "body.media.src", type: "string", required: false, desc: "Valid http/https URL for the media" },
+            { name: "body.buttons[]", type: "array", required: false, desc: "Action buttons (max 3)" },
+            { name: "body.buttons[].text", type: "string", required: true, desc: "Button label" },
+            { name: "body.buttons[].action", type: "string", required: true, desc: '"redirect" | "link" | "alert" | "event" | "reload" | "close" | "onClick"' },
+            { name: "body.buttons[].src", type: "string", required: false, desc: "URL for redirect/link, or message for alert" },
+            { name: "body.buttons[].event", type: "string", required: false, desc: 'Event name (when action="event")' },
+            { name: "body.buttons[].onClick", type: "string", required: false, desc: 'JS function name (when action="onClick")' },
+            { name: "overrides.position", type: "string", required: false, desc: '"top-right" | "top-left" | "bottom-right" | "bottom-left"' },
+            { name: "overrides.duration", type: "number", required: false, desc: "Auto-close timer in milliseconds" },
+            { name: "overrides.auto_dismiss", type: "boolean", required: false, desc: "If false, stays until manually closed" },
+            { name: "overrides.sound.play", type: "boolean", required: false, desc: "Play notification sound on arrival" },
+            { name: "overrides.sound.src", type: "string", required: false, desc: "Sound URL" },
+            { name: "overrides.sound.volume", type: "number", required: false, desc: "Volume 0 to 1" },
+            { name: "overrides.theme.mode", type: "string", required: false, desc: '"light" | "dark" | "auto"' },
+        ],
+    },
 };
 
 type ExampleKey = keyof typeof examples;
