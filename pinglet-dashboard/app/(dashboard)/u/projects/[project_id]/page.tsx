@@ -3,14 +3,14 @@ import { ApiResponse } from '@/lib/types'
 import serverAxios from '@/lib/api/server.instance'
 import { ProjectDetailsResponse } from '@/lib/interfaces/project.interface'
 import ProjectDetails from './_components/projectDetails'
-import { AlertCircle, RefreshCw } from 'lucide-react'
+import { AlertCircle } from 'lucide-react'
 import Link from 'next/link'
 
 const page = async ({ params }: any) => {
   try {
     const { project_id } = await params as { project_id: string }
     const { data } = await serverAxios.get<ApiResponse<ProjectDetailsResponse>>('/api/v1/project/' + project_id)
-    
+
     if (!data.success) {
       throw new Error(data.message || "Failed to fetch project details")
     }

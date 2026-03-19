@@ -24,14 +24,14 @@ const ProjectDetails = ({ project }: { project: ProjectDetailsResponse }) => {
 
     const getCategoryColor = (category: string) => {
         const colors = {
-            Analytics: "bg-blue-100 text-blue-800 border-blue-200",
-            Support: "bg-purple-100 text-purple-800 border-purple-200",
-            Security: "bg-red-100 text-red-800 border-red-200",
-            SEO: "bg-green-100 text-green-800 border-green-200",
-            Performance: "bg-orange-100 text-orange-800 border-orange-200",
+            Analytics: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20",
+            Support: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20",
+            Security: "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20",
+            SEO: "bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20",
+            Performance: "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20",
         };
         return (
-            colors[category as keyof typeof colors] || "bg-gray-100 text-gray-800"
+            colors[category as keyof typeof colors] || "bg-muted text-muted-foreground"
         );
     };
 
@@ -46,18 +46,18 @@ const ProjectDetails = ({ project }: { project: ProjectDetailsResponse }) => {
         value: string | number;
         color: string;
     }) => (
-        <div className="group relative overflow-hidden bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-1">
+        <div className="group relative overflow-hidden rounded-2xl p-6 border border-border/50 bg-card/80 backdrop-blur-sm shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
             <div
-                className={`absolute inset-0 bg-gradient-to-br ${color} opacity-0 group-hover:opacity-5 transition-opacity duration-500`}
+                className={`absolute inset-0 bg-gradient-to-br ${color} opacity-0 group-hover:opacity-[0.06] transition-opacity duration-500`}
             />
             <div className="relative">
                 <div
-                    className={`inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br ${color} shadow-lg mb-4`}
+                    className={`inline-flex items-center justify-center w-11 h-11 rounded-xl bg-gradient-to-br ${color} shadow-md mb-4`}
                 >
-                    <Icon className="w-6 h-6 text-white" />
+                    <Icon className="w-5 h-5 text-white" />
                 </div>
-                <div className="text-2xl font-bold text-gray-900 mb-1">{value}</div>
-                <div className="text-sm text-gray-600">{label}</div>
+                <div className="text-2xl font-bold text-foreground mb-1">{value}</div>
+                <div className="text-sm text-muted-foreground">{label}</div>
             </div>
         </div>
     );
@@ -65,8 +65,8 @@ const ProjectDetails = ({ project }: { project: ProjectDetailsResponse }) => {
     const StatusBadge = ({ isActive }: { isActive: boolean }) => (
         <span
             className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${isActive
-                    ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
-                    : "bg-red-100 text-red-800 border border-red-200"
+                    ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
+                    : "bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20"
                 }`}
         >
             <div
@@ -77,64 +77,52 @@ const ProjectDetails = ({ project }: { project: ProjectDetailsResponse }) => {
         </span>
     );
     return (
-        <div>
-            <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/50 to-indigo-100/50">
-                {/* Floating Background Elements */}
-                <div className="fixed inset-0 overflow-hidden pointer-events-none">
-                    <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-full blur-3xl animate-pulse" />
-                    <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-cyan-400/20 rounded-full blur-3xl animate-pulse" />
-                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-br from-indigo-400/10 to-purple-400/10 rounded-full blur-3xl animate-pulse" />
-                </div>
+        <div className="space-y-8">
+            {/* Header Section */}
+            <ProjectHeader
+                project={project}
+                copyToClipboard={copyToClipboard}
+                StatusBadge={StatusBadge}
+            />
 
-                {/* Header Section */}
-                <ProjectHeader
-                    project={project}
-                    copyToClipboard={copyToClipboard}
-                    StatusBadge={StatusBadge}
+            {/* Metrics Overview */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <MetricCard
+                    icon={Globe}
+                    label="Website Status"
+                    value={project.website.is_active ? "Live" : "Offline"}
+                    color="from-emerald-500 to-teal-600"
                 />
-
-                {/* Metrics Overview */}
-                <div className="relative -mt-8 px-4 sm:px-6 lg:px-8 mb-12">
-                    <div className="max-w-7xl mx-auto">
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                            <MetricCard
-                                icon={Globe}
-                                label="Website Status"
-                                value={project.website.is_active ? "Live" : "Offline"}
-                                color="from-emerald-500 to-teal-600"
-                            />
-                            <MetricCard
-                                icon={Tag}
-                                label="Tags"
-                                value={project.website.tags.length}
-                                color="from-blue-500 to-indigo-600"
-                            />
-                            <MetricCard
-                                icon={Webhook}
-                                label="Webhooks"
-                                value={project.webhooks.length}
-                                color="from-purple-500 to-pink-600"
-                            />
-                            <MetricCard
-                                icon={Activity}
-                                label="Category"
-                                value={project.category.is_active ? "Active" : "Inactive"}
-                                color="from-orange-500 to-red-600"
-                            />
-                        </div>
-                    </div>
-                </div>
-
-                <ProjectWebsiteInfoCard
-                    project={project}
-                    website={project.website}
-                    copyToClipboard={copyToClipboard}
-                    StatusBadge={StatusBadge}
-                    category={project.category}
+                <MetricCard
+                    icon={Tag}
+                    label="Tags"
+                    value={project.website.tags.length}
+                    color="from-blue-500 to-indigo-600"
+                />
+                <MetricCard
+                    icon={Webhook}
+                    label="Webhooks"
+                    value={project.webhooks.length}
+                    color="from-purple-500 to-pink-600"
+                />
+                <MetricCard
+                    icon={Activity}
+                    label="Category"
+                    value={project.category.is_active ? "Active" : "Inactive"}
+                    color="from-orange-500 to-red-600"
                 />
             </div>
+
+            <ProjectWebsiteInfoCard
+                project={project}
+                website={project.website}
+                copyToClipboard={copyToClipboard}
+                StatusBadge={StatusBadge}
+                category={project.category}
+            />
+
             <TemplateCard project={project} getCategoryColor={getCategoryColor} />
-            <WebhookCard webhooks={project.webhooks} />
+            <WebhookCard webhooks={project.webhooks||[]} />
         </div>
     );
 };

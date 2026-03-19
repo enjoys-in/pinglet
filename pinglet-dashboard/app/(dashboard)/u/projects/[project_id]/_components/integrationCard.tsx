@@ -48,33 +48,26 @@ export const TemplateCard = ({ project, getCategoryColor }: { project: ProjectDe
 
 
     return (
-        <div className="group relative overflow-hidden bg-white/70 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/30 hover:shadow-3xl transition-all duration-700 hover:-translate-y-2 hover:bg-white/80">
-            {/* Animated Background Gradient */}
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-
+        <div className="rounded-2xl border border-border/50 bg-card/80 backdrop-blur-sm shadow-sm">
             {
                 templates.map((template) => (
-                    <div className="relative p-8" key={template.id}>
+                    <div className="p-6" key={template.id}>
                         {/* Header */}
-                        <div className="flex items-start justify-between mb-6">
-                            <div className="flex items-center gap-4">
-                                <div className="relative">
-                                    <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-indigo-600 rounded-2xl blur-lg opacity-30 group-hover:opacity-50 transition-opacity duration-500" />
-                                    <div className="relative p-3 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 group-hover:from-blue-100 group-hover:to-indigo-100 transition-all duration-500 border border-blue-200/50">
-                                        {template.icon}
-                                    </div>
+                        <div className="flex items-start justify-between mb-5 gap-4">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2.5 rounded-xl bg-primary/10 border border-primary/15">
+                                    {template.icon}
                                 </div>
                                 <div>
-                                    <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors duration-300 mb-1">
+                                    <h3 className="text-base font-bold text-foreground mb-0.5">
                                         {template.title}
                                     </h3>
-                                    <p className="text-sm text-gray-600 leading-relaxed">
+                                    <p className="text-sm text-muted-foreground">
                                         {template.description}
                                     </p>
                                 </div>
                             </div>
-                            <div className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-300 ${getCategoryColor(template.category)}`}>
+                            <div className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold border shrink-0 ${getCategoryColor(template.category)}`}>
                                 {template.category}
                             </div>
                         </div>
