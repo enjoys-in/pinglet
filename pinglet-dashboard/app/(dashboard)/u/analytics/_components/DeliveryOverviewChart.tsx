@@ -9,13 +9,12 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLe
 const chartConfig = {
   sent: {
     label: "Sent",
-    color: "hsl(35, 85%, 55%)", // ✅ Green - success
+    color: "hsl(152, 69%, 47%)", // ✅ Green - success
   },
   failed: {
     label: "Failed",
-   color: "hsl(260, 60%, 55%)", // ❌ Red - failure
+    color: "hsl(0, 84%, 60%)", // ❌ Red - failure
   },
- 
 };
 
 

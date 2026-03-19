@@ -9,17 +9,16 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLe
 const chartConfig = {
   clickRate: {
     label: "Click Rate (%)",
-    color: "hsl(220, 80%, 55%)", // 🔵 Blue - interaction
+    color: "hsl(217, 91%, 60%)", // 🔵 Blue - interaction
   },
   dropRate: {
     label: "Drop Rate (%)",
-    color: "hsl(35, 85%, 55%)", // 🟠 Orange - warning
+    color: "hsl(25, 95%, 53%)", // 🟠 Orange - warning
   },
   closeRate: {
     label: "Close Rate (%)",
-    color: "hsl(260, 60%, 55%)", // 🟣 Purple - neutral/processing
+    color: "hsl(215, 20%, 65%)", // Slate - neutral/dismissed
   },
-
 }
 
 const generateMockData = (timeFilter: string) => {

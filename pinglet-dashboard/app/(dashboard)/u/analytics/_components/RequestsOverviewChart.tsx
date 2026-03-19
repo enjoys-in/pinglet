@@ -9,23 +9,23 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLe
 const chartConfig = {
   requests: {
     label: "Requests",
-    color: "hsl(15, 75%, 55%)"
+    color: "hsl(262, 83%, 58%)"
   },
   sent: {
     label: "Sent",
-    color: "hsl(160, 60%, 50%)"
+    color: "hsl(152, 69%, 47%)"
   },
   failed: {
     label: "Failed",
-    color: "hsl(250, 60%, 70%)"
+    color: "hsl(0, 84%, 60%)"
   },
   closed: {
     label: "Closed",
-    color: "hsl(45, 80%, 50%)"
+    color: "hsl(217, 91%, 60%)"
   },
   dropped: {
     label: "Dropped",
-    color: "hsl(210, 10%, 50%)"
+    color: "hsl(215, 20%, 65%)"
   },
 }
 

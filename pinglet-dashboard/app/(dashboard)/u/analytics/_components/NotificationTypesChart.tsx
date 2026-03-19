@@ -9,15 +9,15 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLe
 const chartConfig = {
   type0: {
     label: "Default",
-    color: "hsl(50, 85%, 55%)"
+    color: "hsl(262, 83%, 58%)"
   },
   typeNeg1: {
     label: "Push Notification",
-    color: "hsl(190, 70%, 50%)"
+    color: "hsl(186, 72%, 48%)"
   },
   type1: {
     label: "Custom Notification",
-    color: "hsl(235, 60%, 55%)"
+    color: "hsl(330, 81%, 60%)"
   },
 }
 

@@ -9,7 +9,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLe
 const chartConfig = {
   subscribers: {
     label: "Subscribers Gained",
-    color: "hsl(345, 70%, 55%)"
+    color: "hsl(262, 83%, 58%)"
   },
 }
 

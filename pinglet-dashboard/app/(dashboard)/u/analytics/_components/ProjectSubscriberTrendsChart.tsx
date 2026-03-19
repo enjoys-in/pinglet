@@ -9,19 +9,19 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLe
 const chartConfig = {
   project1: {
     label: "Project Alpha",
-    color: "hsl(95, 70%, 45%)"
+    color: "hsl(262, 83%, 58%)"
   },
   project2: {
     label: "Project Beta",
-    color: "hsl(40, 80%, 50%)" 
+    color: "hsl(172, 66%, 50%)"
   },
   project3: {
     label: "Project Gamma",
-    color: "hsl(300, 70%, 50%)" 
+    color: "hsl(25, 95%, 53%)"
   },
   project4: {
     label: "Project Delta",
-   color: "hsl(205, 80%, 60%)" 
+    color: "hsl(217, 91%, 60%)"
   },
 }
  
