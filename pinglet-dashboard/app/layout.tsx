@@ -11,7 +11,7 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "Pinglet - Web Push Notification Service",
   description: "Modern web push notification service for your applications",
- 
+
 }
 
 export default function RootLayout({
