@@ -4,7 +4,6 @@ import type * as React from "react"
 import {
   BarChart3,
   Bell,
-  Globe,
   LayoutDashboard,
   FolderOpen,
   Webhook,
@@ -97,11 +96,6 @@ const data = {
           title: "Inbox",
           url: "/u/inbox",
           icon: Inbox,
-        },
-        {
-          title: "Domains",
-          url: "/u/domains",
-          icon: Globe,
         },
         {
           title: "Flows",

@@ -7,14 +7,57 @@ import { Bell, Search, Moon, Sun } from "lucide-react"
 import { useTheme } from "next-themes"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { usePathname } from "next/navigation"
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
+import React from "react"
 
 export function DashboardHeader() {
   const { setTheme, theme } = useTheme()
+  const pathname = usePathname()
+
+  const segments = pathname.split("/").filter(Boolean)
+  // Filter out "u" from display but keep it in the URL path
+  const breadcrumbs = segments
+    .map((seg, i) => ({
+      label: seg,
+      href: "/" + segments.slice(0, i + 1).join("/"),
+    }))
+    .filter((b) => b.label.toLowerCase() !== "u")
 
   return (
     <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
       <SidebarTrigger className="-ml-1" />
       <Separator orientation="vertical" className="mr-2 h-4" />
+
+      <Breadcrumb>
+        <BreadcrumbList>
+          {breadcrumbs.map((crumb, i) => {
+            const isLast = i === breadcrumbs.length - 1
+            const displayLabel = decodeURIComponent(crumb.label)
+              .replace(/-/g, " ")
+              .replace(/\b\w/g, (c) => c.toUpperCase())
+            return (
+              <React.Fragment key={crumb.href}>
+                {i > 0 && <BreadcrumbSeparator />}
+                <BreadcrumbItem>
+                  {isLast ? (
+                    <BreadcrumbPage>{displayLabel}</BreadcrumbPage>
+                  ) : (
+                    <BreadcrumbLink href={crumb.href}>{displayLabel}</BreadcrumbLink>
+                  )}
+                </BreadcrumbItem>
+              </React.Fragment>
+            )
+          })}
+        </BreadcrumbList>
+      </Breadcrumb>
 
       <div className="ml-auto flex items-center gap-2">
         <div className="relative hidden md:block">
