@@ -4,6 +4,7 @@ const scriptEl = Array.from(document.scripts).find((s) =>
 const currentScript = scriptEl || document.currentScript;
 const widgetId = currentScript?.dataset.widgetId;
 const checksum = currentScript?.dataset.checksum;
+const widgetEndpoint = currentScript?.dataset.endpoint || "";
 import Wrapper from "../wrapper-v1.js";
 import { createWrapper } from "../wrapper-v2.js";
 const displayError = (msg) => {
@@ -70,7 +71,7 @@ const displayError = (msg) => {
 			version,
 		);
 		const response = await fetch(
-			`http://localhost:8888/api/v1/load-widget-v2/${widgetId}`,
+			`${widgetEndpoint}/load-widget-v2/${widgetId}`,
 			{
 				headers: {
 					"X-Widget-ID": widgetId,
@@ -82,8 +83,14 @@ const displayError = (msg) => {
 			},
 		);
 		const parsedResponse = await response.text();
-		const run = new Function(`${parsedResponse}\nreturn element;`);
-		const element = run();
+		let element;
+		try {
+			const run = new Function(`${parsedResponse}\nreturn element;`);
+			element = run();
+		} catch (e) {
+			console.error("[Pinglet] Failed to execute widget code:", e);
+			return;
+		}
 		if (Array.isArray(element)) {
 			createWrapper(element, { side: "right" });
 		} else {

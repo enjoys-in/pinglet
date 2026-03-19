@@ -284,9 +284,13 @@ export function createVariant(data, config) {
 			Object.assign(btnEl.style, i === 0 ? globalStyle.btn1 : globalStyle.btn2);
 
 			if (btn?.onClick) {
-				const func = new Function(`return ${btn.onClick}`)();
-				if (typeof func === "function") {
-					btnEl.addEventListener("click", func);
+				try {
+					const func = new Function(`return ${btn.onClick}`)();
+					if (typeof func === "function") {
+						btnEl.addEventListener("click", func);
+					}
+				} catch (e) {
+					console.warn("[Pinglet] Invalid onClick handler:", e);
 				}
 			} else {
 				btnEl.addEventListener("click", (e) => {

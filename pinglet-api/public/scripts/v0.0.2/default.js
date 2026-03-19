@@ -173,9 +173,13 @@ export function _showPopup(
 			btnEl.onmouseover = () => (btnEl.style.background = "#444");
 			btnEl.onmouseout = () => (btnEl.style.background = "#333");
 			if (btn?.onClick) {
-				const func = new Function(`return ${btn.onClick}`)(); // returns the actual arrow function
-				if (typeof func === "function") {
-					btnEl.addEventListener("click", func);
+				try {
+					const func = new Function(`return ${btn.onClick}`)();
+					if (typeof func === "function") {
+						btnEl.addEventListener("click", func);
+					}
+				} catch (e) {
+					console.warn("[Pinglet] Invalid onClick handler:", e);
 				}
 			} else {
 				btnEl.addEventListener("click", (e) => {

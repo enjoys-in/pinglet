@@ -247,11 +247,15 @@ const templatesIds = currentScript?.dataset.templates;
           if (!template || template.compiled_text.length === 0) {
             return console.error("Template not found");
           }
-          const func = new Function(
-            `return ${template.compiled_text?.trim()}`
-          )();
-          /** @type {HTMLElement} */
-          const element = func(parsed?.custom_template);
+          let element;
+          try {
+            const func = new Function(
+              `return ${template.compiled_text?.trim()}`
+            )();
+            element = func(parsed?.custom_template);
+          } catch (e) {
+            return console.error("[Pinglet] Failed to execute template:", e);
+          }
           let wrapper;
           if (globalConfig.config.sound) playSound();
           if (Array.isArray(element)) {
@@ -293,9 +297,9 @@ const templatesIds = currentScript?.dataset.templates;
         // only browser notifications
         if (parsed && parsed?.type === "-1") {
           TriggerBrowserNotificationApi(
-            body.title,
-            body.description,
-            body.type?.icon?.src || ""
+            parsed.body?.title || "Notification",
+            parsed.body?.description || "",
+            parsed.body?.icon || ""
           );
         }
         // trigger browser notification

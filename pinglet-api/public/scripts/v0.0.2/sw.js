@@ -1,4 +1,5 @@
 let isTabOpen = false;
+const API_BASE = self.location.href.substring(0, self.location.href.lastIndexOf('/'));
 self.addEventListener("install", (event) => {
 	self.skipWaiting();
 });
@@ -83,7 +84,7 @@ async function broadcastCustomEvent(eventName, payload) {
  */
 async function fireCustomEvent(event, data) {
 	if (!("project_id" in data)) return;
-	await fetch("https://pinglet.enjoys.in/api/v1/log/event", {
+	await fetch(`${API_BASE}/log/event`, {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
@@ -153,7 +154,7 @@ self.addEventListener("notificationclick", (event) => {
 		} else {
 			event.waitUntil(
 				fireCustomEvent("closed", {
-					...eventData,
+					...notificationData,
 					notificationTag: event.notification.tag,
 					timestamp: Date.now(),
 				}),
@@ -177,7 +178,7 @@ self.addEventListener("notificationclick", (event) => {
 		} else {
 			event.waitUntil(
 				fireCustomEvent("clicked", {
-					...eventData,
+					...notificationData,
 					notificationTag: event.notification.tag,
 					timestamp: Date.now(),
 				}),

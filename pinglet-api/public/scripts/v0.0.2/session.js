@@ -1,17 +1,21 @@
 const rrwebURL = "https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.js";
 const events = [];
 
-rrweb.record({
-	maskAllInputs: true,
-	maskInputOptions: {
-		password: true,
-		email: true,
-		textarea: true,
-	},
-	emit(event) {
-		events.push(event);
-	},
-});
+if (typeof rrweb !== "undefined" && rrweb.record) {
+	rrweb.record({
+		maskAllInputs: true,
+		maskInputOptions: {
+			password: true,
+			email: true,
+			textarea: true,
+		},
+		emit(event) {
+			events.push(event);
+		},
+	});
+} else {
+	console.warn("[Pinglet] rrweb is not loaded. Session recording disabled. Load it from:", rrwebURL);
+}
 
 // Send events to backend on unload
 window.addEventListener("beforeunload", () => {

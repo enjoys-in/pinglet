@@ -79,7 +79,7 @@ export async function subscribeUser(endpoint, projectId, publicVapidKey) {
                    icon: "https://pinglet.enjoys.in/favicon.ico"
                  }).onclick = () => {
                    window.open("https://pinglet.enjoys.in", "_blank");
-                 })  
+                 }
                 }`,
 						},
 					],
