@@ -6,11 +6,8 @@ import { steps } from "./_data/how-it-works"
 
 export default function HowItWorksSection() {
   return (
-    <section id="how-it-works" className="relative w-full overflow-hidden bg-muted/40 py-24 md:py-32">
-      {/* Subtle radial background */}
-      <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_50%_50%,hsl(var(--primary)/0.04),transparent_70%)]" />
-
-      <div className="mx-auto max-w-7xl px-6">
+    <section id="how-it-works" className="relative w-full py-24 md:py-32">
+      <div className="mx-auto max-w-6xl px-6">
         <FadeIn>
           <SectionHeader
             badge="How It Works"
@@ -19,25 +16,52 @@ export default function HowItWorksSection() {
           />
         </FadeIn>
 
-        <div className="relative mx-auto max-w-4xl">
-          {/* Connector line (desktop) */}
-          <div className="absolute left-0 right-0 top-10 hidden h-px bg-gradient-to-r from-transparent via-border to-transparent md:block" />
+        {/* Vertical timeline */}
+        <div className="relative mx-auto max-w-2xl">
+          {/* Vertical line */}
+          <div className="absolute bottom-0 left-5 top-0 w-px bg-border md:left-1/2 md:-translate-x-px" />
 
-          <div className="grid gap-12 md:grid-cols-3 md:gap-8">
+          <div className="space-y-12">
             {steps.map((step, i) => (
-              <FadeIn
-                key={step.step}
-                delay={i * 0.12}
-                className="relative flex flex-col items-center text-center"
-              >
-                {/* Step number */}
-                <div className="relative z-10 mb-6 flex size-20 items-center justify-center rounded-2xl bg-card shadow-lg shadow-black/[0.04] ring-1 ring-border dark:shadow-black/20">
-                  <span className="bg-gradient-to-br from-primary to-primary/70 bg-clip-text text-2xl font-bold text-transparent">
+              <FadeIn key={step.step} delay={i * 0.1}>
+                <div className="relative flex items-start gap-6 md:gap-12">
+                  {/* Left text (desktop) / hidden on mobile */}
+                  <div className="hidden flex-1 text-right md:block">
+                    {i % 2 === 0 ? (
+                      <>
+                        <h3 className="text-lg font-semibold">{step.title}</h3>
+                        <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{step.description}</p>
+                      </>
+                    ) : (
+                      <div />
+                    )}
+                  </div>
+
+                  {/* Dot */}
+                  <div className="relative z-10 flex size-10 shrink-0 items-center justify-center rounded-full border-2 border-primary bg-background text-sm font-bold text-primary md:mx-0">
                     {step.step}
-                  </span>
+                  </div>
+
+                  {/* Right text (desktop) / all text on mobile */}
+                  <div className="flex-1">
+                    {/* Desktop: only show for odd index */}
+                    <div className="hidden md:block">
+                      {i % 2 !== 0 ? (
+                        <>
+                          <h3 className="text-lg font-semibold">{step.title}</h3>
+                          <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{step.description}</p>
+                        </>
+                      ) : (
+                        <div />
+                      )}
+                    </div>
+                    {/* Mobile: always show */}
+                    <div className="md:hidden">
+                      <h3 className="text-lg font-semibold">{step.title}</h3>
+                      <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{step.description}</p>
+                    </div>
+                  </div>
                 </div>
-                <h3 className="mb-2 text-lg font-semibold">{step.title}</h3>
-                <p className="text-sm leading-relaxed text-muted-foreground">{step.description}</p>
               </FadeIn>
             ))}
           </div>

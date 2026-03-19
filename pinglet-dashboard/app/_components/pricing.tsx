@@ -1,10 +1,8 @@
 "use client"
 
 import { useState, useCallback } from "react"
-import { Check, Sparkles } from "lucide-react"
+import { Check, Infinity } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { SectionHeader } from "./shared/section-header"
 import { FadeIn } from "./shared/fade-in"
 import { pricingPlans, freePlanFeatures } from "./_data/pricing"
@@ -16,10 +14,8 @@ export default function PricingSection() {
   const toAnnual = useCallback(() => setIsAnnual(true), [])
 
   return (
-    <section id="pricing" className="relative w-full overflow-hidden bg-muted/40 py-24 md:py-32">
-      <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_30%_20%,hsl(var(--primary)/0.04),transparent_50%)]" />
-
-      <div className="mx-auto max-w-7xl px-6">
+    <section id="pricing" className="relative w-full py-24 md:py-32">
+      <div className="mx-auto max-w-6xl px-6">
         <FadeIn>
           <SectionHeader
             badge="Pricing"
@@ -28,27 +24,25 @@ export default function PricingSection() {
           />
         </FadeIn>
 
-        {/* Free plan */}
-        <FadeIn className="mx-auto mb-14 max-w-3xl">
-          <Card className="overflow-hidden border-primary/20">
-            <CardContent className="flex flex-col items-center gap-6 p-6 sm:flex-row sm:justify-between sm:p-8">
-              <div className="text-center sm:text-left">
-                <div className="mb-1.5 flex items-center justify-center gap-2 sm:justify-start">
-                  <Sparkles className="size-4 text-primary" />
-                  <h3 className="text-lg font-bold">Free Forever</h3>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Everything you need to get started — no credit card required.
-                </p>
+        {/* Free plan callout */}
+        <FadeIn className="mx-auto mb-12 max-w-2xl">
+          <div className="flex items-center justify-between rounded-2xl border border-border/50 bg-card p-6">
+            <div className="flex items-center gap-4">
+              <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <Infinity className="size-5" />
               </div>
-              <div className="flex items-baseline gap-1 shrink-0">
-                <span className="text-4xl font-extrabold">$0</span>
-                <span className="text-sm text-muted-foreground">/mo</span>
+              <div>
+                <p className="text-base font-semibold">Free Forever</p>
+                <p className="text-sm text-muted-foreground">No credit card required</p>
               </div>
-            </CardContent>
-          </Card>
-          <div className="mt-3 flex flex-wrap justify-center gap-x-5 gap-y-1.5 text-xs text-muted-foreground">
-            {freePlanFeatures.slice(0, 5).map((f) => (
+            </div>
+            <div className="text-right">
+              <p className="text-3xl font-bold">$0</p>
+              <p className="text-xs text-muted-foreground">/month</p>
+            </div>
+          </div>
+          <div className="mt-3 flex flex-wrap justify-center gap-x-5 gap-y-1 text-xs text-muted-foreground">
+            {freePlanFeatures.slice(0, 4).map((f) => (
               <span key={f} className="flex items-center gap-1.5">
                 <Check className="size-3 text-primary" /> {f}
               </span>
@@ -56,15 +50,15 @@ export default function PricingSection() {
           </div>
         </FadeIn>
 
-        {/* Billing toggle */}
+        {/* Toggle */}
         <FadeIn className="mb-10 flex justify-center">
-          <div className="inline-flex items-center rounded-xl bg-muted p-1 ring-1 ring-border/50">
+          <div className="inline-flex items-center rounded-full border border-border/60 bg-card p-1">
             <button
               onClick={toMonthly}
               className={cn(
-                "rounded-lg px-5 py-2 text-sm font-medium transition-all",
+                "rounded-full px-5 py-2 text-sm font-medium transition-all",
                 !isAnnual
-                  ? "bg-background text-foreground shadow-sm"
+                  ? "bg-foreground text-background shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
@@ -73,16 +67,16 @@ export default function PricingSection() {
             <button
               onClick={toAnnual}
               className={cn(
-                "flex items-center gap-2 rounded-lg px-5 py-2 text-sm font-medium transition-all",
+                "flex items-center gap-2 rounded-full px-5 py-2 text-sm font-medium transition-all",
                 isAnnual
-                  ? "bg-background text-foreground shadow-sm"
+                  ? "bg-foreground text-background shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
               Annual
-              <Badge variant="secondary" className="rounded-md px-1.5 py-0 text-[10px] font-semibold">
+              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
                 -20%
-              </Badge>
+              </span>
             </button>
           </div>
         </FadeIn>
@@ -90,50 +84,50 @@ export default function PricingSection() {
         {/* Plan cards */}
         <div className="mx-auto grid max-w-5xl gap-5 lg:grid-cols-3">
           {pricingPlans.map((plan, i) => (
-            <FadeIn key={plan.name} delay={i * 0.1}>
-              <Card
+            <FadeIn key={plan.name} delay={i * 0.08}>
+              <div
                 className={cn(
-                  "relative h-full transition-all duration-300",
+                  "relative flex h-full flex-col rounded-2xl border p-6 transition-all duration-300",
                   plan.popular
-                    ? "border-primary/60 shadow-xl shadow-primary/[0.08] dark:shadow-primary/[0.15] lg:scale-[1.03]"
-                    : "border-border/50 hover:border-border hover:shadow-lg hover:shadow-black/[0.03] dark:hover:shadow-black/20"
+                    ? "border-primary/50 bg-card shadow-xl shadow-primary/5"
+                    : "border-border/50 bg-card hover:border-border"
                 )}
               >
                 {plan.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <Badge className="rounded-full px-3 py-0.5 text-xs font-semibold shadow-sm">
-                      Most Popular
-                    </Badge>
-                  </div>
+                  <span className="absolute -top-3 left-6 rounded-full bg-primary px-3 py-0.5 text-xs font-medium text-primary-foreground">
+                    Popular
+                  </span>
                 )}
-                <CardContent className="flex h-full flex-col p-6">
-                  <h3 className="text-lg font-bold">{plan.name}</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">{plan.description}</p>
-                  <div className="mt-5 flex items-baseline">
-                    <span className="text-4xl font-extrabold">
-                      {isAnnual ? plan.annualPrice : plan.monthlyPrice}
-                    </span>
-                    <span className="ml-1.5 text-sm text-muted-foreground">/month</span>
-                  </div>
-                  <ul className="my-6 flex-grow space-y-2.5">
-                    {plan.features.map((f) => (
-                      <li key={f} className="flex items-start gap-2 text-sm">
-                        <Check className="mt-0.5 size-4 shrink-0 text-primary" />
-                        <span>{f}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <Button
-                    className={cn(
-                      "mt-auto w-full rounded-lg font-medium",
-                      plan.popular && "shadow-sm shadow-primary/25"
-                    )}
-                    variant={plan.popular ? "default" : "outline"}
-                  >
-                    {plan.cta}
-                  </Button>
-                </CardContent>
-              </Card>
+
+                <p className="text-base font-semibold">{plan.name}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{plan.description}</p>
+
+                <div className="mt-5 flex items-baseline gap-1">
+                  <span className="text-4xl font-bold tracking-tight">
+                    {isAnnual ? plan.annualPrice : plan.monthlyPrice}
+                  </span>
+                  <span className="text-sm text-muted-foreground">/mo</span>
+                </div>
+
+                <ul className="my-6 flex-grow space-y-3">
+                  {plan.features.map((f) => (
+                    <li key={f} className="flex items-start gap-2.5 text-sm">
+                      <Check className="mt-0.5 size-4 shrink-0 text-primary" />
+                      <span className="text-muted-foreground">{f}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <Button
+                  className={cn(
+                    "mt-auto w-full rounded-full font-medium",
+                    plan.popular && "shadow-sm shadow-primary/20"
+                  )}
+                  variant={plan.popular ? "default" : "outline"}
+                >
+                  {plan.cta}
+                </Button>
+              </div>
             </FadeIn>
           ))}
         </div>
