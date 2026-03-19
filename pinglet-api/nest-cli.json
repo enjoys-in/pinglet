@@ -4,6 +4,7 @@
 	"compilerOptions": {
 		"builder": "swc",
 		"typeCheck": false,
-		"deleteOutDir": true
+		"deleteOutDir": true,
+		"assets": ["factory/seed/*.sql"]
 	}
 }
