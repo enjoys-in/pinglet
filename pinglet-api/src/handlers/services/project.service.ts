@@ -36,7 +36,6 @@ class ProjectService {
 			where: { id },
 			relations: {
 				website: true,
-				webhooks: true,
 				category: true,
 			},
 		});
