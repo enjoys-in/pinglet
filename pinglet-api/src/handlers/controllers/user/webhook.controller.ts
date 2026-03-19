@@ -11,28 +11,27 @@ const triggerWebhookQueue = QueueService.createQueue("TRIGGER_WEBHOOK");
 class WebhookController {
 	async getAllWebhooks(req: Request, res: Response) {
 		try {
-			const webhooks = await webhookService.getAllWebhooks();
-			res
-				.json({
-					message: "All Webhooks",
-					result: webhooks,
-					success: true,
-				})
-				.end();
+			const userId = req.user?.id as number;
+			const webhooks = await cached(
+				CacheKeys.userWebhooks(userId),
+				CacheTTL.LONG,
+				() => webhookService.getWebhooksByUserId(userId),
+			);
+			const result = webhooks.map((wh) => {
+				const total = wh.success_count + wh.failure_count;
+				return {
+					...wh,
+					triggers: total,
+					success_rate: total > 0 ? Math.round((wh.success_count / total) * 10000) / 100 : 0,
+				};
+			});
+			res.json({ message: "All Webhooks", result, success: true }).end();
 		} catch (error) {
 			if (error instanceof Error) {
-				res
-					.json({ message: error.message, result: null, success: false })
-					.end();
+				res.json({ message: error.message, result: null, success: false }).end();
 				return;
 			}
-			res
-				.json({
-					message: "Something went wrong",
-					result: null,
-					success: false,
-				})
-				.end();
+			res.json({ message: "Something went wrong", result: null, success: false }).end();
 		}
 	}
 
@@ -40,59 +39,30 @@ class WebhookController {
 		try {
 			const id = +req.params.id;
 			const webhook = await webhookService.getWebhookById(id);
-			res
-				.json({
-					message: "Webhook Details",
-					result: webhook,
-					success: true,
-				})
-				.end();
-		} catch (error) {
-			if (error instanceof Error) {
-				res
-					.json({ message: error.message, result: null, success: false })
-					.end();
+			if (!webhook) {
+				res.json({ message: "Webhook not found", result: null, success: false }).end();
 				return;
 			}
-			res
-				.json({
-					message: "Something went wrong",
-					result: null,
-					success: false,
-				})
-				.end();
-		}
-	}
-
-	async getWebhooksByUserId(req: Request, res: Response) {
-		try {
-			const userId = req.user?.id as number;
-			const webhooks = await cached(
-				CacheKeys.userWebhooks(userId),
-				CacheTTL.LONG,
-				() => webhookService.getWebhooksByUserId(userId),
-			);
-			res
-				.json({
-					message: "User Webhooks",
-					result: webhooks,
-					success: true,
-				})
-				.end();
-		} catch (error) {
-			if (error instanceof Error) {
-				res
-					.json({ message: error.message, result: null, success: false })
-					.end();
+			if (webhook.user_id !== (req.user?.id as number)) {
+				res.json({ message: "Unauthorized", result: null, success: false }).end();
 				return;
 			}
-			res
-				.json({
-					message: "Something went wrong",
-					result: null,
-					success: false,
-				})
-				.end();
+			const total = webhook.success_count + webhook.failure_count;
+			res.json({
+				message: "Webhook Details",
+				result: {
+					...webhook,
+					triggers: total,
+					success_rate: total > 0 ? Math.round((webhook.success_count / total) * 10000) / 100 : 0,
+				},
+				success: true,
+			}).end();
+		} catch (error) {
+			if (error instanceof Error) {
+				res.json({ message: error.message, result: null, success: false }).end();
+				return;
+			}
+			res.json({ message: "Something went wrong", result: null, success: false }).end();
 		}
 	}
 
