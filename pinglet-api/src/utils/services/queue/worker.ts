@@ -13,6 +13,7 @@ import { WebhookEvent, WebhookType } from "@/factory/entities/webhook.entity";
 import { webhookService } from "@/handlers/services/webhook.service";
 import { KafkaNotificationLogger } from "../kafka/notificationLogger";
 import { KafkaNotificationProducer } from "../kafka/producer";
+import { executeFlow } from "../flow-engine";
 const kafkaProducer = new KafkaNotificationProducer([
 	`${__CONFIG__.KAFKA.KAFKA_HOST}:${__CONFIG__.KAFKA.KAFKA_PORT}`,
 ]);
@@ -29,6 +30,7 @@ export class ListenWorkers extends QueueService {
 		ListenWorkers.ProcessSendtoSocketNotification();
 		ListenWorkers.ProcessSendtoKafka();
 		ListenWorkers.ProcessTriggerWebhook();
+		ListenWorkers.ProcessExecuteFlow();
 	}
 	private static ProcessSendtoKafka() {
 		const worker = new Worker(
@@ -370,6 +372,30 @@ export class ListenWorkers extends QueueService {
 		});
 		worker.on("error", async (error: Error) => {
 			console.log("Webhook worker error:", error);
+		});
+	}
+
+	// ── Worker 4: EXECUTE_FLOW (async flow graph execution) ──
+	private static ProcessExecuteFlow() {
+		const worker = new Worker(
+			QUEUE_NAME.EXECUTE_FLOW,
+			async (job) => {
+				await executeFlow(job.data);
+			},
+			{
+				connection: ListenWorkers.connection,
+				useWorkerThreads: true,
+				concurrency: os.cpus().length,
+			},
+		);
+		worker.on("completed", async (job) => {
+			console.log(`Flow execution ${job.id} completed`);
+		});
+		worker.on("failed", async (job, err) => {
+			console.error(`Flow execution ${job?.id} failed:`, err.message);
+		});
+		worker.on("error", async (error: Error) => {
+			console.error("Flow worker error:", error);
 		});
 	}
 }

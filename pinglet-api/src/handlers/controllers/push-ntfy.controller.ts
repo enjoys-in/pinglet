@@ -27,6 +27,7 @@ import { DEFAULT_SW_FILE_CONTENT } from "../services/default/swFileContent";
 import { KafkaAnalyticsConsumer } from "../services/kafka/notificationConsumer";
 import { templateService } from "../services/template.service";
 import { WidgetService } from "../services/widget.service";
+import { dispatchFlows } from "@/utils/services/flow-engine";
 
 const clients = new Map<string, Set<Response>>();
 
@@ -470,6 +471,9 @@ class PushNtfyController {
 				removeOnComplete: true,
 				jobId: `${projectId}-${Date.now()}-request`,
 			});
+
+			// Fire-and-forget: dispatch matching active flows (runs in worker, never blocks)
+			dispatchFlows(projectId, "notification_sent", { ...rest, projectId }, project?.user?.id).catch(() => {});
 
 			if (projectId && rest.type === "-1" && rest?.data) {
 				sendPushQueue.add(
