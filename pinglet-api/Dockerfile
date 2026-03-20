@@ -7,6 +7,10 @@ WORKDIR /usr/src/app
 # Copy package files
 COPY package.json bun.lockb ./
 
+# Copy scripts and patches needed by postinstall
+COPY scripts ./scripts
+COPY patches ./patches
+
 # Install all dependencies
 RUN bun install --frozen-lockfile
 
@@ -24,6 +28,10 @@ WORKDIR /usr/src/app
 
 # Copy package files
 COPY package.json bun.lockb ./
+
+# Copy scripts and patches needed by postinstall
+COPY scripts ./scripts
+COPY patches ./patches
 
 # Install only production dependencies
 RUN bun install --frozen-lockfile --production
