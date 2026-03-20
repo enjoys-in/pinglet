@@ -47,7 +47,7 @@ class PushNtfyController {
 			notificationId: body?.notification_id,
 			data: body,
 		});
-		res.end();
+		res.end("OK");
 	};
 	loadConfig = async (req: Request, res: Response) => {
 		try {

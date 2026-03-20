@@ -7,7 +7,7 @@
 let _endpoint = "";
 let _projectId = "";
 const _events = [];
-const _rrwebURL = "https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.js";
+const _rrwebURL = "https://unpkg.com/rrweb@2.0.0-alpha.17/dist/rrweb.min.js";
 
 /**
  * Initialize session recording. Call once after config is loaded.
