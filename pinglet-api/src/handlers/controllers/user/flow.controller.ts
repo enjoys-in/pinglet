@@ -3,7 +3,6 @@ import { flowService } from "@/handlers/services/flow.service";
 import { FlowStatus } from "@/factory/entities/flow.entity";
 import { cached, invalidateCache } from "@/utils/helpers/cache";
 import { CacheInvalidation, CacheKeys, CacheTTL } from "@/utils/types/cache";
-import { AppEvents } from "@/utils/services/Events";
 
 class FlowController {
 	// ─── List all flows ───
@@ -61,8 +60,10 @@ class FlowController {
 				status: status || FlowStatus.DRAFT,
 			});
 
-			await invalidateCache(CacheInvalidation.flow(userId));
-			AppEvents.emit("invalidateNtfyCache", { projectId });
+			await invalidateCache([
+				...CacheInvalidation.flow(userId),
+				...CacheInvalidation.ntfyProject(projectId),
+			]);
 			res.status(201).json({ message: "Flow created", result: flow, success: true }).end();
 		} catch (error) {
 			res.json({ message: error instanceof Error ? error.message : "Something went wrong", result: null, success: false }).end();
@@ -89,8 +90,10 @@ class FlowController {
 				return;
 			}
 
-			await invalidateCache(CacheInvalidation.flow(userId, id));
-			AppEvents.emit("invalidateNtfyCache", { projectId: flow.project_id });
+			await invalidateCache([
+				...CacheInvalidation.flow(userId, id),
+				...CacheInvalidation.ntfyProject(flow.project_id),
+			]);
 			res.json({ message: "Flow updated", result: flow, success: true }).end();
 		} catch (error) {
 			res.json({ message: error instanceof Error ? error.message : "Something went wrong", result: null, success: false }).end();
@@ -107,8 +110,10 @@ class FlowController {
 				res.status(404).json({ message: "Flow not found", result: null, success: false }).end();
 				return;
 			}
-			await invalidateCache(CacheInvalidation.flow(userId, id));
-			AppEvents.emit("invalidateNtfyCache", { projectId: flow.project_id });
+			await invalidateCache([
+				...CacheInvalidation.flow(userId, id),
+				...CacheInvalidation.ntfyProject(flow.project_id),
+			]);
 			res.json({ message: "Flow deleted", result: null, success: true }).end();
 		} catch (error) {
 			res.json({ message: error instanceof Error ? error.message : "Something went wrong", result: null, success: false }).end();
@@ -137,8 +142,10 @@ class FlowController {
 				return;
 			}
 
-			await invalidateCache(CacheInvalidation.flow(userId, id));
-			AppEvents.emit("invalidateNtfyCache", { projectId: flow.project_id });
+			await invalidateCache([
+				...CacheInvalidation.flow(userId, id),
+				...CacheInvalidation.ntfyProject(flow.project_id),
+			]);
 			res.json({ message: `Flow status changed to ${status}`, result: flow, success: true }).end();
 		} catch (error) {
 			res.json({ message: error instanceof Error ? error.message : "Something went wrong", result: null, success: false }).end();

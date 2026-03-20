@@ -12,6 +12,7 @@ import { QueueService } from "@/utils/services/queue";
 import { QUEUE_JOBS, QUEUE_NAME } from "@/utils/services/queue/name";
 import { cached } from "@/utils/helpers/cache";
 import { CacheKeys, CacheTTL } from "@/utils/types/cache";
+import { Logging } from "@/logs";
 
 const flowRepo: Repository<FlowEntity> = InjectRepository(FlowEntity);
 const execRepo: Repository<FlowExecutionEntity> = InjectRepository(FlowExecutionEntity);
@@ -43,13 +44,15 @@ export async function findMatchingFlows(
 	return flows.filter((flow) => {
 		if (!Array.isArray(flow.nodes)) return false;
 		return flow.nodes.some(
-			(n) =>
-				n.type === FlowNodeType.EVENT_TRIGGER &&
-				// Spec uses "eventName" as the field, also support legacy "event"
-				(n.data?.eventName === triggerEvent ||
-				 n.data?.event === triggerEvent ||
-				 n.data?.eventName === "*" ||
-				 n.data?.event === "*"),
+			(n) => {
+				if (n.type !== FlowNodeType.EVENT_TRIGGER) return false;
+				const ev = n.data?.eventName || n.data?.event;
+				if (!ev) return false;
+				if (ev === "*") return true;
+				// Normalize: match "clicked" against both "clicked" and "notification.clicked"
+				const normalized = ev.replace(/^notification\./, "");
+				return normalized === triggerEvent || ev === triggerEvent;
+			},
 		);
 	});
 }
@@ -109,12 +112,14 @@ export async function executeFlow(data: ExecuteFlowJobData): Promise<void> {
 
 	// Find trigger node(s) as starting points
 	const triggerNodes = flow.nodes.filter(
-		(n) =>
-			n.type === FlowNodeType.EVENT_TRIGGER &&
-			(n.data?.eventName === data.triggerEvent ||
-			 n.data?.event === data.triggerEvent ||
-			 n.data?.eventName === "*" ||
-			 n.data?.event === "*"),
+		(n) => {
+			if (n.type !== FlowNodeType.EVENT_TRIGGER) return false;
+			const ev = n.data?.eventName || n.data?.event;
+			if (!ev) return false;
+			if (ev === "*") return true;
+			const normalized = ev.replace(/^notification\./, "");
+			return normalized === data.triggerEvent || ev === data.triggerEvent;
+		},
 	);
 
 	if (triggerNodes.length === 0) {
@@ -274,6 +279,7 @@ export async function dispatchFlows(
 	userId?: number,
 ): Promise<void> {
 	const flows = await findMatchingFlows(projectId, triggerEvent);
+	Logging.dev(`[FlowEngine] dispatchFlows project=${projectId} event=${triggerEvent} matched=${flows.length}`);
 	for (const flow of flows) {
 		enqueueFlowExecution({
 			flowId: flow.id,

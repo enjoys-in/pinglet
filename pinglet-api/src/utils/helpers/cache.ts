@@ -1,5 +1,6 @@
 import { Cache } from "@/utils/services/redis/cacheService";
 import { CacheTTL, type CacheTTLKey } from "@/utils/types/cache";
+import { Logging } from "@/logs";
 
 /**
  * Read-through cache helper.
@@ -17,9 +18,11 @@ export async function cached<T>(
 ): Promise<T> {
 	const raw = await Cache.cache.get(key);
 	if (raw !== null) {
+		Logging.dev(`[Cache] HIT ${key}`);
 		return JSON.parse(raw) as T;
 	}
 
+	Logging.dev(`[Cache] MISS ${key}`);
 	const data = await fetcher();
 	const seconds = typeof ttl === "string" ? CacheTTL[ttl] : ttl;
 
@@ -36,5 +39,6 @@ export async function cached<T>(
 export async function invalidateCache(keys: string | string[]): Promise<void> {
 	const list = Array.isArray(keys) ? keys : [keys];
 	if (list.length === 0) return;
+	Logging.dev(`[Cache] INVALIDATE ${list.join(", ")}`);
 	await Promise.all(list.map((k) => Cache.cache.del(k).catch(() => {})));
 }
