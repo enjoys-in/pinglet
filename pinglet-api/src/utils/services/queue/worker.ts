@@ -11,7 +11,6 @@ import { QUEUE_NAME } from "./name";
 
 import { WebhookEvent, WebhookType } from "@/factory/entities/webhook.entity";
 import { webhookService } from "@/handlers/services/webhook.service";
-import { KafkaNotificationLogger } from "../kafka/notificationLogger";
 import { KafkaNotificationProducer } from "../kafka/producer";
 import { AppEvents } from "@/utils/services/Events";
 import { NotificationLifecycleEvent } from "@/utils/services/kafka/topics";
@@ -19,10 +18,6 @@ import { executeFlow } from "../flow-engine";
 const kafkaProducer = new KafkaNotificationProducer([
 	`${__CONFIG__.KAFKA.KAFKA_HOST}:${__CONFIG__.KAFKA.KAFKA_PORT}`,
 ]);
-const logger = new KafkaNotificationLogger(
-	kafkaProducer,
-	"notification-events",
-);
 
 export class ListenWorkers extends QueueService {
 	static listen() {
@@ -38,20 +33,20 @@ export class ListenWorkers extends QueueService {
 		const worker = new Worker(
 			QUEUE_NAME.SEND_KAFKA_NOTIFICATION,
 			async (job) => {
-				const { project_id, timestamp, type, event, ...metadata } =
+				const { project_id, timestamp, type, event, notification_id } =
 					job.data as {
 						project_id: string;
 						timestamp: number;
 						type: "0" | "1" | "-1";
-						event: "clicked" | "dropped" | "closed";
-					} & Record<string, any> & {};
-				await logger.log({
+						event: string;
+						notification_id?: string;
+					};
+				await kafkaProducer.sendEvent("notification-events", {
 					event,
 					timestamp,
 					type,
 					projectId: project_id,
-					notificationId: `${project_id}-${timestamp}`,
-					metadata: metadata ?? {},
+					notificationId: notification_id || `${project_id}-${timestamp}`,
 				});
 			},
 			{
@@ -268,7 +263,7 @@ export class ListenWorkers extends QueueService {
 					switch (webhookType) {
 						case WebhookType.API: {
 							const url = config?.api?.url;
-							if (!url) throw new Error("Webhook API URL not configured");
+							if (!url) { console.warn(`Webhook ${webhookId} skipped — API URL not configured`); return; }
 							const resp = await fetch(url, {
 								method: "POST",
 								headers: { "Content-Type": "application/json" },
@@ -281,7 +276,7 @@ export class ListenWorkers extends QueueService {
 						case WebhookType.TELEGRAM: {
 							const botToken = config?.telegram?.botToken;
 							const chatId = config?.telegram?.chatId;
-							if (!botToken || !chatId) throw new Error("Telegram config missing");
+							if (!botToken || !chatId) { console.warn(`Webhook ${webhookId} skipped — Telegram config missing`); return; }
 							const text = `*${event}*\nProject: ${projectId}\nType: ${notificationType}\nTime: ${new Date(timestamp).toISOString()}`;
 							const resp = await fetch(
 								`https://api.telegram.org/bot${encodeURIComponent(botToken)}/sendMessage`,
@@ -297,7 +292,7 @@ export class ListenWorkers extends QueueService {
 						}
 						case WebhookType.SLACK: {
 							const url = config?.slack?.url;
-							if (!url) throw new Error("Slack webhook URL not configured");
+							if (!url) { console.warn(`Webhook ${webhookId} skipped — Slack URL not configured`); return; }
 							const resp = await fetch(url, {
 								method: "POST",
 								headers: { "Content-Type": "application/json" },
@@ -311,7 +306,7 @@ export class ListenWorkers extends QueueService {
 						}
 						case WebhookType.DISCORD: {
 							const url = config?.discord?.url;
-							if (!url) throw new Error("Discord webhook URL not configured");
+							if (!url) { console.warn(`Webhook ${webhookId} skipped — Discord URL not configured`); return; }
 							const resp = await fetch(url, {
 								method: "POST",
 								headers: { "Content-Type": "application/json" },
@@ -325,7 +320,7 @@ export class ListenWorkers extends QueueService {
 						}
 						case WebhookType.TEAMS: {
 							const url = config?.teams?.url;
-							if (!url) throw new Error("Teams webhook URL not configured");
+							if (!url) { console.warn(`Webhook ${webhookId} skipped — Teams URL not configured`); return; }
 							const resp = await fetch(url, {
 								method: "POST",
 								headers: { "Content-Type": "application/json" },
@@ -338,7 +333,8 @@ export class ListenWorkers extends QueueService {
 							break;
 						}
 						default:
-							throw new Error(`Unsupported webhook type: ${webhookType}`);
+							console.warn(`Webhook ${webhookId} skipped — unsupported type: ${webhookType}`);
+							return;
 					}
 					await webhookService.recordSuccess(webhookId);
 				} catch (err) {

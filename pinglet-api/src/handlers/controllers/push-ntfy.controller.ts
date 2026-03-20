@@ -23,7 +23,6 @@ import {
 } from "@/utils/validators/notfication-send";
 import { In } from "typeorm";
 import { DEFAULT_SW_FILE_CONTENT } from "../services/default/swFileContent";
-import { KafkaAnalyticsConsumer } from "../services/kafka/notificationConsumer";
 import { templateService } from "../services/template.service";
 import { WidgetService } from "../services/widget.service";
 import { cached } from "@/utils/helpers/cache";
@@ -34,7 +33,6 @@ const clients = new Map<string, Set<Response>>();
 
 const sendPushQueue = QueueService.createQueue("SEND_BROWSER_NOTIFICATION");
 
-new KafkaAnalyticsConsumer().start();
 let base64Mp3: string | null = null;
 
 class PushNtfyController {
@@ -42,7 +40,7 @@ class PushNtfyController {
 		const body = req.body;
 		const event = body?.event;
 
-		if (event && ALLOWED_NOTIFICATION_EVENTS.includes(event)) {
+		if (event && ALLOWED_NOTIFICATION_EVENTS.includes(event) && body?.project_id) {
 			// Notification lifecycle event (clicked, closed, dismissed, etc.)
 			// → Kafka analytics + webhook dispatch + flow execution
 			AppEvents.emit("notificationLifecycle", {

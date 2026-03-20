@@ -34,26 +34,38 @@ export class KafkaAnalyticsConsumer {
 			Logging.dev("Subscribed to Consumer topic", "info");
 
 			await this.consumer.run({
-				eachMessage: async ({ message }) => {
-					const data = JSON.parse(
-						message.value?.toString(),
-					) as NotificationEvent;
-					const { projectId, event } = data;
+				eachMessage: async ({ topic, partition, message }) => {
+					try {
+						const raw = message.value?.toString();
+						if (!raw) {
+							Logging.dev(`[KafkaConsumer] empty message on ${topic}:${partition}`, "alert");
+							return;
+						}
 
-					// const redisKey = `analytics:${projectId}:${event}`; // e.g., analytics:proj123:click
-					// await Cache.cache.incr(redisKey);
+						const data = JSON.parse(raw) as NotificationEvent;
+						const { projectId, event } = data;
 
-					const counterKey = REDIS_KEYS_NAME.ANALYTICS_DELTA.replace(
-						"projectId",
-						projectId,
-					);
-					const bufferKey = REDIS_KEYS_NAME.ANALYTICS_BUFFER.replace(
-						"projectId",
-						projectId,
-					);
+						if (!projectId || !event) {
+							Logging.dev(`[KafkaConsumer] skipped — missing projectId=${projectId} event=${event}`, "error");
+							return;
+						}
 
-					await Cache.cache.hIncrBy(counterKey, event, 1);
-					await Cache.cache.rPush(bufferKey, message.value?.toString());
+						Logging.dev(`[KafkaConsumer] ${event} project=${projectId}`);
+
+						const counterKey = REDIS_KEYS_NAME.ANALYTICS_DELTA.replace(
+							"projectId",
+							projectId,
+						);
+						const bufferKey = REDIS_KEYS_NAME.ANALYTICS_BUFFER.replace(
+							"projectId",
+							projectId,
+						);
+
+						await Cache.cache.hIncrBy(counterKey, event, 1);
+						await Cache.cache.rPush(bufferKey, raw);
+					} catch (err: any) {
+						Logging.dev(`[KafkaConsumer] eachMessage error: ${err?.message || err}`, "error");
+					}
 				},
 			});
 		} catch (error) {

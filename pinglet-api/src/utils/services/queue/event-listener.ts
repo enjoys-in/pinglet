@@ -96,7 +96,10 @@ AppEvents.on("trackActivity", (payload: {
 // ─── Unified notification lifecycle handler ───
 // ONE event → Kafka log + webhook dispatch + flow execution (all fire-and-forget)
 AppEvents.on("notificationLifecycle", async (payload: LifecycleEventPayload) => {
-	console.log(payload)
+	if (!payload.projectId || !payload.event) {
+		Logging.dev(`[Event:notificationLifecycle] skipped — missing projectId=${payload.projectId} event=${payload.event}`, "error");
+		return;
+	}
 	Logging.dev(`[Event:notificationLifecycle] event=${payload.event} project=${payload.projectId} notificationId=${payload.notificationId || "N/A"}`);
 	const ts = Date.now();
 
@@ -107,7 +110,6 @@ AppEvents.on("notificationLifecycle", async (payload: LifecycleEventPayload) => 
 		type: payload.type || "0",
 		event: payload.event,
 		notification_id: payload.notificationId,
-		...(payload.data || {}),
 	}, {
 		removeOnComplete: true,
 		jobId: `${payload.projectId}-${ts}-${payload.event}`,

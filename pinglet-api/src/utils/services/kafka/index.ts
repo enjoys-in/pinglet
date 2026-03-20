@@ -1,7 +1,7 @@
 import type { EVENTS } from "./topics";
 
 export interface NotificationEvent {
-	event: EVENTS;
+	event: string;
 	timestamp: number;
 	type: string;
 	projectId: string;
