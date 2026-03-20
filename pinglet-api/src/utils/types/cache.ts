@@ -9,7 +9,7 @@ export const CacheTTL = {
 	/** Static / rarely-changing data (plans catalog, template categories) */
 	STATIC: 60 * 60 * 24, // 24h
 	/** Slow-changing per-user resources (websites, widgets, webhooks) */
-	LONG: 60 * 5, // 5 min
+	LONG: 60 * 60 * 24, // 24h
 	/** Moderate-changing resources (templates, projects) */
 	MEDIUM: 60 * 2, // 2 min
 	/** Fast-changing resources (plan usage, notifications summaries) */

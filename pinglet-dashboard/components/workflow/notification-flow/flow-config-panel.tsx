@@ -74,13 +74,22 @@ export default function FlowConfigPanel({ node, updateNodeData, onClose }: FlowC
           <Separator />
 
           {/* ─── Event Trigger Fields ────────────────────────────────── */}
-          {node.type === "event_trigger" && (
+          {node.type === "event_trigger" && (() => {
+            const isCustom = !EVENT_PRESETS.some(p => p.eventName && p.eventName === (data.eventName as string))
+            const categories = [...new Set(EVENT_PRESETS.map(p => p.category))]
+            return (
             <>
               <div className="space-y-1.5">
                 <Label className="text-xs">Event Preset</Label>
                 <Select
-                  value={(data.eventName as string) || ""}
+                  value={isCustom ? "__custom__" : ((data.eventName as string) || "")}
                   onValueChange={val => {
+                    if (val === "__custom__") {
+                      update("eventName", "")
+                      update("label", "Custom Event")
+                      update("payload", "{}")
+                      return
+                    }
                     const preset = EVENT_PRESETS.find(p => p.eventName === val)
                     if (preset) {
                       update("eventName", preset.eventName)
@@ -91,22 +100,33 @@ export default function FlowConfigPanel({ node, updateNodeData, onClose }: FlowC
                 >
                   <SelectTrigger className="h-8 text-sm"><SelectValue placeholder="Choose an event" /></SelectTrigger>
                   <SelectContent>
-                    {EVENT_PRESETS.map(p => (
-                      <SelectItem key={p.eventName || "custom"} value={p.eventName || "__custom__"}>
-                        <span className="text-xs text-muted-foreground mr-1">[{p.category}]</span> {p.name}
-                      </SelectItem>
-                    ))}
+                    {categories.map(cat => {
+                      const presets = EVENT_PRESETS.filter(p => p.category === cat)
+                      return (
+                        <div key={cat}>
+                          <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{cat}</div>
+                          {presets.map(p => (
+                            <SelectItem key={p.eventName || "__custom__"} value={p.eventName || "__custom__"}>
+                              {p.name}
+                            </SelectItem>
+                          ))}
+                        </div>
+                      )
+                    })}
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs">Event Name</Label>
+                <Label className="text-xs">Event Name {isCustom && <span className="text-amber-500 ml-1">(custom)</span>}</Label>
                 <Input
                   value={(data.eventName as string) || ""}
                   onChange={e => update("eventName", e.target.value)}
-                  placeholder="e.g. user:signup"
+                  placeholder={isCustom ? "my.custom.event" : "e.g. notification.sent"}
                   className="h-8 text-sm font-mono"
                 />
+                {isCustom && (data.eventName as string) === "" && (
+                  <p className="text-xs text-amber-500">Enter your custom event name</p>
+                )}
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs">Sample Payload (JSON)</Label>
@@ -118,7 +138,8 @@ export default function FlowConfigPanel({ node, updateNodeData, onClose }: FlowC
                 />
               </div>
             </>
-          )}
+            )
+          })()}
 
           {/* ─── Condition Fields ─────────────────────────────────── */}
           {node.type === "condition" && (
