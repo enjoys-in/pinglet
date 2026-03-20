@@ -46,6 +46,7 @@ import FlowConfigPanel from "./flow-config-panel"
 import { type FlowNode, type FlowExport, generateFlowId } from "./types"
 import { API } from "@/lib/api/handler"
 import JsonEditor from "./json-editor"
+import { db } from "@/lib/db"
 
 // ─── Edge defaults ──────────────────────────────────────────────────────────────
 
@@ -387,6 +388,9 @@ export default function NotificationFlowBuilder({ flowId, projectId }: Notificat
     apiCall
       .then(({ data }) => {
         if (data.success) {
+          if (data.result) {
+            db.putItem("flows", data.result as any)
+          }
           toast({ title: "Flow saved", description: `"${flowName}" saved successfully.` })
         } else {
           throw new Error(data.message || "Save failed")

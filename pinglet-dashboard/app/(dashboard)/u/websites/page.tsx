@@ -81,13 +81,13 @@ export default function WebsitesPage() {
         if (!response.success) {
           throw new Error(response.message)
         }
+        const updatedWebsite = { ...editingWebsite, name: data.name, domain: data.domain, tags: data.tags?.split(",").map((t) => t.trim()) || [] }
         setWebsites((prev) =>
           prev.map((w) =>
-            w.id === editingWebsite.id
-              ? { ...w, name: data.name, domain: data.domain, tags: data.tags?.split(",").map((t) => t.trim()) || [] }
-              : w,
+            w.id === editingWebsite.id ? updatedWebsite : w,
           ),
         )
+        db.putItem("websites", updatedWebsite as any)
         toast({
           title: "Website updated",
           description: "Website has been updated successfully.",

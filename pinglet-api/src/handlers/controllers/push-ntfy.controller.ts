@@ -28,6 +28,8 @@ import { KafkaAnalyticsConsumer } from "../services/kafka/notificationConsumer";
 import { templateService } from "../services/template.service";
 import { WidgetService } from "../services/widget.service";
 import { dispatchFlows } from "@/utils/services/flow-engine";
+import { cached } from "@/utils/helpers/cache";
+import { CacheKeys, CacheTTL } from "@/utils/types/cache";
 
 const clients = new Map<string, Set<Response>>();
 
@@ -161,7 +163,8 @@ class PushNtfyController {
 			}
 			if (!query.templatesIds ) {
 				 
-				return res.json({ message: "OK", result: {}, success: true }).end();
+				 res.json({ message: "OK", result: {}, success: true }).end();
+				 return
 			}
 			const duplicationKey = Buffer.from(
 				`${query.projectId}-${query.templatesIds}`,
@@ -404,12 +407,16 @@ class PushNtfyController {
 			}
 			const { projectId, ...rest } = req.body;
 
-			// --- Plan quota enforcement (notification send limit) ---
-			const project = await projectService.getSelectedProjects({
-				where: { unique_id: projectId },
-				select: { id: true, user: { id: true }, quiet_hours: true, rate_limit: true },
-				relations: { user: true },
-			});
+			// --- Cached project lookup (5 min TTL, invalidated on project/flow/webhook mutations) ---
+			const project = await cached(
+				CacheKeys.ntfyProject(projectId),
+				CacheTTL.LONG,
+				() => projectService.getSelectedProjects({
+					where: { unique_id: projectId },
+					select: { id: true, user: { id: true }, quiet_hours: true, rate_limit: true },
+					relations: { user: true },
+				}),
+			);
 
 			// --- Quiet hours check ---
 			if (project && isInQuietHours((project as any).quiet_hours)) {

@@ -2,6 +2,7 @@ import { planService } from "@/handlers/services/plan.service";
 import { projectService } from "@/handlers/services/project.service";
 import { cached, invalidateCache } from "@/utils/helpers/cache";
 import { CacheInvalidation, CacheKeys, CacheTTL } from "@/utils/types/cache";
+import { AppEvents } from "@/utils/services/Events";
 import type { Request, Response } from "express";
 
 class ProjectController {
@@ -79,6 +80,7 @@ class ProjectController {
 				},
 			});
 			await invalidateCache(CacheInvalidation.project(userId!));
+			AppEvents.emit("invalidateNtfyCache", { projectId: project.unique_id });
 			res
 				.json({
 					message: "Project Created",
@@ -107,9 +109,11 @@ class ProjectController {
 	async deleteProject(req: Request, res: Response) {
 		try {
 			const id = +req.params.id;
+			const existing = await projectService.getSelectedProjects({ where: { id }, select: { unique_id: true } });
 			await projectService.deleteProject(id);
 			const userId = req.user?.id;
 			await invalidateCache(CacheInvalidation.project(userId!, id));
+			if (existing?.unique_id) AppEvents.emit("invalidateNtfyCache", { projectId: existing.unique_id });
 			res
 				.json({
 					message: "Project Deleted",
@@ -155,6 +159,8 @@ class ProjectController {
 				}
 			}
 
+			const existing = await projectService.getSelectedProjects({ where: { id }, select: { unique_id: true } });
+
 			await projectService.updateProject(id, {
 				...body,
 				user: {
@@ -162,6 +168,7 @@ class ProjectController {
 				},
 			});
 			await invalidateCache(CacheInvalidation.project(userId!, id));
+			if (existing?.unique_id) AppEvents.emit("invalidateNtfyCache", { projectId: existing.unique_id });
 			res
 				.json({
 					message: "Project Updated",

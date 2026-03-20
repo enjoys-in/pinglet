@@ -58,13 +58,27 @@ export default function FlowsPage() {
   const { toast } = useToast()
   const router = useRouter()
 
-  // Fetch flows from API
+  // Fetch flows from API, cache in IDB
   const fetchFlows = useCallback(async () => {
     setLoading(true)
     try {
+      const cached = await db.getAllItems("flows")
+      if (cached?.length) {
+        setFlows(cached as unknown as FlowExport[])
+        setLoading(false)
+        // Refresh in background
+        API.getFlows().then(({ data }) => {
+          if (data.success && data.result) {
+            setFlows(data.result)
+            db.bulkPutItems("flows", data.result as any)
+          }
+        }).catch(() => {})
+        return
+      }
       const { data } = await API.getFlows()
       if (data.success && data.result) {
         setFlows(data.result)
+        db.bulkPutItems("flows", data.result as any)
       }
     } catch {
       toast({ title: "Failed to load flows", variant: "destructive" })
@@ -134,6 +148,7 @@ export default function FlowsPage() {
       const { data } = await API.createFlow(payload)
       if (data.success && data.result) {
         const created = data.result
+        db.putItem("flows", created as any)
         setCreateOpen(false)
         setNewName("")
         setNewDesc("")
@@ -158,6 +173,7 @@ export default function FlowsPage() {
       const { data } = await API.deleteFlow(deleteTarget)
       if (data.success) {
         setFlows(prev => prev.filter(f => f.id !== deleteTarget))
+        db.deleteItem("flows", deleteTarget)
         setDeleteTarget(null)
         toast({ title: "Flow deleted" })
         fetchStats()
@@ -178,6 +194,7 @@ export default function FlowsPage() {
       const { data } = await API.toggleFlowStatus(flow.id, next)
       if (data.success) {
         setFlows(prev => prev.map(f => f.id === flow.id ? { ...f, status: next } : f))
+        db.putItem("flows", { ...flow, status: next } as any)
         toast({ title: `Flow ${next}` })
         fetchStats()
       }
@@ -200,6 +217,7 @@ export default function FlowsPage() {
       const { data } = await API.createFlow(payload)
       if (data.success && data.result) {
         setFlows(prev => [...prev, data.result])
+        db.putItem("flows", data.result as any)
         toast({ title: "Flow duplicated" })
         fetchStats()
       }

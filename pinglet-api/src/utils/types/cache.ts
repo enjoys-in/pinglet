@@ -64,6 +64,10 @@ export const CacheKeys = {
 	sdkTemplates: (projectId: string, templateIds: string) =>
 		Buffer.from(`${projectId}-${templateIds}`).toString("base64"),
 	sdkWidget: (wid: string) => wid,
+
+	// ---- Hot-path (triggerNotification) ----
+	ntfyProject: (projectId: string) => `ntfy:project:${projectId}`,
+	projectActiveFlows: (projectId: string) => `project:${projectId}:active-flows`,
 } as const;
 
 // --- Invalidation groups (for busting related caches on writes) ---
@@ -109,4 +113,9 @@ export const CacheInvalidation = {
 		if (flowId) keys.push(CacheKeys.flow(flowId));
 		return keys;
 	},
+	/** Call on any mutation that could affect hot-path notification cache for a project */
+	ntfyProject: (projectId: string) => [
+		CacheKeys.ntfyProject(projectId),
+		CacheKeys.projectActiveFlows(projectId),
+	],
 } as const;

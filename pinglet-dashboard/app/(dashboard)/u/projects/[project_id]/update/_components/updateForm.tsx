@@ -75,13 +75,27 @@ export function UpdateProjectForm({
 
     const fetchLocalData = async () => {
         try {
-            const categories = await db.getAllItems("template_categories");
+            let categories = await db.getAllItems("template_categories");
+            if (categories.length === 0) {
+                const { data } = await API.getTemplateCategories();
+                if (data.success) {
+                    categories = data.result;
+                    db.bulkPutItems("template_categories", data.result as any);
+                }
+            }
             setTemplateCategories((categories as TemplateCategoryResponse[]) || []);
 
-            const websites = await db.getAllItems("websites");
-            setWebsites((websites as AllWebsitesResponse[]) || []);
+            let sites = await db.getAllItems("websites");
+            if (sites.length === 0) {
+                const { data } = await API.getWebsites();
+                if (data.success) {
+                    sites = data.result;
+                    db.bulkPutItems("websites", data.result as any);
+                }
+            }
+            setWebsites((sites as AllWebsitesResponse[]) || []);
         } catch (error) {
-            console.error("Failed to fetch categories", error);
+            console.error("Failed to fetch data", error);
         }
     };
 
@@ -133,6 +147,9 @@ export function UpdateProjectForm({
 
             if (!response.success) {
                 throw new Error(response.message || "Failed to update project");
+            }
+            if (response.result) {
+                db.putItem("projects", response.result as any);
             }
             setSubmitStatus("success");
             router.push(`/projects`)

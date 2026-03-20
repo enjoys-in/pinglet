@@ -5,6 +5,7 @@ import { TemplateResponse } from '../interfaces/templates.interface'
 import { TemplateCategoryResponse } from '../interfaces/template-category.interface'
 import { ProjectDetailsResponse } from '../interfaces/project.interface'
 import { Widget } from '../interfaces/widget.interface'
+import type { FlowExport } from '@/components/workflow/notification-flow/types'
 
 type Tables = {
     websites: EntityTable<AllWebsitesResponse, "id">,
@@ -12,6 +13,7 @@ type Tables = {
     templates: EntityTable<TemplateResponse & { catgory_id: string}, "id">
     template_categories: EntityTable<TemplateCategoryResponse, "id">
     widgets: EntityTable<Widget, "id">
+    flows: EntityTable<FlowExport, "id">
 
 }
 const tables: CreatePKTableSchema<Tables> = {
@@ -20,5 +22,6 @@ const tables: CreatePKTableSchema<Tables> = {
     template_categories: "++id,slug",
     projects: "++id,unique_id",
     widgets: "++id",
+    flows: "++id,projectId",
 }
-export const db = new IDB<Tables>(tables, "pinglet", 2)
+export const db = new IDB<Tables>(tables, "pinglet", 3)

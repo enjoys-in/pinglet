@@ -5,11 +5,23 @@ import type {
 import { projectService } from "@/handlers/services/project.service";
 import { webhookService } from "@/handlers/services/webhook.service";
 import { OnEvent } from "@/utils/decorators";
+import { invalidateCache } from "@/utils/helpers/cache";
+import { CacheInvalidation } from "@/utils/types/cache";
 import { MailService } from "@/utils/services/mail/mailService";
+import { AppEvents } from "@/utils/services/Events";
 import { QueueService } from ".";
 import { QUEUE_JOBS } from "./name";
 const triggerWebhookQueue = QueueService.createQueue("TRIGGER_WEBHOOK");
 const mailer = MailService.getInstance();
+
+// ─── Fire-and-forget cache invalidation for hot-path notification lookups ───
+// Emitters send: { projectId: string } or { projectIds: string[] }
+AppEvents.on("invalidateNtfyCache", (payload: { projectId?: string; projectIds?: string[] }) => {
+	const ids = payload.projectIds || (payload.projectId ? [payload.projectId] : []);
+	const keys = ids.flatMap((pid) => CacheInvalidation.ntfyProject(pid));
+	if (keys.length > 0) invalidateCache(keys).catch(() => {});
+});
+
 export class EventListeners {
 	constructor() {
 		console.log("EventListeners");

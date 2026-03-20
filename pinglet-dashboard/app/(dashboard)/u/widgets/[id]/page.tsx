@@ -25,7 +25,7 @@ const page = async ({ params }: any) => {
           </Link>
 
         </div>
-        <WidgetForm data={data.result.data} />
+        <WidgetForm data={data.result.data} widgetId={data.result.widget_id} />
       </div>
     )
   } catch (error) {

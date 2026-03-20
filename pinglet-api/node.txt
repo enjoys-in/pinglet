@@ -1,0 +1,330 @@
+================================================================================
+  PINGLET FLOW NODES — REFERENCE & PAYLOAD SPECIFICATION
+================================================================================
+
+  Total Nodes: 15
+  (* = required field, ? = optional field)
+
+
+────────────────────────────────────────────────────────────────────────────────
+ 1. EVENT TRIGGER
+────────────────────────────────────────────────────────────────────────────────
+  Purpose : Entry point — listens for a specific event to start the flow.
+  Handles : 0 inputs, 1 output
+
+  Payload:
+  {
+    "label"       : string  *   // Display label, e.g. "User Signup"
+    "eventName"   : string  *   // Event key, e.g. "user:signup", "order:placed"
+    "description" : string  ?   // Optional description
+    "payload"     : string  ?   // JSON string of sample payload, e.g.
+                                //   {"userId": "{{userId}}", "email": "{{email}}"}
+  }
+
+  Preset Events:
+    - user:signup, user:login, user:profile_updated
+    - user:cart, order:placed
+    - payment:success, payment:failed
+    - subscription:created, subscription:cancelled
+    - feature:used, feedback:submitted
+    - (custom)
+
+
+────────────────────────────────────────────────────────────────────────────────
+ 2. CONDITION (If/Else)
+────────────────────────────────────────────────────────────────────────────────
+  Purpose : Branch the flow based on a condition evaluation.
+  Handles : 1 input, 2 outputs (true / false)
+
+  Payload:
+  {
+    "label"      : string  *   // e.g. "Amount > 100"
+    "field"      : string  *   // Path to evaluate, e.g. "payload.amount"
+    "operator"   : string  *   // One of: ==, !=, >, <, >=, <=,
+                               //         contains, not_contains, exists, not_exists
+    "value"      : string  *   // Value to compare against, e.g. "100"
+    "trueLabel"  : string  ?   // Label for true branch (default: "Yes")
+    "falseLabel" : string  ?   // Label for false branch (default: "No")
+  }
+
+
+────────────────────────────────────────────────────────────────────────────────
+ 3. DELAY
+────────────────────────────────────────────────────────────────────────────────
+  Purpose : Pause execution for a specified duration before continuing.
+  Handles : 1 input, 1 output
+
+  Payload:
+  {
+    "label"    : string  *   // e.g. "Wait 5 minutes"
+    "duration" : number  *   // Numeric value, e.g. 5
+    "unit"     : string  *   // One of: "seconds", "minutes", "hours", "days"
+  }
+
+
+────────────────────────────────────────────────────────────────────────────────
+ 4. NOTIFICATION (Send Notification)
+────────────────────────────────────────────────────────────────────────────────
+  Purpose : Send a Pinglet notification to the user.
+  Handles : 1 input, 1 output
+
+  Payload:
+  {
+    "label"              : string   *   // e.g. "Welcome Toast"
+    "notificationType"   : string   *   // "0" (Toast), "1" (Custom Template),
+                                        // "2" (Glassmorphism), "-1" (Browser Push)
+    "title"              : string   *   // Notification title
+    "description"        : string   ?   // Message body
+
+    // ── Type 0 (Toast) & Type 2 (Glassmorphism) ──
+    "icon"               : string   ?   // Icon URL
+    "logo"               : string   ?   // Logo URL
+    "url"                : string   ?   // Click-through URL
+    "variant"            : string   ?   // Type 0 only: "default"|"success"|"error"|"warning"|"info"
+
+    // ── Type -1 (Browser Push) ──
+    "pushIcon"           : string   ?   // Push notification icon
+    "pushImage"          : string   ?   // Push notification image
+    "pushUrl"            : string   ?   // Click URL
+    "requireInteraction" : boolean  ?   // Keep notification until user dismisses
+
+    // ── Type 1 (Custom Template) ──
+    "templateId"         : string   ?   // Template identifier
+
+    // ── Buttons (all types) ──
+    "buttons"            : array    ?   // Max 3 for toast/glass, max 2 for push
+      [
+        {
+          "text"   : string  *   // Button label
+          "action" : string  *   // URL or action identifier
+          "event"  : string  ?   // Custom event to fire on click
+        }
+      ]
+  }
+
+
+────────────────────────────────────────────────────────────────────────────────
+ 5. WEBHOOK
+────────────────────────────────────────────────────────────────────────────────
+  Purpose : Make an HTTP request to an external service.
+  Handles : 1 input, 1 output
+
+  Payload:
+  {
+    "label"      : string  *   // e.g. "Call Slack API"
+    "url"        : string  *   // Full URL, e.g. "https://api.example.com/webhook"
+    "method"     : string  *   // "GET", "POST", "PUT", "PATCH", "DELETE"
+    "headers"    : string  ?   // JSON string of headers, e.g.
+                               //   {"Authorization": "Bearer ..."}
+    "body"       : string  ?   // JSON string of request body, e.g.
+                               //   {"key": "{{value}}"}
+    "retryCount" : number  ?   // Number of retries on failure (0-5)
+  }
+
+
+────────────────────────────────────────────────────────────────────────────────
+ 6. A/B SPLIT
+────────────────────────────────────────────────────────────────────────────────
+  Purpose : Split traffic into two paths by percentage for A/B testing.
+  Handles : 1 input, 2 outputs (A / B)
+
+  Payload:
+  {
+    "label"       : string  *   // e.g. "50/50 Split"
+    "splitA"      : number  *   // Percentage for path A (0-100)
+    "splitB"      : number  *   // Percentage for path B (0-100), must = 100 - splitA
+    "splitALabel" : string  ?   // Label for A output (default: "A")
+    "splitBLabel" : string  ?   // Label for B output (default: "B")
+  }
+
+
+────────────────────────────────────────────────────────────────────────────────
+ 7. FILTER / SEGMENT
+────────────────────────────────────────────────────────────────────────────────
+  Purpose : Filter users/events based on field matching.
+  Handles : 1 input, 2 outputs (match / no match)
+
+  Payload:
+  {
+    "label"     : string  *   // e.g. "Premium Users Only"
+    "field"     : string  *   // Field path, e.g. "user.plan"
+    "operator"  : string  *   // ==, !=, >, <, >=, <=, contains, not_contains,
+                               //  exists, not_exists, in, not_in
+    "value"     : string  *   // Value to match, e.g. "premium"
+    "attribute" : string  ?   // User attribute to filter on, e.g. "segment"
+  }
+
+
+────────────────────────────────────────────────────────────────────────────────
+ 8. SCHEDULE
+────────────────────────────────────────────────────────────────────────────────
+  Purpose : Only allow execution during specific days/hours.
+  Handles : 1 input, 1 output
+
+  Payload:
+  {
+    "label"     : string    *   // e.g. "Weekdays 9-17"
+    "days"      : string[]  *   // Active days: ["mon","tue","wed","thu","fri","sat","sun"]
+    "startHour" : number    *   // Start hour (0-23)
+    "endHour"   : number    *   // End hour (0-23)
+    "timezone"  : string    *   // Timezone, e.g. "UTC", "America/New_York"
+  }
+
+
+────────────────────────────────────────────────────────────────────────────────
+ 9. RATE LIMIT
+────────────────────────────────────────────────────────────────────────────────
+  Purpose : Limit how many times a flow action fires within a time window.
+  Handles : 1 input, 1 output
+
+  Payload:
+  {
+    "label"      : string  *   // e.g. "Max 5/hour"
+    "maxCount"   : number  *   // Maximum allowed executions
+    "window"     : number  *   // Time window value
+    "windowUnit" : string  *   // "seconds", "minutes", "hours", "days"
+    "key"        : string  ?   // Grouping key, e.g. "userId" (rate limit per user)
+  }
+
+
+────────────────────────────────────────────────────────────────────────────────
+ 10. PRESENCE CHECK
+────────────────────────────────────────────────────────────────────────────────
+  Purpose : Check if a user is online/offline and route accordingly.
+  Handles : 1 input, 1 output
+
+  Payload:
+  {
+    "label"          : string  *   // e.g. "Is User Online?"
+    "checkType"      : string  *   // "online" or "offline"
+    "fallbackAction" : string  ?   // What to do if condition fails:
+                                   //   "queue" (send later), "skip", "email"
+  }
+
+
+────────────────────────────────────────────────────────────────────────────────
+ 11. TRANSFORM
+────────────────────────────────────────────────────────────────────────────────
+  Purpose : Map/transform payload data before passing to the next node.
+  Handles : 1 input, 1 output
+
+  Payload:
+  {
+    "label"    : string  *   // e.g. "Enrich Data"
+    "mappings" : string  *   // JSON string of key → expression mappings, e.g.
+                             //   {
+                             //     "newField": "payload.oldField",
+                             //     "computed": "payload.price * payload.qty"
+                             //   }
+  }
+
+
+────────────────────────────────────────────────────────────────────────────────
+ 12. EMAIL (Send Email)
+────────────────────────────────────────────────────────────────────────────────
+  Purpose : Send an email to a recipient.
+  Handles : 1 input, 1 output
+
+  Payload:
+  {
+    "label"      : string  *   // e.g. "Send Welcome Email"
+    "to"         : string  *   // Recipient — "{{email}}" or static address
+    "subject"    : string  *   // Email subject line
+    "body"       : string  *   // HTML or plain text body, e.g.
+                               //   "<h1>Hello {{name}}</h1>"
+    "templateId" : string  ?   // Use a predefined email template
+    "replyTo"    : string  ?   // Reply-to address
+  }
+
+
+────────────────────────────────────────────────────────────────────────────────
+ 13. MERGE
+────────────────────────────────────────────────────────────────────────────────
+  Purpose : Combine multiple flow paths back into one.
+  Handles : Multiple inputs, 1 output
+
+  Payload:
+  {
+    "label"     : string  *   // e.g. "Wait for All"
+    "mergeMode" : string  *   // "all" — wait for ALL inputs to arrive
+                               // "any" — continue as soon as ANY input arrives
+  }
+
+
+────────────────────────────────────────────────────────────────────────────────
+ 14. DIVERGE / FORK
+────────────────────────────────────────────────────────────────────────────────
+  Purpose : Split flow into multiple parallel paths.
+  Handles : 1 input, 2-5 outputs
+
+  Payload:
+  {
+    "label"        : string    *   // e.g. "Fan Out"
+    "outputCount"  : number    *   // Number of parallel outputs (2-5)
+    "outputLabels" : string[]  ?   // Labels for each output, e.g.
+                                   //   ["Email Path", "Push Path", "Webhook Path"]
+  }
+
+
+────────────────────────────────────────────────────────────────────────────────
+ 15. NOTE
+────────────────────────────────────────────────────────────────────────────────
+  Purpose : Annotation/documentation on the canvas — no connections.
+  Handles : 0 inputs, 0 outputs (decorative only)
+
+  Payload:
+  {
+    "label"   : string  *   // Note title
+    "content" : string  *   // Note body text
+    "color"   : string  ?   // Background color hint
+  }
+
+
+================================================================================
+  FLOW STRUCTURE (Top-Level)
+================================================================================
+
+  {
+    "id"          : string   *   // Unique flow ID
+    "name"        : string   *   // Flow name
+    "description" : string   ?   // Flow description
+    "projectId"   : string   *   // Project unique_id
+    "status"      : string   *   // "draft", "active", "paused"
+    "createdAt"   : string   *   // ISO 8601 timestamp
+    "updatedAt"   : string   *   // ISO 8601 timestamp
+    "nodes"       : array    *   // Array of node objects:
+      [
+        {
+          "id"       : string  *   // Node ID
+          "type"     : string  *   // One of the 15 node types above
+          "data"     : object  *   // Node-specific payload (see above)
+          "position" : object  *   // { "x": number, "y": number }
+        }
+      ]
+    "edges"       : array    *   // Array of edge connections:
+      [
+        {
+          "id"           : string  *   // Edge ID
+          "source"       : string  *   // Source node ID
+          "target"       : string  *   // Target node ID
+          "sourceHandle" : string  ?   // Handle name (for branching nodes)
+          "label"        : string  ?   // Edge label
+        }
+      ]
+  }
+
+
+================================================================================
+  API ENDPOINTS
+================================================================================
+
+  GET    /api/v1/flows              — List all flows
+  GET    /api/v1/flows/stats        — Dashboard stats
+  GET    /api/v1/flows/:id          — Get single flow
+  POST   /api/v1/flows              — Create flow
+  PUT    /api/v1/flows/:id          — Update flow
+  DELETE /api/v1/flows/:id          — Delete flow
+  PATCH  /api/v1/flows/:id/status   — Toggle status (body: { "status": "active"|"paused" })
+  GET    /api/v1/flows/:id/logs     — Execution logs
+
+================================================================================

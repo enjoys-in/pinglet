@@ -78,6 +78,10 @@ export default function CreateProjectPage() {
                 throw new Error(data.message)
             }
 
+            if (data.result) {
+                db.putItem("projects", data.result as any)
+            }
+
             toast({
                 title: "Project created successfully!",
                 description: "Your project has been created and is ready to use.",
@@ -94,10 +98,18 @@ export default function CreateProjectPage() {
     const selectedGroupData = templateGroup.find((g) => String(g.id) === selectedGroup)
 
     const loadConfig = useCallback(() => {
-        db.getAllItems("websites").then((response) => {
+        db.getAllItems("websites").then(async (response) => {
             if (response.length > 0) {
                 setWebsites(response as AllWebsitesResponse[])
+                return
             }
+            try {
+                const { data } = await API.getWebsites()
+                if (data.success) {
+                    setWebsites(data.result)
+                    db.bulkPutItems("websites", data.result as any)
+                }
+            } catch {}
         })
 
         db.getAllItems("template_categories").then(async (r) => {

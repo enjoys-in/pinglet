@@ -4,19 +4,38 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, } from '@/components/ui/card';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
-import { Upload, Link, Image, Video, X } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+import { Upload, Link, Image, Video, X, Settings2 } from 'lucide-react';
 import WidgetPreview from './Widget';
 import StyleEditorForm from './styleEditor';
 import { API } from '@/lib/api/handler';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import { db } from '@/lib/db';
+import { defaultWidgetConfig } from '@/lib/interfaces/widget.interface';
+
+const configSchema = z.object({
+    position: z.enum(['bottom-right', 'bottom-left', 'top-right', 'top-left', 'center']),
+    autoDismiss: z.boolean(),
+    autoDismissSeconds: z.number().min(1).max(120),
+    autoShow: z.boolean(),
+    autoShowDelaySeconds: z.number().min(0).max(120),
+    showCloseButton: z.boolean(),
+    backdrop: z.boolean(),
+    sound: z.boolean(),
+    animation: z.enum(['slide', 'fade', 'bounce', 'none']),
+    maxWidth: z.number().min(200).max(600),
+    zIndex: z.number().min(1).max(999999),
+});
 
 const formSchema = z.object({
     text: z.string().min(1, 'Title is required').max(100, 'Title must be less than 100 characters'),
@@ -30,6 +49,7 @@ const formSchema = z.object({
     imageFile: z.any().optional(),
     imageUrl: z.string().url('Please enter a valid image URL').optional().or(z.literal('')),
     videoUrl: z.string().url('Please enter a valid video URL').optional().or(z.literal('')),
+    config: configSchema,
 }).refine((data) => {
     if (data.mediaType === 'image') {
         if (data.imageSource === 'upload') {
@@ -49,10 +69,11 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
-export function WidgetForm({ data }: { data?: FormData }) {
+export function WidgetForm({ data, widgetId }: { data?: FormData; widgetId?: string }) {
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [dragActive, setDragActive] = useState(false);
     const router = useRouter()
+    const isEditing = !!widgetId
     const form = useForm<FormData>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -64,6 +85,7 @@ export function WidgetForm({ data }: { data?: FormData }) {
             imageSource: 'upload',
             imageUrl: '',
             videoUrl: '',
+            config: { ...defaultWidgetConfig },
         },
     });
 
@@ -136,11 +158,25 @@ export function WidgetForm({ data }: { data?: FormData }) {
                 }
             }
 
-            const { data } = await API.createWidget(input)
-            if (!data.success) {
-                throw new Error(data.message || 'Failed to create widget');
+            if (isEditing) {
+                const { data } = await API.updateWidget(widgetId!, input)
+                if (!data.success) {
+                    throw new Error(data.message || 'Failed to update widget');
+                }
+                if (data.result) {
+                    db.putItem('widgets', data.result as any)
+                }
+                toast.success('Widget updated successfully!');
+            } else {
+                const { data } = await API.createWidget(input)
+                if (!data.success) {
+                    throw new Error(data.message || 'Failed to create widget');
+                }
+                if (data.result) {
+                    db.putItem('widgets', data.result as any)
+                }
+                toast.success('Widget created successfully!');
             }
-            toast.success('Widget created successfully!');
 
             form.reset();
             setImagePreview(null);
@@ -154,8 +190,8 @@ export function WidgetForm({ data }: { data?: FormData }) {
     };
 
     return (
-        <div className="flex lg:flex-row gap-4 py-8 px-4 sm:flex-col ">
-            <div className="w-1/2 border-zinc-800/30">
+        <div className="flex flex-col lg:flex-row gap-6 py-6">
+            <div className="w-full lg:w-1/2">
                 <Card className="shadow-xl backdrop-blur-sm">
                     <CardContent>
                         <Form {...form}>
@@ -166,7 +202,7 @@ export function WidgetForm({ data }: { data?: FormData }) {
                                     name="text"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="text-slate-200 font-medium">Title</FormLabel>
+                                            <FormLabel className="font-medium">Title</FormLabel>
                                             <FormControl>
                                                 <Input
                                                     placeholder="Enter your content title..."
@@ -185,7 +221,7 @@ export function WidgetForm({ data }: { data?: FormData }) {
                                     name="description"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="text-slate-200 font-medium">Description  (Optional)</FormLabel>
+                                            <FormLabel className="font-medium">Description (Optional)</FormLabel>
                                             <FormControl>
                                                 <Textarea
                                                     placeholder="Describe your content in detail..."
@@ -204,7 +240,7 @@ export function WidgetForm({ data }: { data?: FormData }) {
                                         name="buttonText"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="text-slate-200 font-medium flex items-center gap-2">
+                                                <FormLabel className="font-medium flex items-center gap-2">
 
                                                     Button Text
                                                 </FormLabel>
@@ -224,7 +260,7 @@ export function WidgetForm({ data }: { data?: FormData }) {
                                         name="link"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="text-slate-200 font-medium flex items-center gap-2">
+                                                <FormLabel className="font-medium flex items-center gap-2">
                                                     <Link className="w-4 h-4" />
                                                     Link
                                                 </FormLabel>
@@ -248,7 +284,7 @@ export function WidgetForm({ data }: { data?: FormData }) {
                                     name="mediaType"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="text-slate-200 font-medium">Media Type</FormLabel>
+                                            <FormLabel className="font-medium">Media Type</FormLabel>
                                             <FormControl>
                                                 <RadioGroup
                                                     onValueChange={field.onChange}
@@ -284,7 +320,7 @@ export function WidgetForm({ data }: { data?: FormData }) {
                                             name="imageSource"
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel className="text-slate-200 font-medium">Image Source</FormLabel>
+                                                    <FormLabel className="font-medium">Image Source</FormLabel>
                                                     <FormControl>
                                                         <Tabs
                                                             value={field.value}
@@ -299,7 +335,7 @@ export function WidgetForm({ data }: { data?: FormData }) {
 
                                                                 {imagePreview ? (
                                                                     <div className="relative">
-                                                                        <Label className="text-slate-200 font-medium mb-2 block">Image Preview</Label>
+                                                                        <Label className="font-medium mb-2 block">Image Preview</Label>
                                                                         <div className="relative rounded-lg overflow-hidden border border-slate-200">
                                                                             <img
                                                                                 src={imagePreview}
@@ -410,16 +446,16 @@ export function WidgetForm({ data }: { data?: FormData }) {
                                     type="submit"
                                     className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium py-3 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
                                 >
-                                    Create Widget
+                                    {isEditing ? 'Update Widget' : 'Create Widget'}
                                 </Button>
                             </form>
                         </Form>
                     </CardContent>
                 </Card>
             </div>
-            <div className="w-1/2 border-zinc-800/30 ">
-                <div className=" first-letter:">
-                    <Label className="text-slate-200 font-medium mb-2 block">Style Editor</Label>
+            <div className="w-full lg:w-1/2">
+                <div>
+                    <Label className="text-sm font-medium mb-2 block">Widget Preview</Label>
                     {/* <StyleEditorForm  /> */}
                     <WidgetPreview
                         text={form.getValues('text')}

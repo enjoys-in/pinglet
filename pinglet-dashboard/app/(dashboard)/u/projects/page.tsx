@@ -19,7 +19,7 @@ import {
   Edit,
   Trash2,
   BarChart3,
-
+  RefreshCcw,
 } from "lucide-react"
 import Link from "next/link"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -27,7 +27,20 @@ import { db } from "@/lib/db"
 import { API } from "@/lib/api/handler"
 import { AllProjectsResponse } from "@/lib/interfaces/project.interface"
 import { __config } from "@/constants/config"
-import axios from "axios"
+import axios, { isCancel } from "axios"
+import { useLoadingStore } from "@/store/loading.store"
+import { signal } from "@/lib/requestController"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { useToast } from "@/hooks/use-toast"
 
 
 const getStatusBadge = (status: string) => {
@@ -47,6 +60,9 @@ export default function ProjectsPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [categoryFilter, setCategoryFilter] = useState("all")
   const [templateCategories, setTemplateCategories] = useState<{ name: string; slug: string }[]>([])
+  const [deleteProjectId, setDeleteProjectId] = useState<number | null>(null)
+  const { startLoading, stopLoading, isLoading } = useLoadingStore()
+  const { toast } = useToast()
 
   const URL = __config.APP.BASE_URL
   const [projects, setProjects] = useState<AllProjectsResponse[]>([])
@@ -63,7 +79,7 @@ export default function ProjectsPage() {
   }, [projects, searchQuery, categoryFilter])
 
 
-  const fetchAllProjects = async () => {
+  const refreshProjects = async () => {
     try {
       const { data } = await API.getAllProjects()
       if (!data.success) {
@@ -73,12 +89,52 @@ export default function ProjectsPage() {
       setProjects(data.result)
     } catch (error) { }
   }
+  const fetchAllProjects = async () => {
+    const cached = await db.getAllItems("projects")
+    if (cached.length > 0) {
+      setProjects(cached as AllProjectsResponse[])
+      return
+    }
+    refreshProjects()
+  }
   const fetchTemplateCategories = async () => {
     try {
       const categories = await db.getAllItems("template_categories")
       setTemplateCategories(categories)
     } catch (error) {
       console.error("Failed to fetch categories", error)
+    }
+  }
+
+  const handleDeleteProject = async (id: number) => {
+    try {
+      startLoading()
+      const { data } = await API.deleteProject(id)
+      if (!data.success) {
+        throw new Error(data.message)
+      }
+      setProjects((prev) => prev.filter((p) => p.id !== id))
+      setDeleteProjectId(null)
+      db.deleteItem("projects", id)
+      toast({
+        title: "Project deleted",
+        description: "Project has been deleted successfully.",
+      })
+    } catch (error: any) {
+      if (isCancel(error)) {
+        return toast({
+          title: "Request cancelled",
+          description: "Request cancelled. Please try again.",
+          variant: "destructive",
+        })
+      }
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      })
+    } finally {
+      stopLoading()
     }
   }
 
@@ -185,6 +241,9 @@ export default function ProjectsPage() {
               <Plus className="mr-2 h-4 w-4" />
               New Project
             </Link>
+          </Button>
+          <Button variant="outline" size="icon" className="cursor-pointer" onClick={refreshProjects} disabled={isLoading}>
+            <RefreshCcw className="h-4 w-4" />
           </Button>
         </div>
       </div>
@@ -352,7 +411,7 @@ export default function ProjectsPage() {
                           <Bell className="mr-2 h-4 w-4" />
                           Send Browser Notification
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">
+                        <DropdownMenuItem className="text-destructive" onClick={() => setDeleteProjectId(project.id)}>
                           <Trash2 className="mr-2 h-4 w-4" />
                           Delete
                         </DropdownMenuItem>
@@ -366,6 +425,31 @@ export default function ProjectsPage() {
           </div>
         </CardContent>
       </Card>
+
+      <AlertDialog open={deleteProjectId !== null}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Project</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the project and all associated data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => {
+              setDeleteProjectId(null)
+              signal("/api/v1/projects", "DELETE")
+            }}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteProjectId && handleDeleteProject(deleteProjectId)}
+              className="bg-red-600 hover:bg-red-700 cursor-pointer"
+              autoFocus
+              disabled={deleteProjectId === null || isLoading}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

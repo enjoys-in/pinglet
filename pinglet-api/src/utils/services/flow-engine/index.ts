@@ -10,6 +10,8 @@ import type { Repository } from "typeorm";
 import { NODE_EXECUTORS, type ExecutionContext, type NodeResult } from "./node-executors";
 import { QueueService } from "@/utils/services/queue";
 import { QUEUE_JOBS, QUEUE_NAME } from "@/utils/services/queue/name";
+import { cached } from "@/utils/helpers/cache";
+import { CacheKeys, CacheTTL } from "@/utils/types/cache";
 
 const flowRepo: Repository<FlowEntity> = InjectRepository(FlowEntity);
 const execRepo: Repository<FlowExecutionEntity> = InjectRepository(FlowExecutionEntity);
@@ -25,14 +27,18 @@ interface ExecuteFlowJobData {
 	triggerPayload: Record<string, any>;
 }
 
-// ─── Find active flows matching a trigger event for a project ────
+// ─── Find active flows matching a trigger event for a project (cached 5 min) ──
 export async function findMatchingFlows(
 	projectId: string,
 	triggerEvent: string,
 ): Promise<FlowEntity[]> {
-	const flows = await flowRepo.find({
-		where: { project_id: projectId, status: FlowStatus.ACTIVE },
-	});
+	const flows = await cached(
+		CacheKeys.projectActiveFlows(projectId),
+		CacheTTL.LONG,
+		() => flowRepo.find({
+			where: { project_id: projectId, status: FlowStatus.ACTIVE },
+		}),
+	);
 
 	return flows.filter((flow) => {
 		if (!Array.isArray(flow.nodes)) return false;
