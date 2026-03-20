@@ -41,8 +41,8 @@ function highlightJson(json: string): string {
 
 function validateJson(str: string): { valid: boolean; error?: string } {
   if (!str.trim()) return { valid: true }
-  // Replace template placeholders like {{var}} with valid JSON strings before parsing
-  const sanitized = str.replace(/\{\{[^}]*\}\}/g, '"__tpl__"')
+  // Replace template placeholders like {{var}} or "{{var}}" with valid JSON strings before parsing
+  const sanitized = str.replace(/"\{\{[^}]*\}\}"|\{\{[^}]*\}\}/g, '"__tpl__"')
   try {
     JSON.parse(sanitized)
     return { valid: true }
@@ -107,7 +107,7 @@ export default function JsonEditor({ value, onChange, placeholder, className, he
   const displayValue = isEditing ? editValue : value
 
   return (
-    <div className={cn("relative group rounded-lg border bg-zinc-950/80 overflow-hidden max-w-full", error ? "border-red-500/50" : "border-border/50", className)}>
+    <div className={cn("relative group rounded-lg border bg-zinc-950/80 overflow-hidden w-full min-w-0", error ? "border-red-500/50" : "border-border/50", className)}>
       {/* Toolbar */}
       <div className="flex items-center justify-between px-2 py-1 bg-zinc-900/60 border-b border-border/30">
         <span className="text-[10px] font-mono text-muted-foreground/60 uppercase tracking-wider">json</span>

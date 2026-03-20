@@ -44,7 +44,7 @@ export class Cors {
 		return {
 			origin: "*",
 			optionsSuccessStatus: 200,
-			methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+			methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
 			allowedHeaders: ALL_ALLOWED_HEADERS,
 			credentials: false,
 		};
@@ -63,7 +63,7 @@ export class Cors {
 			},
 			credentials: true,
 			optionsSuccessStatus: 200,
-			methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+			methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
 			allowedHeaders: ALL_ALLOWED_HEADERS,
 		};
 	}
