@@ -28,7 +28,7 @@ import { templateService } from "../services/template.service";
 import { WidgetService } from "../services/widget.service";
 import { cached } from "@/utils/helpers/cache";
 import { CacheKeys, CacheTTL } from "@/utils/types/cache";
-import { NotificationLifecycleEvent } from "@/utils/services/kafka/topics";
+import { NotificationLifecycleEvent, ALLOWED_NOTIFICATION_EVENTS } from "@/utils/services/kafka/topics";
 
 const clients = new Map<string, Set<Response>>();
 
@@ -40,13 +40,37 @@ let base64Mp3: string | null = null;
 class PushNtfyController {
 	logEvent = async (req: Request, res: Response) => {
 		const body = req.body;
-		AppEvents.emit("notificationLifecycle", {
-			event: body?.event,
-			projectId: body?.project_id,
-			type: body?.type,
-			notificationId: body?.notification_id,
-			data: body,
-		});
+		const event = body?.event;
+
+		if (event && ALLOWED_NOTIFICATION_EVENTS.includes(event)) {
+			// Notification lifecycle event (clicked, closed, dismissed, etc.)
+			// → Kafka analytics + webhook dispatch + flow execution
+			AppEvents.emit("notificationLifecycle", {
+				event,
+				projectId: body?.project_id,
+				type: body?.type,
+				notificationId: body?.notification_id,
+				data: body,
+			});
+		} else {
+			// Activity / interaction event (click, scroll, pageview, etc.)
+			// → Store as visitor activity tracking
+			AppEvents.emit("trackActivity", {
+				project_id: body?.project_id,
+				event_type: body?.eventType || event || "custom",
+				page_url: body?.page?.url,
+				page_title: body?.page?.title,
+				referrer: body?.page?.referrer,
+				visitor_id: body?.anonId || body?.fingerprint,
+				metadata: {
+					element: body?.element,
+					browser: body?.browser,
+					utm: body?.utm,
+					timestamp: body?.timestamp,
+				},
+			});
+		}
+
 		res.end("OK");
 	};
 	loadConfig = async (req: Request, res: Response) => {

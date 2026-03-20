@@ -5,6 +5,7 @@ import {
 import { projectService } from "@/handlers/services/project.service";
 import { webhookService } from "@/handlers/services/webhook.service";
 import { notificationInboxService } from "@/handlers/services/notification-inbox.service";
+import { visitorActivityService } from "@/handlers/services/visitor-activity.service";
 import { OnEvent } from "@/utils/decorators";
 import { invalidateCache } from "@/utils/helpers/cache";
 import { CacheInvalidation } from "@/utils/types/cache";
@@ -59,6 +60,27 @@ AppEvents.on("storeInbox", (payload: {
 	data: Record<string, any>;
 }) => {
 	notificationInboxService.addToInbox(payload).catch(() => {});
+});
+
+// ─── Fire-and-forget activity tracking ───
+AppEvents.on("trackActivity", (payload: {
+	project_id: string;
+	event_type: string;
+	page_url?: string;
+	page_title?: string;
+	referrer?: string;
+	visitor_id?: string;
+	metadata?: Record<string, any>;
+}) => {
+	visitorActivityService.trackEvent({
+		project_id: payload.project_id,
+		visitor_id: payload.visitor_id || "anonymous",
+		event_type: payload.event_type,
+		page_url: payload.page_url,
+		page_title: payload.page_title,
+		referrer: payload.referrer,
+		metadata: payload.metadata,
+	}).catch(() => {});
 });
 
 // ─── Unified notification lifecycle handler ───
