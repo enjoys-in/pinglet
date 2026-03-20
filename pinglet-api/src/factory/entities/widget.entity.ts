@@ -12,7 +12,7 @@ import {
 import { UserEntity } from "./users.entity";
 
 import helpers from "@/utils/helpers";
-import type { WidgetProps } from "@/utils/interfaces/widgets.interface";
+import type { WidgetConfig, WidgetProps } from "@/utils/interfaces/widgets.interface";
 
 @Entity("widgets")
 export class WidgetEntity {
@@ -26,7 +26,10 @@ export class WidgetEntity {
 	data!: WidgetProps;
 
 	@Column("jsonb", { default: {}, nullable: true })
-	style_props!: Record<string, any>;
+	style_props!: WidgetConfig
+
+	@Column("jsonb", { default: {}, nullable: true })
+	config!:WidgetConfig;
 
 	@Column({ default: true })
 	is_active!: boolean;

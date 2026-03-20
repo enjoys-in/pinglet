@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { API } from "@/lib/api/handler"
 import { toast } from "sonner"
 import { db } from "@/lib/db"
+import { defaultWidgetConfig } from "@/lib/interfaces/widget.interface"
 
 interface PrebuiltWidget {
   id: string
@@ -208,6 +209,7 @@ export default function PrebuiltWidgetsPage() {
         mediaType: "image" as const,
         imageSource: "url" as const,
         imageUrl: widget.preview.imageUrl,
+        config: { ...defaultWidgetConfig },
       }
       const { data } = await API.createWidget(payload)
       if (!data.success) {

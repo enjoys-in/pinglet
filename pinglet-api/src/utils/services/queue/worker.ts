@@ -13,6 +13,8 @@ import { WebhookEvent, WebhookType } from "@/factory/entities/webhook.entity";
 import { webhookService } from "@/handlers/services/webhook.service";
 import { KafkaNotificationLogger } from "../kafka/notificationLogger";
 import { KafkaNotificationProducer } from "../kafka/producer";
+import { AppEvents } from "@/utils/services/Events";
+import { NotificationLifecycleEvent } from "@/utils/services/kafka/topics";
 import { executeFlow } from "../flow-engine";
 const kafkaProducer = new KafkaNotificationProducer([
 	`${__CONFIG__.KAFKA.KAFKA_HOST}:${__CONFIG__.KAFKA.KAFKA_PORT}`,
@@ -207,14 +209,12 @@ export class ListenWorkers extends QueueService {
 	private static workerEventListener(worker: Worker) {
 		worker.on("completed", async (job) => {
 			const p = JSON.parse(job.data);
-
-			await logger.log({
-				event: "sent",
-				timestamp: Date.now(),
-				type: p.type,
+			AppEvents.emit("notificationLifecycle", {
+				event: NotificationLifecycleEvent.SENT,
 				projectId: p?.projectId,
+				type: p.type || "-1",
 				notificationId: job.id!,
-				metadata: job.data,
+				data: p,
 			});
 		});
 		worker.on("error", async (error: Error) => {
@@ -223,27 +223,13 @@ export class ListenWorkers extends QueueService {
 		worker.on("failed", async (job, err) => {
 			console.log(`${job} has failed with ${err.message}`);
 			const p = JSON.parse(job?.data);
-			const timestamp = Date.now();
-			await logger.log({
-				event: "failed",
-				timestamp,
+			AppEvents.emit("notificationLifecycle", {
+				event: NotificationLifecycleEvent.FAILED,
+				projectId: p?.projectId,
 				type: p.type || "-1",
-				projectId: p.projectId,
 				notificationId: job?.id!,
-				metadata: job?.data,
+				data: p,
 			});
-			ListenWorkers.addJob(
-				"TRIGGER_WEBHOOK",
-				"TRIGGER_WEBHOOK",
-				JSON.stringify({
-					webhookType: WebhookType.API,
-					event: WebhookEvent.NOTIFICATION_FAILED,
-					projectId: p.projectId,
-					notificationType: p.type || "-1",
-					notificationData: job?.data,
-					timestamp,
-				}),
-			);
 		});
 	}
 	private static ProcessTriggerWebhook() {

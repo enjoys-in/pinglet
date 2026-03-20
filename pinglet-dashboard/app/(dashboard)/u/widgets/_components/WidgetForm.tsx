@@ -92,6 +92,8 @@ export function WidgetForm({ data, widgetId }: { data?: FormData; widgetId?: str
     const watchMediaType = form.watch('mediaType');
     const watchImageSource = form.watch('imageSource');
     const watchImageUrl = form.watch('imageUrl');
+    const watchAutoDismiss = form.watch('config.autoDismiss');
+    const watchAutoShow = form.watch('config.autoShow');
 
     const handleImageUpload = (file: File) => {
         if (file && file.type.startsWith('image/')) {
@@ -440,6 +442,212 @@ export function WidgetForm({ data, widgetId }: { data?: FormData; widgetId?: str
                                         )}
                                     />
                                 )}
+
+                                {/* Widget Configuration */}
+                                <Separator />
+                                <div className="space-y-4">
+                                    <div className="flex items-center gap-2">
+                                        <Settings2 className="w-4 h-4" />
+                                        <h3 className="font-semibold text-sm">Widget Configuration</h3>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        {/* Position */}
+                                        <FormField
+                                            control={form.control}
+                                            name="config.position"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="font-medium text-xs">Position</FormLabel>
+                                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                        <FormControl>
+                                                            <SelectTrigger>
+                                                                <SelectValue />
+                                                            </SelectTrigger>
+                                                        </FormControl>
+                                                        <SelectContent>
+                                                            <SelectItem value="bottom-right">Bottom Right</SelectItem>
+                                                            <SelectItem value="bottom-left">Bottom Left</SelectItem>
+                                                            <SelectItem value="top-right">Top Right</SelectItem>
+                                                            <SelectItem value="top-left">Top Left</SelectItem>
+                                                            <SelectItem value="center">Center</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                </FormItem>
+                                            )}
+                                        />
+
+                                        {/* Animation */}
+                                        <FormField
+                                            control={form.control}
+                                            name="config.animation"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="font-medium text-xs">Animation</FormLabel>
+                                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                        <FormControl>
+                                                            <SelectTrigger>
+                                                                <SelectValue />
+                                                            </SelectTrigger>
+                                                        </FormControl>
+                                                        <SelectContent>
+                                                            <SelectItem value="slide">Slide</SelectItem>
+                                                            <SelectItem value="fade">Fade</SelectItem>
+                                                            <SelectItem value="bounce">Bounce</SelectItem>
+                                                            <SelectItem value="none">None</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        {/* Max Width */}
+                                        <FormField
+                                            control={form.control}
+                                            name="config.maxWidth"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="font-medium text-xs">Max Width (px)</FormLabel>
+                                                    <FormControl>
+                                                        <Input type="number" min={200} max={600} {...field} onChange={(e) => field.onChange(+e.target.value)} />
+                                                    </FormControl>
+                                                </FormItem>
+                                            )}
+                                        />
+
+                                        {/* Z-Index */}
+                                        <FormField
+                                            control={form.control}
+                                            name="config.zIndex"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="font-medium text-xs">Z-Index</FormLabel>
+                                                    <FormControl>
+                                                        <Input type="number" min={1} max={999999} {...field} onChange={(e) => field.onChange(+e.target.value)} />
+                                                    </FormControl>
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </div>
+
+                                    {/* Auto Dismiss */}
+                                    <div className="rounded-lg border p-3 space-y-3">
+                                        <FormField
+                                            control={form.control}
+                                            name="config.autoDismiss"
+                                            render={({ field }) => (
+                                                <FormItem className="flex items-center justify-between">
+                                                    <div>
+                                                        <FormLabel className="font-medium text-xs">Auto Dismiss</FormLabel>
+                                                        <FormDescription className="text-xs">Automatically close the widget after a delay</FormDescription>
+                                                    </div>
+                                                    <FormControl>
+                                                        <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                                    </FormControl>
+                                                </FormItem>
+                                            )}
+                                        />
+                                        {watchAutoDismiss && (
+                                            <FormField
+                                                control={form.control}
+                                                name="config.autoDismissSeconds"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel className="font-medium text-xs">Dismiss After (seconds)</FormLabel>
+                                                        <FormControl>
+                                                            <Input type="number" min={1} max={120} {...field} onChange={(e) => field.onChange(+e.target.value)} />
+                                                        </FormControl>
+                                                    </FormItem>
+                                                )}
+                                            />
+                                        )}
+                                    </div>
+
+                                    {/* Auto Show */}
+                                    <div className="rounded-lg border p-3 space-y-3">
+                                        <FormField
+                                            control={form.control}
+                                            name="config.autoShow"
+                                            render={({ field }) => (
+                                                <FormItem className="flex items-center justify-between">
+                                                    <div>
+                                                        <FormLabel className="font-medium text-xs">Auto Show</FormLabel>
+                                                        <FormDescription className="text-xs">Automatically show the widget after page load</FormDescription>
+                                                    </div>
+                                                    <FormControl>
+                                                        <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                                    </FormControl>
+                                                </FormItem>
+                                            )}
+                                        />
+                                        {watchAutoShow && (
+                                            <FormField
+                                                control={form.control}
+                                                name="config.autoShowDelaySeconds"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel className="font-medium text-xs">Show After Delay (seconds)</FormLabel>
+                                                        <FormControl>
+                                                            <Input type="number" min={0} max={120} placeholder="0 = immediately" {...field} onChange={(e) => field.onChange(+e.target.value)} />
+                                                        </FormControl>
+                                                        <FormDescription className="text-xs">0 means show immediately on load</FormDescription>
+                                                    </FormItem>
+                                                )}
+                                            />
+                                        )}
+                                    </div>
+
+                                    {/* Toggle Options */}
+                                    <div className="grid grid-cols-1 gap-3">
+                                        <FormField
+                                            control={form.control}
+                                            name="config.showCloseButton"
+                                            render={({ field }) => (
+                                                <FormItem className="flex items-center justify-between rounded-lg border p-3">
+                                                    <div>
+                                                        <FormLabel className="font-medium text-xs">Show Close Button</FormLabel>
+                                                        <FormDescription className="text-xs">Display × button on the widget</FormDescription>
+                                                    </div>
+                                                    <FormControl>
+                                                        <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                                    </FormControl>
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <FormField
+                                            control={form.control}
+                                            name="config.backdrop"
+                                            render={({ field }) => (
+                                                <FormItem className="flex items-center justify-between rounded-lg border p-3">
+                                                    <div>
+                                                        <FormLabel className="font-medium text-xs">Backdrop Overlay</FormLabel>
+                                                        <FormDescription className="text-xs">Dim background when widget is shown</FormDescription>
+                                                    </div>
+                                                    <FormControl>
+                                                        <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                                    </FormControl>
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <FormField
+                                            control={form.control}
+                                            name="config.sound"
+                                            render={({ field }) => (
+                                                <FormItem className="flex items-center justify-between rounded-lg border p-3">
+                                                    <div>
+                                                        <FormLabel className="font-medium text-xs">Play Sound</FormLabel>
+                                                        <FormDescription className="text-xs">Play a notification sound when shown</FormDescription>
+                                                    </div>
+                                                    <FormControl>
+                                                        <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                                    </FormControl>
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </div>
+                                </div>
 
                                 {/* Submit Button */}
                                 <Button

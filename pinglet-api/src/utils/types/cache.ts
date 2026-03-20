@@ -68,6 +68,7 @@ export const CacheKeys = {
 	// ---- Hot-path (triggerNotification) ----
 	ntfyProject: (projectId: string) => `ntfy:project:${projectId}`,
 	projectActiveFlows: (projectId: string) => `project:${projectId}:active-flows`,
+	userPlanType: (userId: number) => `user:${userId}:plan-type`,
 } as const;
 
 // --- Invalidation groups (for busting related caches on writes) ---
@@ -106,6 +107,7 @@ export const CacheInvalidation = {
 	/** Call after plan change */
 	plan: (userId: number) => [
 		CacheKeys.userPlanSummary(userId),
+		CacheKeys.userPlanType(userId),
 	],
 	/** Call after flow create/update/delete */
 	flow: (userId: number, flowId?: string) => {

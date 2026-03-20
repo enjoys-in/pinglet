@@ -16,7 +16,6 @@ import { livePresenceService } from "@/handlers/services/live-presence.service";
 import { unsubscribeAnalyticsService } from "@/handlers/services/unsubscribe-analytics.service";
 import { AppEvents } from "@/utils/services/Events";
 import { QueueService } from "@/utils/services/queue";
-import { QUEUE_JOBS } from "@/utils/services/queue/name";
 import { Cache } from "@/utils/services/redis/cacheService";
 import {
 	type NotificationBody,
@@ -30,11 +29,11 @@ import { WidgetService } from "../services/widget.service";
 import { dispatchFlows } from "@/utils/services/flow-engine";
 import { cached } from "@/utils/helpers/cache";
 import { CacheKeys, CacheTTL } from "@/utils/types/cache";
+import { NotificationLifecycleEvent } from "@/utils/services/kafka/topics";
 
 const clients = new Map<string, Set<Response>>();
 
 const sendPushQueue = QueueService.createQueue("SEND_BROWSER_NOTIFICATION");
-const sendToKafkaQueue = QueueService.createQueue("SEND_KAFKA_NOTIFICATION");
 
 new KafkaAnalyticsConsumer().start();
 let base64Mp3: string | null = null;
@@ -42,21 +41,13 @@ let base64Mp3: string | null = null;
 class PushNtfyController {
 	logEvent = async (req: Request, res: Response) => {
 		const body = req.body;
-		sendToKafkaQueue.add(QUEUE_JOBS.SEND_KAFKA_NOTIFICATION, body, {
-			removeOnComplete: true,
-			jobId: `${body.project_id}-${body.timestamp}-${body.event}`,
+		AppEvents.emit("notificationLifecycle", {
+			event: body?.event,
+			projectId: body?.project_id,
+			type: body?.type,
+			notificationId: body?.notification_id,
+			data: body,
 		});
-		AppEvents.emit(
-			"triggerWebhook",
-			JSON.stringify({
-				webhookType: WebhookType.API,
-				event: body?.event,
-				projectId: body?.project_id,
-				notificationType: body?.type,
-				notificationData: body,
-				timestamp: body?.timestamp,
-			}),
-		);
 		res.end();
 	};
 	loadConfig = async (req: Request, res: Response) => {
@@ -468,15 +459,13 @@ class PushNtfyController {
 				}
 			}
 
-			// Log "request" event — the pipeline is wired but nobody was producing it
-			sendToKafkaQueue.add(QUEUE_JOBS.SEND_KAFKA_NOTIFICATION, {
-				project_id: projectId,
-				timestamp: Date.now(),
+			// Log "request" event — fire-and-forget (Kafka + webhooks handled by event-listener)
+			AppEvents.emit("notificationLifecycle", {
+				event: NotificationLifecycleEvent.REQUEST,
+				projectId,
+				userId: project?.user?.id,
 				type: rest.type || "0",
-				event: "request",
-			}, {
-				removeOnComplete: true,
-				jobId: `${projectId}-${Date.now()}-request`,
+				data: rest,
 			});
 
 			// Fire-and-forget: dispatch matching active flows (runs in worker, never blocks)
@@ -502,18 +491,13 @@ class PushNtfyController {
 						success: true,
 					})
 					.end();
-				AppEvents.emit(
-					"triggerWebhook",
-					JSON.stringify({
-						webhookType: WebhookType.API,
-						event: WebhookEvent.NOTIFICATION_SENT,
-						projectId: projectId,
-						userId: project?.user?.id,
-						notificationType: rest.type,
-						notificationData: rest,
-						timestamp: Date.now(),
-					}),
-				);
+				AppEvents.emit("notificationLifecycle", {
+					event: NotificationLifecycleEvent.QUEUED,
+					projectId,
+					userId: project?.user?.id,
+					type: rest.type,
+					data: rest,
+				});
 				return;
 			}
 			res.setHeader("X-Notification-Type", "custom");
@@ -535,18 +519,13 @@ class PushNtfyController {
 				data: rest.data || rest.body || {},
 			}).catch(() => {});
 
-			AppEvents.emit(
-				"triggerWebhook",
-				JSON.stringify({
-					webhookType: WebhookType.API,
-					event: WebhookEvent.NOTIFICATION_SENT,
-					projectId: projectId,
-					userId: project?.user?.id,
-					notificationType: rest.type,
-					notificationData: rest,
-					timestamp: Date.now(),
-				}),
-			);
+			AppEvents.emit("notificationLifecycle", {
+				event: NotificationLifecycleEvent.SENT,
+				projectId,
+				userId: project?.user?.id,
+				type: rest.type || "0",
+				data: rest,
+			});
 			res
 				.json({
 					message: "OK",

@@ -254,6 +254,31 @@ export default function WidgetsPage() {
                     />
                   </div>
                 )}
+                {/* Config badges */}
+                {widget.config && (
+                  <div className="flex flex-wrap gap-1 mb-3">
+                    <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                      {widget.config.position}
+                    </Badge>
+                    {widget.config.autoDismiss && (
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                        dismiss: {widget.config.autoDismissSeconds}s
+                      </Badge>
+                    )}
+                    {widget.config.autoShow && (
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                        {widget.config.autoShowDelaySeconds > 0
+                          ? `show: ${widget.config.autoShowDelaySeconds}s delay`
+                          : "auto show"}
+                      </Badge>
+                    )}
+                    {widget.config.animation !== 'none' && (
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                        {widget.config.animation}
+                      </Badge>
+                    )}
+                  </div>
+                )}
                 <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t">
                   <span>Created {moment(widget.created_at).fromNow()}</span>
                   <span>Updated {moment(widget.updated_at).fromNow()}</span>

@@ -10,6 +10,8 @@ import { WebhookEntity } from "@/factory/entities/webhook.entity";
 import { WidgetEntity } from "@/factory/entities/widget.entity";
 import { InjectRepository } from "@/factory/typeorm";
 import { Cache } from "@/utils/services/redis/cacheService";
+import { cached } from "@/utils/helpers/cache";
+import { CacheKeys, CacheTTL } from "@/utils/types/cache";
 import type { Repository } from "typeorm";
 
 class PlanService {
@@ -32,18 +34,21 @@ class PlanService {
 	 * Get the user's current plan type. Falls back to FREE.
 	 */
 	async getUserPlanType(userId: number): Promise<PlanType> {
-		const user = await this.userRepo.findOne({
-			where: { id: userId },
-			select: { id: true, plan_type: true, plan_expires_at: true },
-		});
-		if (!user) return PlanType.FREE;
-
-		// If plan has expired, treat as FREE
-		if (user.plan_expires_at && new Date(user.plan_expires_at) < new Date()) {
-			return PlanType.FREE;
-		}
-
-		return user.plan_type ?? PlanType.FREE;
+		return cached(
+			CacheKeys.userPlanType(userId),
+			CacheTTL.LONG,
+			async () => {
+				const user = await this.userRepo.findOne({
+					where: { id: userId },
+					select: { id: true, plan_type: true, plan_expires_at: true },
+				});
+				if (!user) return PlanType.FREE;
+				if (user.plan_expires_at && new Date(user.plan_expires_at) < new Date()) {
+					return PlanType.FREE;
+				}
+				return user.plan_type ?? PlanType.FREE;
+			},
+		);
 	}
 
 	/**

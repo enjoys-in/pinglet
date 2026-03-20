@@ -22,6 +22,6 @@ const tables: CreatePKTableSchema<Tables> = {
     template_categories: "++id,slug",
     projects: "++id,unique_id",
     widgets: "++id",
-    flows: "++id,projectId",
+    flows: "id,projectId,status",
 }
 export const db = new IDB<Tables>(tables, "pinglet", 3)

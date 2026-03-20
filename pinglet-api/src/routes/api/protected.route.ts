@@ -18,6 +18,8 @@ import {
 	WidgetController,
 } from "@handlers/controllers/user";
 import { checkPlanQuota, requireFeature } from "@/middlewares/plan.middleware";
+import { ALLOWED_NOTIFICATION_EVENTS } from "@/utils/services/kafka/topics";
+import { WebhookEvent } from "@/factory/entities/webhook.entity";
 import { Router } from "express";
 
 const router: Router = Router();
@@ -128,6 +130,14 @@ router.get("/analytics/project-subscriber-trends", AnalyticsController.default.g
 router.get("/activity/stats", ActivityController.default.getActivityStats);
 router.get("/activity/events", ActivityController.default.getActivityEvents);
 router.get("/activity/visitor", ActivityController.default.getVisitorActivity);
+
+// Allowed events (static — for frontend dropdowns/config)
+router.get("/events/notification-lifecycle", (_req, res) => {
+	res.json({ message: "Allowed notification lifecycle events", result: ALLOWED_NOTIFICATION_EVENTS, success: true }).end();
+});
+router.get("/events/webhook", (_req, res) => {
+	res.json({ message: "Allowed webhook events", result: Object.values(WebhookEvent), success: true }).end();
+});
 router.get("/sessions", ActivityController.default.getSessionRecordings);
 router.get("/sessions/:id", ActivityController.default.getSessionRecording);
 router.delete("/sessions/:id", ActivityController.default.deleteSessionRecording);

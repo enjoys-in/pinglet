@@ -16,6 +16,7 @@ class WidgetController {
 					"id",
 					"widget_id",
 					"style_props",
+					"config",
 					"is_active",
 					"created_at",
 					"updated_at",
