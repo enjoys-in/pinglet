@@ -38,6 +38,8 @@ RUN bun install --frozen-lockfile --production
 
 # Copy built assets from builder stage
 COPY --from=builder /usr/src/app/build ./build
+# Copy public assets for static file serving
+COPY --from=builder /usr/src/app/public ./public
 # Copy tsconfig.json because it is required by tsconfig-paths in main.js
 COPY --from=builder /usr/src/app/tsconfig.json ./
 
