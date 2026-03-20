@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pinglet SDK v0.0.3 — All Notification Types Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f5f5f7; --surface: rgba(255,255,255,0.7); --border: rgba(255,255,255,0.5);
+      --text: #1a1a2e; --muted: #6b7280; --accent: #667eea; --accent-bg: rgba(102,126,234,0.10);
+      --success: #10b981; --warning: #f59e0b; --error: #ef4444; --info: #3b82f6;
+      --card-hover: 0 8px 24px rgba(0,0,0,0.1);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0c0c18; --surface: rgba(30,30,50,0.65); --border: rgba(255,255,255,0.08);
+        --text: #e0e0f0; --muted: #8888a8; --accent: #818cf8; --accent-bg: rgba(129,140,248,0.12);
+        --card-hover: 0 8px 24px rgba(0,0,0,0.35);
+      }
+    }
+
+    body {
+      font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg); color: var(--text); min-height: 100vh; padding: 40px 24px 80px;
+    }
+
+    .header { max-width: 900px; margin: 0 auto 36px; }
+    h1 { font-size: 30px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 6px; }
+    .subtitle { color: var(--muted); font-size: 14.5px; line-height: 1.6; }
+    .badge { display: inline-block; background: var(--accent-bg); color: var(--accent); font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; margin-bottom: 10px; }
+
+    /* Section */
+    .section { max-width: 900px; margin: 0 auto 32px; }
+    .section-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+    .section-desc { color: var(--muted); font-size: 13px; margin-bottom: 16px; }
+    .type-badge { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 6px; color: #fff; }
+    .type-badge.t0 { background: var(--info); }
+    .type-badge.t1 { background: var(--warning); }
+    .type-badge.t2 { background: var(--accent); }
+    .type-badge.t-1 { background: var(--error); }
+
+    /* Grid */
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+    .card {
+      background: var(--surface); backdrop-filter: blur(12px); border: 1px solid var(--border);
+      border-radius: 14px; padding: 16px; cursor: pointer; transition: transform .15s, box-shadow .15s;
+    }
+    .card:hover { transform: translateY(-2px); box-shadow: var(--card-hover); }
+    .card:active { transform: scale(0.98); }
+    .card h3 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+    .card p { font-size: 12px; color: var(--muted); line-height: 1.5; }
+    .tag { display: inline-block; background: var(--accent-bg); color: var(--accent); font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 5px; margin-bottom: 6px; }
+
+    /* API panel */
+    .api-panel { max-width: 900px; margin: 40px auto 0; }
+    .api-panel h2 { font-size: 18px; font-weight: 700; margin-bottom: 12px; }
+    .api-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      padding: 20px; margin-bottom: 16px;
+    }
+    .api-card h3 { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+    .api-card pre {
+      background: #1e1e2e; color: #cdd6f4; border-radius: 10px; padding: 14px; font-size: 12px;
+      line-height: 1.6; overflow-x: auto; white-space: pre; margin-top: 8px;
+    }
+    .api-card .method { color: #f38ba8; font-weight: 700; }
+    .api-card .url { color: #89b4fa; }
+    .api-card .key { color: #a6e3a1; }
+    .api-card .str { color: #f9e2af; }
+    .api-card .num { color: #fab387; }
+
+    /* Footer */
+    .footer { max-width: 900px; margin: 48px auto 0; text-align: center; color: var(--muted); font-size: 12px; }
+    .footer a { color: var(--accent); text-decoration: none; }
+
+    /* Toast for API response */
+    .api-toast {
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      background: #1e1e2e; color: #cdd6f4; padding: 10px 20px; border-radius: 10px;
+      font-size: 12px; z-index: 9999; display: none; box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    }
+    .api-toast.show { display: block; animation: fadeUp .3s ease; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <span class="badge">SDK v0.0.3</span>
+    <h1>Pinglet Notification Demo</h1>
+    <p class="subtitle">
+      All 4 notification types in action. Click any card to fire a live notification via the backend API.<br>
+      Types 0, 1, 2 arrive via SSE → rendered in-page. Type -1 triggers a browser push via Service Worker.
+    </p>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       TYPE 0 — In-App Toast Notification
+       ═══════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-title"><span class="type-badge t0">TYPE 0</span> In-App Toast Notification</div>
+    <p class="section-desc">Classic slide/fade/zoom toast rendered via <code>createVariant()</code> + <code>renderToast()</code>. Supports title, description, buttons, icon, logo, media, dark mode.</p>
+    <div class="grid">
+      <div class="card" onclick="fire('type0_minimal')">
+        <span class="tag">0-A</span>
+        <h3>Minimal — Title Only</h3>
+        <p>Simplest toast with just a title.</p>
+      </div>
+      <div class="card" onclick="fire('type0_full')">
+        <span class="tag">0-B</span>
+        <h3>Full — Title + Desc + Icon</h3>
+        <p>Title, description, and a small icon.</p>
+      </div>
+      <div class="card" onclick="fire('type0_media_image')">
+        <span class="tag">0-C</span>
+        <h3>Image Media</h3>
+        <p>Toast with a full-width image banner.</p>
+      </div>
+      <div class="card" onclick="fire('type0_media_video')">
+        <span class="tag">0-D</span>
+        <h3>Video Media</h3>
+        <p>Toast with an embedded muted video.</p>
+      </div>
+      <div class="card" onclick="fire('type0_buttons')">
+        <span class="tag">0-E</span>
+        <h3>With Buttons</h3>
+        <p>Redirect + reload + event action buttons.</p>
+      </div>
+      <div class="card" onclick="fire('type0_logo_url')">
+        <span class="tag">0-F</span>
+        <h3>Logo + Click URL</h3>
+        <p>Logo image, body click opens a link.</p>
+      </div>
+      <div class="card" onclick="fire('type0_stack')">
+        <span class="tag">0-G</span>
+        <h3>Stacking — Fire 5 at once</h3>
+        <p>Fires 5 toasts rapidly to test stack behavior.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       TYPE 2 — Glassmorphism HTML Notification
+       ═══════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-title"><span class="type-badge t2">TYPE 2</span> Glassmorphism HTML Notification</div>
+    <p class="section-desc">Glassmorphism card rendered via <code>showHtmlNotification()</code>. Stacking queue, branding footer, progress bar, 4-corner positioning, dark mode, media, max 3 buttons.</p>
+    <div class="grid">
+      <div class="card" onclick="fire('type2_minimal')">
+        <span class="tag">2-A</span>
+        <h3>Title Only</h3>
+        <p>Minimal glassmorphism card, just a title.</p>
+      </div>
+      <div class="card" onclick="fire('type2_full')">
+        <span class="tag">2-B</span>
+        <h3>Full — Icon + Body + Badge</h3>
+        <p>Icon, body text, badge, and relative time.</p>
+      </div>
+      <div class="card" onclick="fire('type2_image')">
+        <span class="tag">2-C</span>
+        <h3>Image Banner</h3>
+        <p>Full-width image below the content.</p>
+      </div>
+      <div class="card" onclick="fire('type2_video')">
+        <span class="tag">2-D</span>
+        <h3>Video Media</h3>
+        <p>Embedded video player in the card.</p>
+      </div>
+      <div class="card" onclick="fire('type2_buttons')">
+        <span class="tag">2-E</span>
+        <h3>3 Buttons — Redirect / Event / Close</h3>
+        <p>Max 3 buttons with different actions.</p>
+      </div>
+      <div class="card" onclick="fire('type2_event_button')">
+        <span class="tag">2-F</span>
+        <h3>Custom Event Button</h3>
+        <p>Button dispatches a CustomEvent on window.</p>
+      </div>
+      <div class="card" onclick="fire('type2_positions')">
+        <span class="tag">2-G</span>
+        <h3>All 4 Corners</h3>
+        <p>Shows one notification in each corner.</p>
+      </div>
+      <div class="card" onclick="fire('type2_persist')">
+        <span class="tag">2-H</span>
+        <h3>No Auto-Close (requireInteraction)</h3>
+        <p>Stays until user dismisses. No progress bar.</p>
+      </div>
+      <div class="card" onclick="fire('type2_stack')">
+        <span class="tag">2-I</span>
+        <h3>Stacking — Fire 6 at once</h3>
+        <p>Max 3 visible, rest queued and dequeued on dismiss.</p>
+      </div>
+      <div class="card" onclick="fire('type2_dark')">
+        <span class="tag">2-J</span>
+        <h3>Force Dark Theme</h3>
+        <p>Explicitly dark mode regardless of system.</p>
+      </div>
+      <div class="card" onclick="fire('type2_branding')">
+        <span class="tag">2-K</span>
+        <h3>Custom Branding</h3>
+        <p>Custom branding HTML at the bottom.</p>
+      </div>
+      <div class="card" onclick="fire('type2_tag_dedup')">
+        <span class="tag">2-L</span>
+        <h3>Tag Dedup — Replace</h3>
+        <p>Same tag replaces existing notification.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       TYPE -1 — Browser Push via Service Worker
+       ═══════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-title"><span class="type-badge t-1">TYPE -1</span> Browser Push Notification</div>
+    <p class="section-desc">Sent via Web Push API → Service Worker. Works when tab is backgrounded or closed. Requires push permission. <em>Note: these go through BullMQ queue on backend.</em></p>
+    <div class="grid">
+      <div class="card" onclick="fire('push_basic')">
+        <span class="tag">-1-A</span>
+        <h3>Basic Push</h3>
+        <p>Title + body, appears in OS notification tray.</p>
+      </div>
+      <div class="card" onclick="fire('push_icon')">
+        <span class="tag">-1-B</span>
+        <h3>Push with Icon + Badge</h3>
+        <p>Custom icon and badge overlay.</p>
+      </div>
+      <div class="card" onclick="fire('push_image')">
+        <span class="tag">-1-C</span>
+        <h3>Push with Large Image</h3>
+        <p>Big image shown in the push notification.</p>
+      </div>
+      <div class="card" onclick="fire('push_actions')">
+        <span class="tag">-1-D</span>
+        <h3>Push with Actions</h3>
+        <p>2 action buttons in native push (max 2).</p>
+      </div>
+      <div class="card" onclick="fire('push_silent')">
+        <span class="tag">-1-E</span>
+        <h3>Silent Push</h3>
+        <p>No sound or vibration, stealth notification.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       TYPE 1 — Custom Template
+       ═══════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-title"><span class="type-badge t1">TYPE 1</span> Custom Template Notification</div>
+    <p class="section-desc">Uses a pre-built server-stored template referenced by <code>template_id</code>. The template's compiled JS is executed with the <code>custom_template</code> data passed in. Rendered via <code>createWrapper()</code>.</p>
+    <div class="grid">
+      <div class="card" onclick="fire('template_basic')">
+        <span class="tag">1-A</span>
+        <h3>Template with Data</h3>
+        <p>Sends custom_template data to a stored template.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       API Payloads Reference
+       ═══════════════════════════════════════════ -->
+  <div class="api-panel">
+    <h2>API Reference — POST /api/v1/notifications/send</h2>
+
+    <div class="api-card">
+      <h3>Type 0 — In-App Toast</h3>
+      <pre><code>{
+  <span class="key">"projectId"</span>: <span class="str">"YOUR_24_CHAR_PROJECT_ID"</span>,
+  <span class="key">"type"</span>: <span class="str">"0"</span>,
+  <span class="key">"body"</span>: {
+    <span class="key">"title"</span>: <span class="str">"New Message"</span>,
+    <span class="key">"description"</span>: <span class="str">"You have a new order."</span>,
+    <span class="key">"icon"</span>: <span class="str">"🔔"</span>,
+    <span class="key">"logo"</span>: <span class="str">"https://cdn.example.com/logo.png"</span>,
+    <span class="key">"url"</span>: <span class="str">"https://example.com/orders"</span>,
+    <span class="key">"media"</span>: { <span class="key">"type"</span>: <span class="str">"image"</span>, <span class="key">"src"</span>: <span class="str">"https://..."</span> },
+    <span class="key">"buttons"</span>: [
+      { <span class="key">"text"</span>: <span class="str">"View"</span>, <span class="key">"action"</span>: <span class="str">"redirect"</span>, <span class="key">"src"</span>: <span class="str">"https://..."</span> },
+      { <span class="key">"text"</span>: <span class="str">"Dismiss"</span>, <span class="key">"action"</span>: <span class="str">"close"</span> }
+    ]
+  }
+}</code></pre>
+    </div>
+
+    <div class="api-card">
+      <h3>Type 2 — Glassmorphism HTML</h3>
+      <pre><code>{
+  <span class="key">"projectId"</span>: <span class="str">"YOUR_24_CHAR_PROJECT_ID"</span>,
+  <span class="key">"type"</span>: <span class="str">"2"</span>,
+  <span class="key">"body"</span>: {
+    <span class="key">"title"</span>: <span class="str">"Flash Sale 🔥"</span>,
+    <span class="key">"description"</span>: <span class="str">"50% off all items today."</span>,
+    <span class="key">"icon"</span>: <span class="str">"https://cdn.example.com/icon.png"</span>,
+    <span class="key">"url"</span>: <span class="str">"https://example.com/sale"</span>,
+    <span class="key">"media"</span>: { <span class="key">"type"</span>: <span class="str">"image"</span>, <span class="key">"src"</span>: <span class="str">"https://..."</span> },
+    <span class="key">"buttons"</span>: [
+      { <span class="key">"text"</span>: <span class="str">"Shop Now"</span>, <span class="key">"action"</span>: <span class="str">"redirect"</span>, <span class="key">"src"</span>: <span class="str">"https://..."</span> },
+      { <span class="key">"text"</span>: <span class="str">"Track"</span>, <span class="key">"action"</span>: <span class="str">"event"</span>, <span class="key">"event"</span>: <span class="str">"sale:click"</span>, <span class="key">"data"</span>: {} },
+      { <span class="key">"text"</span>: <span class="str">"Close"</span>, <span class="key">"action"</span>: <span class="str">"close"</span> }
+    ]
+  }
+}</code></pre>
+    </div>
+
+    <div class="api-card">
+      <h3>Type -1 — Browser Push</h3>
+      <pre><code>{
+  <span class="key">"projectId"</span>: <span class="str">"YOUR_24_CHAR_PROJECT_ID"</span>,
+  <span class="key">"type"</span>: <span class="str">"-1"</span>,
+  <span class="key">"data"</span>: {
+    <span class="key">"title"</span>: <span class="str">"Order Shipped"</span>,
+    <span class="key">"body"</span>: <span class="str">"Your package is on the way."</span>,
+    <span class="key">"icon"</span>: <span class="str">"https://cdn.example.com/icon.png"</span>,
+    <span class="key">"badge"</span>: <span class="str">"https://cdn.example.com/badge.png"</span>,
+    <span class="key">"image"</span>: <span class="str">"https://cdn.example.com/hero.jpg"</span>,
+    <span class="key">"tag"</span>: <span class="str">"order-123"</span>,
+    <span class="key">"requireInteraction"</span>: <span class="num">true</span>,
+    <span class="key">"data"</span>: { <span class="key">"url"</span>: <span class="str">"https://example.com/track"</span> },
+    <span class="key">"actions"</span>: [
+      { <span class="key">"action"</span>: <span class="str">"view"</span>, <span class="key">"title"</span>: <span class="str">"View Order"</span> },
+      { <span class="key">"action"</span>: <span class="str">"dismiss"</span>, <span class="key">"title"</span>: <span class="str">"Dismiss"</span> }
+    ]
+  }
+}</code></pre>
+    </div>
+
+    <div class="api-card">
+      <h3>Type 1 — Custom Template</h3>
+      <pre><code>{
+  <span class="key">"projectId"</span>: <span class="str">"YOUR_24_CHAR_PROJECT_ID"</span>,
+  <span class="key">"type"</span>: <span class="str">"1"</span>,
+  <span class="key">"template_id"</span>: <span class="str">"42"</span>,
+  <span class="key">"custom_template"</span>: {
+    <span class="key">"user_name"</span>: <span class="str">"John"</span>,
+    <span class="key">"order_total"</span>: <span class="str">"$49.99"</span>,
+    <span class="key">"action_url"</span>: <span class="str">"https://example.com/orders/123"</span>
+  }
+}</code></pre>
+    </div>
+
+    <div class="api-card">
+      <h3>Overrides (Premium — any type)</h3>
+      <pre><code>{
+  <span class="key">"overrides"</span>: {
+    <span class="key">"position"</span>: <span class="str">"top-right"</span>,
+    <span class="key">"transition"</span>: <span class="str">"slide"</span>,
+    <span class="key">"duration"</span>: <span class="num">8000</span>,
+    <span class="key">"maxVisible"</span>: <span class="num">5</span>,
+    <span class="key">"auto_dismiss"</span>: <span class="num">true</span>,
+    <span class="key">"theme"</span>: { <span class="key">"mode"</span>: <span class="str">"dark"</span> },
+    <span class="key">"branding"</span>: { <span class="key">"show"</span>: <span class="num">true</span>, <span class="key">"html"</span>: <span class="str">"Powered by Acme Inc"</span> },
+    <span class="key">"sound"</span>: { <span class="key">"play"</span>: <span class="num">true</span>, <span class="key">"src"</span>: <span class="str">"https://..."</span>, <span class="key">"volume"</span>: <span class="num">0.7</span> }
+  }
+}</code></pre>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>Notification by <a href="https://pinglet.enjoys.in" target="_blank" rel="noopener">Enjoys</a> — Pinglet SDK v0.0.3</p>
+  </div>
+
+  <div class="api-toast" id="apiToast"></div>
+
+  <!-- ═══════════════════════════════════════════
+       Pinglet SDK — data attributes auto-init
+       ═══════════════════════════════════════════ -->
+  <script
+    crossorigin="anonymous"
+    src="http://localhost:8888/api/v1/public/scripts/v0.0.2/sw.js"
+  ></script>
+  <script
+    type="module"
+    crossorigin="anonymous"
+    src="http://localhost:8888/api/v1/public/scripts/v.0.0.3/pinglet-sse.js"
+    data-endpoint="http://localhost:8888/api/v1/notifications"
+    data-testimonials="false"
+    data-configured-domain="localhost"
+    data-project-id="0e5c2a5f527acdbe13791234"
+    data-pinglet-id="BLTiMxJVA2V0fFRXEJ1UZV-zVMxpRuYSmzeMF0WSP33Dd-wlQ-mzUqBb_gGKbrZiCeDsQsK6DJ4LCGop0zkekOE"
+    data-checksum="sha384-3MXOBybd1yFrlmTCqYborphsQHUoS0M7gyLbKuk2FUqDWQfMUkVikG/Pn2J2gDwn"
+  ></script>
+
+  <script>
+    // ───────────────────────────────────────
+    // Config — change these to match your setup
+    // ───────────────────────────────────────
+    const API   = "http://localhost:8888/api/v1/notifications/send";
+    const PID   = "0e5c2a5f527acdbe13791234";
+    const ICON  = "https://cdn.jsdelivr.net/gh/nicedayworld/icons@main/pwa/icon-192x192.png";
+    const BADGE = "https://cdn.jsdelivr.net/gh/nicedayworld/icons@main/pwa/icon-72x72.png";
+    const IMG   = "https://images.unsplash.com/photo-1557683316-973673baf926?w=600&q=80";
+    const VID   = "https://www.w3schools.com/html/mov_bbb.mp4";
+
+    // ───────────────────────────────────────
+    // Helpers
+    // ───────────────────────────────────────
+    function toast(msg, ok = true) {
+      const el = document.getElementById("apiToast");
+      el.textContent = (ok ? "✅ " : "❌ ") + msg;
+      el.classList.add("show");
+      setTimeout(() => el.classList.remove("show"), 3000);
+    }
+
+    async function send(payload) {
+      try {
+        const res = await fetch(API, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        toast(data.message || (data.success ? "Sent!" : "Error"), data.success !== false);
+      } catch (err) {
+        toast("Network error: " + err.message, false);
+      }
+    }
+
+    // ─── Listen for custom events (for event button demos) ───
+    window.addEventListener("sale:click", (e) => {
+      toast("🎯 Custom Event received: sale:click — " + JSON.stringify(e.detail));
+    });
+    window.addEventListener("add-to-cart", (e) => {
+      toast("🛒 Custom Event received: add-to-cart — " + JSON.stringify(e.detail));
+    });
+
+    // ───────────────────────────────────────
+    // Demo payloads — all types
+    // ───────────────────────────────────────
+    const demos = {
+      // ══════ TYPE 0 ══════
+      type0_minimal: {
+        projectId: PID, type: "0",
+        body: { title: "Hello from Pinglet!" }
+      },
+      type0_full: {
+        projectId: PID, type: "0",
+        body: {
+          title: "New Order Received",
+          description: "You have a new order #1234 from John Doe worth $129.99",
+          icon: "🛒",
+        }
+      },
+      type0_media_image: {
+        projectId: PID, type: "0",
+        body: {
+          title: "Product Spotlight",
+          description: "Check out our latest collection",
+          media: { type: "image", src: IMG },
+        }
+      },
+      type0_media_video: {
+        projectId: PID, type: "0",
+        body: {
+          title: "Video Update",
+          description: "Watch the demo reel",
+          media: { type: "video", src: VID },
+        }
+      },
+      type0_buttons: {
+        projectId: PID, type: "0",
+        body: {
+          title: "Action Required",
+          description: "Your subscription is about to expire.",
+          icon: "⚠️",
+          buttons: [
+            { text: "Renew Now", action: "redirect", src: "https://pinglet.enjoys.in" },
+            { text: "Refresh", action: "reload" },
+            { text: "Track", action: "event", event: "sale:click", data: { from: "type0" } },
+          ],
+        }
+      },
+      type0_logo_url: {
+        projectId: PID, type: "0",
+        body: {
+          title: "Visit Our Store",
+          description: "Exclusive deals waiting for you.",
+          logo: ICON,
+          url: "https://pinglet.enjoys.in",
+        }
+      },
+
+      // ══════ TYPE 2 ══════
+      type2_minimal: {
+        projectId: PID, type: "2",
+        body: { title: "Glassmorphism Minimal" }
+      },
+      type2_full: {
+        projectId: PID, type: "2",
+        body: {
+          title: "Flash Sale 🔥",
+          description: "50% off on all premium plans. Limited time only!",
+          icon: ICON,
+        }
+      },
+      type2_image: {
+        projectId: PID, type: "2",
+        body: {
+          title: "New Feature",
+          description: "Dark mode is now available across all platforms.",
+          media: { type: "image", src: IMG },
+        }
+      },
+      type2_video: {
+        projectId: PID, type: "2",
+        body: {
+          title: "Video Tutorial",
+          description: "Learn how to integrate Pinglet in 2 minutes.",
+          media: { type: "video", src: VID },
+        }
+      },
+      type2_buttons: {
+        projectId: PID, type: "2",
+        body: {
+          title: "Review Purchase",
+          description: "Your order #5678 has been delivered.",
+          icon: ICON,
+          buttons: [
+            { text: "View Order", action: "redirect", src: "https://pinglet.enjoys.in" },
+            { text: "Track", action: "event", event: "sale:click", data: { orderId: "5678" } },
+            { text: "Dismiss", action: "close" },
+          ],
+        }
+      },
+      type2_event_button: {
+        projectId: PID, type: "2",
+        body: {
+          title: "Add to Cart?",
+          description: "Limited stock — Wireless Headphones only $29.99",
+          icon: ICON,
+          buttons: [
+            { text: "🛒 Add to Cart", action: "event", event: "add-to-cart", data: { productId: "WH-100", price: 29.99 } },
+            { text: "Not Now", action: "close" },
+          ],
+        }
+      },
+      type2_persist: {
+        projectId: PID, type: "2",
+        overrides: { auto_dismiss: false },
+        body: {
+          title: "Important Notice",
+          description: "This notification won't auto-close. You must dismiss it manually.",
+          icon: ICON,
+        }
+      },
+      type2_dark: {
+        projectId: PID, type: "2",
+        overrides: { theme: { mode: "dark" } },
+        body: {
+          title: "Dark Mode Notification",
+          description: "This is forced dark mode regardless of your system settings.",
+          icon: ICON,
+        }
+      },
+      type2_branding: {
+        projectId: PID, type: "2",
+        overrides: { branding: { show: true, html: "Powered by <b>Enjoys</b> 🚀" } },
+        body: {
+          title: "Custom Branding",
+          description: "The footer shows custom branding HTML.",
+          icon: ICON,
+        }
+      },
+      type2_tag_dedup: {
+        projectId: PID, type: "2",
+        tag: "promo-update",
+        body: {
+          title: "Promo Updated (click again to replace)",
+          description: "Price changed to $" + (Math.random() * 100).toFixed(2),
+          icon: ICON,
+        }
+      },
+
+      // ══════ TYPE -1 ══════
+      push_basic: {
+        projectId: PID, type: "-1",
+        data: {
+          title: "Browser Push",
+          body: "This arrives via Service Worker even if the tab is closed.",
+        }
+      },
+      push_icon: {
+        projectId: PID, type: "-1",
+        data: {
+          title: "Push with Icon",
+          body: "Custom icon and badge overlay.",
+          icon: ICON,
+          badge: BADGE,
+        }
+      },
+      push_image: {
+        projectId: PID, type: "-1",
+        data: {
+          title: "Push with Image",
+          body: "Large hero image in the notification.",
+          icon: ICON,
+          image: IMG,
+        }
+      },
+      push_actions: {
+        projectId: PID, type: "-1",
+        data: {
+          title: "Order Ready",
+          body: "Your order #999 is ready for pickup.",
+          icon: ICON,
+          actions: [
+            { action: "view", title: "View Order" },
+            { action: "dismiss", title: "Dismiss" },
+          ],
+          data: { url: "https://pinglet.enjoys.in" },
+        }
+      },
+      push_silent: {
+        projectId: PID, type: "-1",
+        data: {
+          title: "Silent Update",
+          body: "No sound, no vibration.",
+          silent: true,
+          icon: ICON,
+        }
+      },
+
+      // ══════ TYPE 1 ══════
+      template_basic: {
+        projectId: PID, type: "1",
+        template_id: "1",
+        custom_template: {
+          user_name: "John Doe",
+          order_total: "$49.99",
+          action_url: "https://pinglet.enjoys.in",
+        },
+      },
+    };
+
+    // ───────────────────────────────────────
+    // Fire handler
+    // ───────────────────────────────────────
+    function fire(key) {
+      // Special: stack tests fire multiple
+      if (key === "type0_stack") {
+        for (let i = 1; i <= 5; i++) {
+          setTimeout(() => send({
+            projectId: PID, type: "0",
+            body: { title: `Toast #${i} of 5`, description: `Stacking test — notification ${i}`, icon: "📦" }
+          }), i * 200);
+        }
+        return;
+      }
+      if (key === "type2_stack") {
+        for (let i = 1; i <= 6; i++) {
+          setTimeout(() => send({
+            projectId: PID, type: "2",
+            body: {
+              title: `Notification ${i} of 6`,
+              description: `Max 3 visible — this is #${i}. The rest are queued.`,
+              icon: ICON,
+            }
+          }), i * 200);
+        }
+        return;
+      }
+      if (key === "type2_positions") {
+        const positions = ["top-right", "top-left", "bottom-right", "bottom-left"];
+        positions.forEach((pos, i) => {
+          setTimeout(() => send({
+            projectId: PID, type: "2",
+            overrides: { position: pos },
+            body: { title: pos, description: `This card is in the ${pos} corner.`, icon: ICON }
+          }), i * 300);
+        });
+        return;
+      }
+      // tag dedup — randomize price each click
+      if (key === "type2_tag_dedup") {
+        send({
+          projectId: PID, type: "2",
+          tag: "promo-update",
+          body: {
+            title: "Promo Updated! (click again to replace)",
+            description: "Price changed to $" + (Math.random() * 100).toFixed(2),
+            icon: ICON,
+          }
+        });
+        return;
+      }
+      // Default — send payload
+      const payload = demos[key];
+      if (!payload) return toast("Unknown demo: " + key, false);
+      send(payload);
+    }
+  </script>
+</body>
+</html>

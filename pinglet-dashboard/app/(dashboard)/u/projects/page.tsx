@@ -174,9 +174,9 @@ export default function ProjectsPage() {
   }
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <div className="flex items-center justify-between space-y-2">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Projects</h2>
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Projects</h2>
           <p className="text-muted-foreground">Manage your notification projects and campaigns</p>
         </div>
         <div className="flex items-center space-x-2">
@@ -190,7 +190,7 @@ export default function ProjectsPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Projects</CardTitle>
@@ -249,20 +249,20 @@ export default function ProjectsPage() {
           <CardDescription>View and manage all your notification projects</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-between space-x-2 mb-4">
-            <div className="flex items-center space-x-2">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
               <div className="relative">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search projects..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-[300px] pl-8"
+                  className="w-full sm:w-[300px] pl-8"
                 />
               </div>
 
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger className="w-[150px]">
+                <SelectTrigger className="w-full sm:w-[150px]">
                   <Filter className="mr-2 h-4 w-4" />
                   <SelectValue placeholder="Category" />
                 </SelectTrigger>
@@ -280,6 +280,7 @@ export default function ProjectsPage() {
             </div>
           </div>
 
+          <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -362,6 +363,7 @@ export default function ProjectsPage() {
               ))}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
     </div>

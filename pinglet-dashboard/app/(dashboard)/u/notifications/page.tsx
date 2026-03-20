@@ -111,9 +111,9 @@ export default function NotificationsPage() {
   }, [])
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <div className="flex items-center justify-between space-y-2">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Notifications</h2>
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Notifications</h2>
           <p className="text-muted-foreground">Manage and send push notifications to your users</p>
         </div>
         <div className="flex items-center space-x-2">
@@ -127,26 +127,26 @@ export default function NotificationsPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Sent</CardTitle>
             <Bell className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
-            <p className="text-xs text-muted-foreground">0 from last week</p>
+            <div className="text-2xl font-bold">{notifications.reduce((sum, n) => sum + n.total_sent, 0).toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground">Across all projects</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Scheduled</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Requests</CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
-            <p className="text-xs text-muted-foreground">Next in 2 hours</p>
+            <div className="text-2xl font-bold">{notifications.reduce((sum, n) => sum + n.total_request, 0).toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground">Across all projects</p>
           </CardContent>
         </Card>
 
@@ -156,8 +156,16 @@ export default function NotificationsPage() {
             <CheckCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0%</div>
-            <p className="text-xs text-muted-foreground">0% from last week</p>
+            <div className="text-2xl font-bold">
+              {notifications.length > 0
+                ? (() => {
+                    const totalSent = notifications.reduce((sum, n) => sum + n.total_sent, 0)
+                    const totalClicked = notifications.reduce((sum, n) => sum + n.total_clicked, 0)
+                    return totalSent > 0 ? ((totalClicked / totalSent) * 100).toFixed(1) + "%" : "0%"
+                  })()
+                : "0%"}
+            </div>
+            <p className="text-xs text-muted-foreground">Across all projects</p>
           </CardContent>
         </Card>
 
@@ -167,8 +175,8 @@ export default function NotificationsPage() {
             <XCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">00</div>
-            <p className="text-xs text-muted-foreground"> 0 from last week</p>
+            <div className="text-2xl font-bold">{notifications.reduce((sum, n) => sum + n.total_failed, 0).toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground">Across all projects</p>
           </CardContent>
         </Card>
       </div>
@@ -180,15 +188,15 @@ export default function NotificationsPage() {
           <CardDescription>View and manage all your push notifications</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-between space-x-2 mb-4">
-            <div className="flex items-center space-x-2">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
               <div className="relative">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search notifications..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-[300px] pl-8"
+                  className="w-full sm:w-[300px] pl-8"
                 />
               </div>            
             </div>
@@ -203,6 +211,7 @@ export default function NotificationsPage() {
             )}
           </div>
 
+          <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>              
@@ -276,6 +285,7 @@ export default function NotificationsPage() {
               ))}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
     </div>

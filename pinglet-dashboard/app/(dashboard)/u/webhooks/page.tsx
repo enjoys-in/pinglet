@@ -176,12 +176,12 @@ export default function WebhooksPage() {
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <div className="flex items-center justify-between space-y-2">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Webhooks</h2>
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Webhooks</h2>
           <p className="text-muted-foreground">Integrate with external services using webhooks</p>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 shrink-0">
           <Link href="/u/webhooks/create">
             <Button>
               <Plus className="mr-2 h-4 w-4" />
@@ -193,7 +193,7 @@ export default function WebhooksPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Webhooks</CardTitle>
@@ -264,6 +264,7 @@ export default function WebhooksPage() {
             </div>
           </div>
 
+          <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -377,6 +378,7 @@ export default function WebhooksPage() {
               ))}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
 

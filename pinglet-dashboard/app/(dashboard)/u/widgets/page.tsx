@@ -104,12 +104,12 @@ export default function WidgetsPage() {
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Widgets</h1>
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Widgets</h1>
             <p className="text-muted-foreground">Manage your widgets and their settings</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Link href="widgets/prebuilt">
               <Button>
                 Prebuilt Widgets
@@ -130,6 +130,7 @@ export default function WidgetsPage() {
 
         </CardHeader>
         <CardContent>
+          <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -186,6 +187,7 @@ export default function WidgetsPage() {
                 ))}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
 

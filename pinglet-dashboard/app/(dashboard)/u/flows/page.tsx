@@ -198,12 +198,12 @@ export default function FlowsPage() {
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <div className="flex items-center justify-between space-y-2">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Notification Flows</h2>
           <p className="text-muted-foreground">Create and manage automated notification workflows</p>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 shrink-0">
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
               <Button>
@@ -262,7 +262,7 @@ export default function FlowsPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Flows</CardTitle>
@@ -317,19 +317,19 @@ export default function FlowsPage() {
           <CardDescription>View and manage your notification workflows</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-between space-x-2 mb-4">
-            <div className="flex items-center space-x-2">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
               <div className="relative">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search flows..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-[300px] pl-8"
+                  className="w-full sm:w-[300px] pl-8"
                 />
               </div>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[150px]">
+                <SelectTrigger className="w-full sm:w-[150px]">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -342,6 +342,7 @@ export default function FlowsPage() {
             </div>
           </div>
 
+          <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -441,6 +442,7 @@ export default function FlowsPage() {
               ))}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
 

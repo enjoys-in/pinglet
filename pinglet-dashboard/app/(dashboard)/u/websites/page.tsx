@@ -201,7 +201,7 @@ export default function WebsitesPage() {
 
 
       <Card>
-        <CardHeader className="flex  flex-row items-center justify-between">
+        <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold tracking-tight">Websites</h1>
@@ -294,7 +294,7 @@ export default function WebsitesPage() {
               </DialogContent>
             </Dialog>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Button variant="outline" className="cursor-pointer" onClick={refreshWebsites}>
               <RefreshCcw className="mr-2 h-4 w-4" />
               Refresh Data
@@ -306,6 +306,7 @@ export default function WebsitesPage() {
           </div>
         </CardHeader>
         <CardContent>
+          <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -367,6 +368,7 @@ export default function WebsitesPage() {
               ))}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
 
