@@ -87,11 +87,11 @@ export function RequestsOverviewChart({ initialData }: Props) {
               <CartesianGrid vertical={false} />
               <XAxis dataKey="time" tickLine={false} axisLine={false} tickMargin={8} />
               <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
-              <Area dataKey="requests" type="natural" fill="transparent" strokeWidth={2} dot={true} stroke="var(--color-requests)" stackId="a" />
-              <Area dataKey="sent" type="natural" fill="var(--color-sent)" fillOpacity={0.4} stroke="var(--color-sent)" stackId="b" />
-              <Area dataKey="failed" type="natural" fill="var(--color-failed)" fillOpacity={0.4} stroke="var(--color-failed)" stackId="c" />
-              <Area dataKey="closed" type="natural" fill="var(--color-closed)" fillOpacity={0.4} stroke="var(--color-closed)" stackId="d" />
-              <Area dataKey="dropped" type="natural" fill="transparent" stroke="var(--color-dropped)" dot={true} strokeWidth={2} stackId="e" />
+              <Area dataKey="requests" type="monotone" fill="transparent" strokeWidth={2} dot={true} stroke="var(--color-requests)" stackId="a" />
+              <Area dataKey="sent" type="monotone" fill="var(--color-sent)" fillOpacity={0.4} stroke="var(--color-sent)" stackId="b" />
+              <Area dataKey="failed" type="monotone" fill="var(--color-failed)" fillOpacity={0.4} stroke="var(--color-failed)" stackId="c" />
+              <Area dataKey="closed" type="monotone" fill="var(--color-closed)" fillOpacity={0.4} stroke="var(--color-closed)" stackId="d" />
+              <Area dataKey="dropped" type="monotone" fill="transparent" stroke="var(--color-dropped)" dot={true} strokeWidth={2} stackId="e" />
               <ChartLegend content={<ChartLegendContent />} />
             </AreaChart>
           </ChartContainer>

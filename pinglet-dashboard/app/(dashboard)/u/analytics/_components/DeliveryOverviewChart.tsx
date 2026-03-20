@@ -76,8 +76,8 @@ export function DeliveryOverviewChart({ initialData }: Props) {
               <XAxis dataKey="time" tickLine={false} axisLine={false} tickMargin={8} />
               <YAxis />
               <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
-              <Area dataKey="sent" type="natural" fill="var(--color-sent)" fillOpacity={0.4} stroke="var(--color-sent)" stackId="a" />
-              <Area dataKey="failed" type="natural" fill="var(--color-failed)" fillOpacity={0.4} stroke="var(--color-failed)" stackId="b" />
+              <Area dataKey="sent" type="monotone" fill="var(--color-sent)" fillOpacity={0.4} stroke="var(--color-sent)" stackId="a" />
+              <Area dataKey="failed" type="monotone" fill="var(--color-failed)" fillOpacity={0.4} stroke="var(--color-failed)" stackId="b" />
               <ChartLegend content={<ChartLegendContent />} />
             </AreaChart>
           </ChartContainer>

@@ -79,9 +79,9 @@ export function EngagementRatesChart({ initialData }: Props) {
               <CartesianGrid vertical={false} />
               <XAxis dataKey="time" tickLine={false} axisLine={false} tickMargin={8} />
               <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
-              <Area dataKey="clickRate" type="natural" fill="var(--color-clickRate)" fillOpacity={0.4} stroke="var(--color-clickRate)" stackId="a" />
-              <Area dataKey="dropRate" type="natural" fill="var(--color-dropRate)" fillOpacity={0.4} stroke="var(--color-dropRate)" stackId="b" />
-              <Area dataKey="closeRate" type="natural" fill="var(--color-closeRate)" fillOpacity={0.4} stroke="var(--color-closeRate)" stackId="c" />
+              <Area dataKey="clickRate" type="monotone" fill="var(--color-clickRate)" fillOpacity={0.4} stroke="var(--color-clickRate)" stackId="a" />
+              <Area dataKey="dropRate" type="monotone" fill="var(--color-dropRate)" fillOpacity={0.4} stroke="var(--color-dropRate)" stackId="b" />
+              <Area dataKey="closeRate" type="monotone" fill="var(--color-closeRate)" fillOpacity={0.4} stroke="var(--color-closeRate)" stackId="c" />
               <ChartLegend content={<ChartLegendContent />} />
             </AreaChart>
           </ChartContainer>

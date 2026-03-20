@@ -79,9 +79,9 @@ export function NotificationTypesChart({ initialData }: Props) {
               <CartesianGrid vertical={false} />
               <XAxis dataKey="time" tickLine={false} axisLine={false} tickMargin={8} />
               <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
-              <Area dataKey="type0" type="natural" fill="var(--color-type0)" fillOpacity={0.4} stroke="var(--color-type0)" stackId="a" />
-              <Area dataKey="typeNeg1" type="natural" fill="var(--color-typeNeg1)" fillOpacity={0.4} stroke="var(--color-typeNeg1)" stackId="b" />
-              <Area dataKey="type1" type="natural" fill="var(--color-type1)" fillOpacity={0.4} stroke="var(--color-type1)" stackId="c" />
+              <Area dataKey="type0" type="monotone" fill="var(--color-type0)" fillOpacity={0.4} stroke="var(--color-type0)" stackId="a" />
+              <Area dataKey="typeNeg1" type="monotone" fill="var(--color-typeNeg1)" fillOpacity={0.4} stroke="var(--color-typeNeg1)" stackId="b" />
+              <Area dataKey="type1" type="monotone" fill="var(--color-type1)" fillOpacity={0.4} stroke="var(--color-type1)" stackId="c" />
               <ChartLegend content={<ChartLegendContent />} />
             </AreaChart>
           </ChartContainer>

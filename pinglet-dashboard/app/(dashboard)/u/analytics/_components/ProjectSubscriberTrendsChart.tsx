@@ -92,7 +92,7 @@ export function ProjectSubscriberTrendsChart({ initialData }: Props) {
                 <Area
                   key={p.key}
                   dataKey={p.key}
-                  type="natural"
+                  type="monotone"
                   fill={`var(--color-${p.key})`}
                   fillOpacity={0.4}
                   stroke={`var(--color-${p.key})`}

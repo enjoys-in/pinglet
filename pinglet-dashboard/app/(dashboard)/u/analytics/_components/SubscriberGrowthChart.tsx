@@ -72,7 +72,7 @@ export function SubscriberGrowthChart({ initialData }: Props) {
               <XAxis dataKey="time" tickLine={false} axisLine={false} tickMargin={8} />
               <YAxis />
               <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
-              <Area dataKey="subscribers" type="natural" fill="transparent" stroke="var(--color-subscribers)" strokeWidth={2} stackId="a" dot={true} />
+              <Area dataKey="subscribers" type="monotone" fill="transparent" stroke="var(--color-subscribers)" strokeWidth={2} stackId="a" dot={true} />
               <ChartLegend content={<ChartLegendContent />} />
             </AreaChart>
           </ChartContainer>
