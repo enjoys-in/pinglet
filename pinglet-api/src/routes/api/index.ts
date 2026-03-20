@@ -54,8 +54,8 @@ router.get("/notifications/sse", sdkCors, pushNtfyController.customNotificatons)
 router.get("/notifications/sw.js", sdkCors, pushNtfyController.swJSFile);
 router.get("/load-widget-v1/:wid?", sdkCors, pushNtfyController.loadWidgetJsV1File);
 router.get("/load-widget-v2/:wid?", sdkCors, pushNtfyController.loadWidgetJsV2File);
-router.post("/log/event", sdkCors, pushNtfyController.logEvent);
-router.post("/log/track", sdkCors, pushNtfyController.logEvent);
+router.post("/notifications/log/event", sdkCors, pushNtfyController.logEvent);
+router.post("/notifications/log/track", sdkCors, pushNtfyController.logEvent);
 // API to trigger a notification
 router.post(
 	"/notifications/send",
@@ -71,8 +71,8 @@ router.post(
 router.get("/pinglet-sound.mp3", sdkCors, pushNtfyController.sound);
 
 // Public SDK endpoints for activity tracking & session recording
-router.post("/track/activity", sdkCors, ActivityController.default.ingestActivity);
-router.post("/track/session", sdkCors, ActivityController.default.ingestSession);
+router.post("/notifications/track/activity", sdkCors, ActivityController.default.ingestActivity);
+router.post("/notifications/track/session", sdkCors, ActivityController.default.ingestSession);
 
 // Public notification inbox endpoint (for SDK bell icon widget)
 router.get("/inbox", sdkCors, pushNtfyController.getPublicInbox);

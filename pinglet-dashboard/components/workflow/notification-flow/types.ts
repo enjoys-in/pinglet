@@ -115,6 +115,12 @@ export interface MergeData {
   mergeMode: "all" | "any"  // wait for all inputs or any
 }
 
+export interface DivergeData {
+  label: string
+  outputCount: number       // 2-5 parallel outputs
+  outputLabels?: string[]   // optional labels for each output
+}
+
 export interface NoteData {
   label: string
   content: string
@@ -135,6 +141,7 @@ export type FlowNodeData =
   | TransformData
   | EmailData
   | MergeData
+  | DivergeData
   | NoteData
 
 export type FlowNode = Node<FlowNodeData>
@@ -175,7 +182,7 @@ export interface FlowExport {
   updatedAt: string
   nodes: Array<{
     id: string
-    type: "event_trigger" | "condition" | "delay" | "notification" | "webhook" | "ab_split" | "filter" | "schedule" | "rate_limit" | "presence_check" | "transform" | "email" | "merge" | "note"
+    type: "event_trigger" | "condition" | "delay" | "notification" | "webhook" | "ab_split" | "filter" | "schedule" | "rate_limit" | "presence_check" | "transform" | "email" | "merge" | "diverge" | "note"
     data: FlowNodeData
     position: { x: number; y: number }
   }>

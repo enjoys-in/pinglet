@@ -21,7 +21,7 @@ import "reactflow/dist/style.css"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { Save, Download, Trash2, Zap, GitBranch, Clock, Bell, GripVertical, Eye, ArrowLeft, Globe, Split, Filter, CalendarClock, Gauge, Shuffle, Mail, Merge, StickyNote } from "lucide-react"
+import { Save, Download, Trash2, Zap, GitBranch, Clock, Bell, GripVertical, Eye, ArrowLeft, Globe, Split, Filter, CalendarClock, Gauge, Shuffle, Mail, Merge, StickyNote, Copy, Scissors, ClipboardPaste, CopyPlus, MousePointerSquareDashed } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
 import { EventTriggerNode } from "./event-trigger-node"
@@ -38,6 +38,7 @@ import { TransformNode } from "./transform-node"
 import { EmailNode } from "./email-node"
 import { MergeNode } from "./merge-node"
 import { NoteNode } from "./note-node"
+import { DivergeNode } from "./diverge-node"
 import FlowConfigPanel from "./flow-config-panel"
 import { type FlowNode, type FlowExport, getFlowById, saveFlow, generateFlowId } from "./types"
 
@@ -57,6 +58,7 @@ const nodeTypes: NodeTypes = {
   transform: TransformNode,
   email: EmailNode,
   merge: MergeNode,
+  diverge: DivergeNode,
   note: NoteNode,
 }
 
@@ -74,6 +76,7 @@ const PALETTE = [
   { type: "rate_limit", label: "Rate Limit", desc: "Throttle notifications", icon: Gauge, color: "text-orange-500", group: "Logic" },
   { type: "presence_check", label: "Presence Check", desc: "Online / offline check", icon: Eye, color: "text-teal-500", group: "Logic" },
   { type: "merge", label: "Merge", desc: "Join multiple branches", icon: Merge, color: "text-lime-500", group: "Logic" },
+  { type: "diverge", label: "Diverge", desc: "Fork into parallel paths", icon: GitBranch, color: "text-purple-500", group: "Logic" },
   // Actions
   { type: "notification", label: "Send Notification", desc: "Toast, Push, Template …", icon: Bell, color: "text-emerald-500", group: "Actions" },
   { type: "email", label: "Send Email", desc: "Email with template", icon: Mail, color: "text-sky-500", group: "Actions" },
@@ -100,6 +103,7 @@ const defaultData: Record<string, Record<string, unknown>> = {
   transform: { label: "Transform", mappings: "{}" },
   email: { label: "Send Email", to: "", subject: "", body: "", templateId: "", replyTo: "" },
   merge: { label: "Merge", mergeMode: "all" },
+  diverge: { label: "Diverge", outputCount: 3, outputLabels: ["Email", "Webhook", "Push"] },
   note: { label: "Note", content: "" },
 }
 
@@ -173,7 +177,148 @@ export default function NotificationFlowBuilder({ flowId, projectId }: Notificat
   )
 
   const onNodeClick = useCallback((_: React.MouseEvent, node: Node) => setSelectedNode(node), [])
-  const onPaneClick = useCallback(() => setSelectedNode(null), [])
+  const onPaneClick = useCallback(() => { setSelectedNode(null); setContextMenu(null) }, [])
+
+  // ─── Context Menu ────────────────────────────────────────────────────────────
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; nodeId?: string } | null>(null)
+  const [clipboard, setClipboard] = useState<Node | null>(null)
+
+  const onNodeContextMenu = useCallback((e: React.MouseEvent, node: Node) => {
+    e.preventDefault()
+    setSelectedNode(node)
+    setContextMenu({ x: e.clientX, y: e.clientY, nodeId: node.id })
+  }, [])
+
+  const onPaneContextMenu = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    setContextMenu({ x: e.clientX, y: e.clientY })
+  }, [])
+
+  const ctxDeleteNode = useCallback(() => {
+    if (!contextMenu?.nodeId) return
+    setNodes(nds => nds.filter(n => n.id !== contextMenu.nodeId))
+    setEdges(eds => eds.filter(e => e.source !== contextMenu.nodeId && e.target !== contextMenu.nodeId))
+    if (selectedNode?.id === contextMenu.nodeId) setSelectedNode(null)
+    setContextMenu(null)
+  }, [contextMenu, selectedNode, setNodes, setEdges])
+
+  const ctxCopyNode = useCallback(() => {
+    if (!contextMenu?.nodeId) return
+    const node = nodes.find(n => n.id === contextMenu.nodeId)
+    if (node) setClipboard(node)
+    setContextMenu(null)
+    toast({ title: "Copied", description: "Node copied to clipboard." })
+  }, [contextMenu, nodes, toast])
+
+  const ctxCutNode = useCallback(() => {
+    if (!contextMenu?.nodeId) return
+    const node = nodes.find(n => n.id === contextMenu.nodeId)
+    if (node) setClipboard(node)
+    setNodes(nds => nds.filter(n => n.id !== contextMenu.nodeId))
+    setEdges(eds => eds.filter(e => e.source !== contextMenu.nodeId && e.target !== contextMenu.nodeId))
+    if (selectedNode?.id === contextMenu.nodeId) setSelectedNode(null)
+    setContextMenu(null)
+    toast({ title: "Cut", description: "Node cut to clipboard." })
+  }, [contextMenu, nodes, selectedNode, setNodes, setEdges, toast])
+
+  const ctxDuplicateNode = useCallback(() => {
+    if (!contextMenu?.nodeId) return
+    const node = nodes.find(n => n.id === contextMenu.nodeId)
+    if (!node) return
+    const dup: Node = {
+      id: nextId(node.type || "node"),
+      type: node.type,
+      position: { x: node.position.x + 40, y: node.position.y + 40 },
+      data: { ...node.data },
+    }
+    setNodes(nds => nds.concat(dup))
+    setContextMenu(null)
+    toast({ title: "Duplicated" })
+  }, [contextMenu, nodes, setNodes, toast])
+
+  const ctxPasteNode = useCallback(() => {
+    if (!clipboard) return
+    const dup: Node = {
+      id: nextId(clipboard.type || "node"),
+      type: clipboard.type,
+      position: {
+        x: clipboard.position.x + 60,
+        y: clipboard.position.y + 60,
+      },
+      data: { ...clipboard.data },
+    }
+    setNodes(nds => nds.concat(dup))
+    setContextMenu(null)
+    toast({ title: "Pasted" })
+  }, [clipboard, setNodes, toast])
+
+  const ctxSelectAll = useCallback(() => {
+    setNodes(nds => nds.map(n => ({ ...n, selected: true })))
+    setContextMenu(null)
+  }, [setNodes])
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement
+      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) return
+
+      if ((e.key === "Delete" || e.key === "Backspace") && selectedNode) {
+        setNodes(nds => nds.filter(n => n.id !== selectedNode.id))
+        setEdges(eds => eds.filter(ed => ed.source !== selectedNode.id && ed.target !== selectedNode.id))
+        setSelectedNode(null)
+      }
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === "c" && selectedNode) {
+          setClipboard(selectedNode)
+          toast({ title: "Copied" })
+        }
+        if (e.key === "x" && selectedNode) {
+          setClipboard(selectedNode)
+          setNodes(nds => nds.filter(n => n.id !== selectedNode.id))
+          setEdges(eds => eds.filter(ed => ed.source !== selectedNode.id && ed.target !== selectedNode.id))
+          setSelectedNode(null)
+          toast({ title: "Cut" })
+        }
+        if (e.key === "v" && clipboard) {
+          const dup: Node = {
+            id: nextId(clipboard.type || "node"),
+            type: clipboard.type,
+            position: { x: clipboard.position.x + 60, y: clipboard.position.y + 60 },
+            data: { ...clipboard.data },
+          }
+          setNodes(nds => nds.concat(dup))
+          toast({ title: "Pasted" })
+        }
+        if (e.key === "d" && selectedNode) {
+          e.preventDefault()
+          const dup: Node = {
+            id: nextId(selectedNode.type || "node"),
+            type: selectedNode.type,
+            position: { x: selectedNode.position.x + 40, y: selectedNode.position.y + 40 },
+            data: { ...selectedNode.data },
+          }
+          setNodes(nds => nds.concat(dup))
+          toast({ title: "Duplicated" })
+        }
+        if (e.key === "a") {
+          e.preventDefault()
+          setNodes(nds => nds.map(n => ({ ...n, selected: true })))
+        }
+      }
+    }
+    window.addEventListener("keydown", handler)
+    return () => window.removeEventListener("keydown", handler)
+  }, [selectedNode, clipboard, setNodes, setEdges, toast])
+
+  // Close context menu on scroll/click outside
+  useEffect(() => {
+    if (!contextMenu) return
+    const close = () => setContextMenu(null)
+    window.addEventListener("click", close)
+    window.addEventListener("scroll", close, true)
+    return () => { window.removeEventListener("click", close); window.removeEventListener("scroll", close, true) }
+  }, [contextMenu])
 
   const updateNodeData = useCallback(
     (nodeId: string, data: Record<string, unknown>) => {
@@ -308,6 +453,8 @@ export default function NotificationFlowBuilder({ flowId, projectId }: Notificat
               onDragOver={onDragOver}
               onNodeClick={onNodeClick}
               onPaneClick={onPaneClick}
+              onNodeContextMenu={onNodeContextMenu}
+              onPaneContextMenu={onPaneContextMenu}
               nodeTypes={nodeTypes}
               fitView
               snapToGrid
@@ -333,6 +480,7 @@ export default function NotificationFlowBuilder({ flowId, projectId }: Notificat
                     transform: "#d946ef",
                     email: "#0ea5e9",
                     merge: "#84cc16",
+                    diverge: "#a855f7",
                     note: "#eab308",
                   }
                   return colors[n.type || ""] || "#6b7280"
@@ -392,6 +540,42 @@ export default function NotificationFlowBuilder({ flowId, projectId }: Notificat
           updateNodeData={updateNodeData}
           onClose={() => setSelectedNode(null)}
         />
+      )}
+
+      {/* ─── Context Menu ─── */}
+      {contextMenu && (
+        <div
+          className="fixed z-50 min-w-[180px] rounded-lg border border-border bg-popover p-1 shadow-lg animate-in fade-in-0 zoom-in-95"
+          style={{ top: contextMenu.y, left: contextMenu.x }}
+          onClick={e => e.stopPropagation()}
+        >
+          {contextMenu.nodeId ? (
+            <>
+              <button onClick={ctxCopyNode} className="flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm hover:bg-accent transition-colors">
+                <Copy className="size-3.5 text-muted-foreground" /> Copy <kbd className="ml-auto text-[10px] text-muted-foreground">Ctrl+C</kbd>
+              </button>
+              <button onClick={ctxCutNode} className="flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm hover:bg-accent transition-colors">
+                <Scissors className="size-3.5 text-muted-foreground" /> Cut <kbd className="ml-auto text-[10px] text-muted-foreground">Ctrl+X</kbd>
+              </button>
+              <button onClick={ctxDuplicateNode} className="flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm hover:bg-accent transition-colors">
+                <CopyPlus className="size-3.5 text-muted-foreground" /> Duplicate <kbd className="ml-auto text-[10px] text-muted-foreground">Ctrl+D</kbd>
+              </button>
+              <div className="my-1 h-px bg-border" />
+              <button onClick={ctxDeleteNode} className="flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm text-destructive hover:bg-destructive/10 transition-colors">
+                <Trash2 className="size-3.5" /> Delete <kbd className="ml-auto text-[10px] text-destructive/60">Del</kbd>
+              </button>
+            </>
+          ) : (
+            <>
+              <button onClick={ctxPasteNode} disabled={!clipboard} className="flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm hover:bg-accent transition-colors disabled:opacity-40 disabled:pointer-events-none">
+                <ClipboardPaste className="size-3.5 text-muted-foreground" /> Paste <kbd className="ml-auto text-[10px] text-muted-foreground">Ctrl+V</kbd>
+              </button>
+              <button onClick={ctxSelectAll} className="flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm hover:bg-accent transition-colors">
+                <MousePointerSquareDashed className="size-3.5 text-muted-foreground" /> Select All <kbd className="ml-auto text-[10px] text-muted-foreground">Ctrl+A</kbd>
+              </button>
+            </>
+          )}
+        </div>
       )}
     </div>
   )

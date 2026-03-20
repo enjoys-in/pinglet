@@ -376,7 +376,29 @@ export function showHtmlNotification(opts = {}) {
 				img.decoding = "async";
 				mediaWrap.appendChild(img);
 			} else if (mediaType === "video") {
-				const vp = videoPlayerElement(mediaSrc, true, dark);
+				const vp = videoPlayerElement(mediaSrc, true, dark, (durationMs) => {
+					// video.onloadedmetadata — sync notification timer to actual video length
+					if (!autoClose || dismissed || durationMs <= 0) return;
+					const newDuration = durationMs + 1500;
+					_effectiveDuration = newDuration;
+					// Reset the running timer with the real duration
+					clearTimeout(autoCloseTimer);
+					remaining = newDuration;
+					if (progressBar) {
+						progressBar.style.transition = "none";
+						progressBar.style.width = "100%";
+						requestAnimationFrame(() => {
+							progressBar.style.transition = "width " + newDuration + "ms linear";
+							progressBar.style.width = "0%";
+						});
+					}
+					pausedAt = Date.now();
+					autoCloseTimer = setTimeout(() => {
+						dismissReason = "dropped";
+						dismissReasonText = "auto-dismiss";
+						dismiss();
+					}, newDuration);
+				});
 				mediaWrap.appendChild(vp.element);
 				_videoGetDuration = vp.getDuration;
 			} else if (mediaType === "audio") {

@@ -117,11 +117,12 @@ function _fmt(s) {
  * @param {string}  src       Video URL
  * @param {boolean} [isMuted=true]  Start muted (required for autoplay)
  * @param {boolean} [isDark=false]  Dark theme variant
+ * @param {(durationMs: number) => void} [onDurationReady]  Called when metadata loads with duration in ms
  * @returns {{ element: HTMLDivElement, getDuration: () => number }}
  *   element    — DOM node to mount
  *   getDuration — Returns video duration in ms once metadata loads (0 until then)
  */
-export function videoPlayerElement(src, isMuted = true, isDark = false) {
+export function videoPlayerElement(src, isMuted = true, isDark = false, onDurationReady = null) {
 	_ensureVideoStyles();
 
 	let _durationMs = 0;
@@ -209,6 +210,9 @@ export function videoPlayerElement(src, isMuted = true, isDark = false) {
 	video.addEventListener("loadedmetadata", () => {
 		_durationMs = Math.round(video.duration * 1000);
 		timeEl.textContent = "0:00 / " + _fmt(video.duration);
+
+		// Notify the notification card so it can sync its timer
+		if (typeof onDurationReady === "function") onDurationReady(_durationMs);
 
 		// Autoplay muted
 		video.play().then(() => {

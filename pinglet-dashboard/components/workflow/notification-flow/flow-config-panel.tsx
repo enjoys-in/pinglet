@@ -44,6 +44,7 @@ export default function FlowConfigPanel({ node, updateNodeData, onClose }: FlowC
     transform: "Transform",
     email: "Send Email",
     merge: "Merge",
+    diverge: "Diverge / Fork",
     note: "Note",
   }
 
@@ -542,6 +543,52 @@ export default function FlowConfigPanel({ node, updateNodeData, onClose }: FlowC
                 </SelectContent>
               </Select>
             </div>
+          )}
+
+          {/* ─── Diverge Fields ──────────────────────────────── */}
+          {node.type === "diverge" && (
+            <>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Output Count (2-5)</Label>
+                <Select
+                  value={String((data.outputCount as number) || 3)}
+                  onValueChange={val => {
+                    const count = Number(val)
+                    const labels = (data.outputLabels as string[]) || []
+                    // Pad or trim labels array to match new count
+                    const newLabels = Array.from({ length: count }, (_, i) => labels[i] || `#${i + 1}`)
+                    update("outputCount", count)
+                    update("outputLabels", newLabels)
+                  }}
+                >
+                  <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {[2, 3, 4, 5].map(n => (
+                      <SelectItem key={n} value={String(n)}>{n} outputs</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <Separator />
+              <div className="space-y-2">
+                <Label className="text-xs">Output Labels</Label>
+                {Array.from({ length: (data.outputCount as number) || 3 }).map((_, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <div className="flex size-5 shrink-0 items-center justify-center rounded bg-purple-500/10 text-[10px] font-bold text-purple-500">{i + 1}</div>
+                    <Input
+                      value={((data.outputLabels as string[]) || [])[i] || ""}
+                      onChange={e => {
+                        const labels = [...((data.outputLabels as string[]) || [])]
+                        labels[i] = e.target.value
+                        update("outputLabels", labels)
+                      }}
+                      placeholder={`Output ${i + 1} label`}
+                      className="h-7 text-xs"
+                    />
+                  </div>
+                ))}
+              </div>
+            </>
           )}
 
           {/* ─── Note Fields ─────────────────────────────────────── */}
