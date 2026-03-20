@@ -139,15 +139,7 @@ class AppServer {
 	 */
 	private RegisterRoutes(): void {
 		Logging.dev("Registering Routes");
-		if (
-			__CONFIG__.APP.APP_ENV.toUpperCase() === "PRODUCTION" ||
-			__CONFIG__.APP.APP_ENV.toUpperCase() === "PROD"
-		) {
-			AppServer.App.use(AppMiddlewares.isApiProtected(), AppRoutes);
-		} else {
-			AppServer.App.use(AppRoutes);
-		}
-
+		AppServer.App.use(AppRoutes);
 		RouteResolver.Mapper(AppServer.App, { listEndpoints: true });
 	}
 	/**

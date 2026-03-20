@@ -6,6 +6,7 @@ import fileUpload from "express-fileupload";
 import { JwtAuth } from "../middlewares/auth.Middleware";
 import ApiRoutes from "./api";
 import ProtectedRoutes from "./api/protected.route";
+import { AppMiddlewares } from "@/middlewares/app.middleware";
 
 const router = Router();
 
@@ -13,11 +14,20 @@ const router = Router();
 router.use(`/api/${__CONFIG__.APP.API_VERSION}`, ApiRoutes);
 
 // Protected dashboard routes — uses global CORS (restricted origins + credentials)
-router.use(
-	`/api/${__CONFIG__.APP.API_VERSION}`,
+const isProduction =
+	__CONFIG__.APP.APP_ENV.toUpperCase() === "PRODUCTION" ||
+	__CONFIG__.APP.APP_ENV.toUpperCase() === "PROD";
+
+const protectedMiddlewares = [
+	...(isProduction ? [AppMiddlewares.isApiProtected()] : []),
 	JwtAuth.validateUser,
 	SessionHandler.forRoot(),
 	fileUpload({ tempFileDir: "./" }),
+];
+
+router.use(
+	`/api/${__CONFIG__.APP.API_VERSION}`,
+	...protectedMiddlewares,
 	ProtectedRoutes,
 );
 
