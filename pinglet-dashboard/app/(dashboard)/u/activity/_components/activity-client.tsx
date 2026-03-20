@@ -16,14 +16,48 @@ interface Project {
   name: string
 }
 
+interface ActivityEvent {
+  id: string
+  project_id: string
+  visitor_id: string
+  event_type: string
+  page_url: string | null
+  page_title: string | null
+  referrer: string | null
+  duration_ms: number
+  metadata: Record<string, any> | null
+  user_agent: string | null
+  ip_hash: string | null
+  created_at: string
+}
+
+interface TopPage {
+  page_url: string
+  views: number
+  uniqueVisitors: number
+}
+
+interface ActivityStats {
+  stats: Record<string, number>
+  topPages: TopPage[]
+  avgSessionDuration: number
+  uniqueVisitors: number
+}
+
+function sumEventCounts(stats: Record<string, number> | undefined): number {
+  if (!stats) return 0
+  return Object.values(stats).reduce((sum, n) => sum + (n || 0), 0)
+}
+
 export function ActivityClient({ projects }: { projects: Project[] }) {
   const [selectedProject, setSelectedProject] = useState<string>("")
-  const [stats, setStats] = useState<any>(null)
-  const [events, setEvents] = useState<any[]>([])
+  const [stats, setStats] = useState<ActivityStats | null>(null)
+  const [events, setEvents] = useState<ActivityEvent[]>([])
+  const [totalEvents, setTotalEvents] = useState(0)
   const [loading, setLoading] = useState(false)
   const [offset, setOffset] = useState(0)
   const [selectedVisitor, setSelectedVisitor] = useState<string | null>(null)
-  const [visitorEvents, setVisitorEvents] = useState<any[]>([])
+  const [visitorEvents, setVisitorEvents] = useState<ActivityEvent[]>([])
   const [visitorLoading, setVisitorLoading] = useState(false)
   const limit = 50
 
@@ -36,7 +70,11 @@ export function ActivityClient({ projects }: { projects: Project[] }) {
         API.getActivityEvents(projectId, limit, page),
       ])
       if (statsRes.status === "fulfilled") setStats(statsRes.value.data?.result)
-      if (eventsRes.status === "fulfilled") setEvents(eventsRes.value.data?.result ?? [])
+      if (eventsRes.status === "fulfilled") {
+        const evData = eventsRes.value.data?.result
+        setEvents(evData?.events ?? [])
+        setTotalEvents(evData?.total ?? 0)
+      }
     } catch {
       setStats(null)
       setEvents([])
@@ -62,7 +100,7 @@ export function ActivityClient({ projects }: { projects: Project[] }) {
     setVisitorLoading(true)
     try {
       const res = await API.getVisitorEvents(selectedProject, visitorId)
-      setVisitorEvents(res.data?.result ?? [])
+      setVisitorEvents(res.data?.result?.events ?? res.data?.result ?? [])
     } catch {
       setVisitorEvents([])
     } finally {
@@ -110,12 +148,12 @@ export function ActivityClient({ projects }: { projects: Project[] }) {
                 <Activity className="h-4 w-4 text-primary" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats?.stats?.totalEvents?.toLocaleString() ?? 0}</div>
+                <div className="text-2xl font-bold">{sumEventCounts(stats?.stats).toLocaleString()}</div>
               </CardContent>
             </Card>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-xs font-medium text-muted-foreground">Unique Visitors (7d)</CardTitle>
+                <CardTitle className="text-xs font-medium text-muted-foreground">Unique Visitors (30d)</CardTitle>
                 <Users className="h-4 w-4 text-emerald-500" />
               </CardHeader>
               <CardContent>
@@ -128,7 +166,7 @@ export function ActivityClient({ projects }: { projects: Project[] }) {
                 <Clock className="h-4 w-4 text-amber-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats?.avgDuration ? `${Math.round(stats.avgDuration / 1000)}s` : "—"}</div>
+                <div className="text-2xl font-bold">{stats?.avgSessionDuration ? `${Math.round(stats.avgSessionDuration / 1000)}s` : "—"}</div>
               </CardContent>
             </Card>
             <Card>
@@ -147,16 +185,16 @@ export function ActivityClient({ projects }: { projects: Project[] }) {
             <Card>
               <CardHeader>
                 <CardTitle className="text-sm font-semibold">Top Pages</CardTitle>
-                <CardDescription className="text-xs">Most visited pages by event count</CardDescription>
+                <CardDescription className="text-xs">Most visited pages by view count</CardDescription>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={stats.topPages.slice(0, 10)} layout="vertical" margin={{ left: 120 }}>
                     <CartesianGrid strokeDasharray="3 3" horizontal={false} />
                     <XAxis type="number" />
-                    <YAxis dataKey="page" type="category" tick={{ fontSize: 11 }} width={120} />
+                    <YAxis dataKey="page_url" type="category" tick={{ fontSize: 11 }} width={120} />
                     <Tooltip />
-                    <Bar dataKey="count" fill="hsl(262, 83%, 58%)" radius={[0, 4, 4, 0]} />
+                    <Bar dataKey="views" fill="hsl(262, 83%, 58%)" radius={[0, 4, 4, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -212,7 +250,7 @@ export function ActivityClient({ projects }: { projects: Project[] }) {
                   <CardTitle className="text-sm font-semibold">Recent Events</CardTitle>
                   <CardDescription className="text-xs">Activity event feed</CardDescription>
                 </div>
-                <Badge variant="secondary" className="text-xs">{events.length} events</Badge>
+                <Badge variant="secondary" className="text-xs">{totalEvents || events.length} events</Badge>
               </div>
             </CardHeader>
             <CardContent>
@@ -254,7 +292,7 @@ export function ActivityClient({ projects }: { projects: Project[] }) {
                       <ChevronLeft className="h-4 w-4" />
                     </Button>
                     <span className="text-xs text-muted-foreground">Page {Math.floor(offset / limit) + 1}</span>
-                    <Button variant="outline" size="sm" disabled={events.length < limit} onClick={() => handlePageChange(offset + limit)}>
+                    <Button variant="outline" size="sm" disabled={events.length < limit || offset + limit >= totalEvents} onClick={() => handlePageChange(offset + limit)}>
                       <ChevronRight className="h-4 w-4" />
                     </Button>
                   </div>

@@ -13,6 +13,7 @@ import { MailService } from "@/utils/services/mail/mailService";
 import { AppEvents } from "@/utils/services/Events";
 import { NotificationLifecycleEvent } from "@/utils/services/kafka/topics";
 import { dispatchFlows } from "@/utils/services/flow-engine";
+import { Logging } from "@/logs";
 import { QueueService } from ".";
 import { QUEUE_JOBS } from "./name";
 const triggerWebhookQueue = QueueService.createQueue("TRIGGER_WEBHOOK");
@@ -43,9 +44,12 @@ export interface LifecycleEventPayload {
 
 // ─── Fire-and-forget cache invalidation for hot-path notification lookups ───
 AppEvents.on("invalidateNtfyCache", (payload: { projectId?: string; projectIds?: string[] }) => {
+	Logging.dev(`[Event:invalidateNtfyCache] projectId=${payload.projectId || ""} projectIds=${payload.projectIds?.join(",") || ""}`);
 	const ids = payload.projectIds || (payload.projectId ? [payload.projectId] : []);
 	const keys = ids.flatMap((pid) => CacheInvalidation.ntfyProject(pid));
-	if (keys.length > 0) invalidateCache(keys).catch(() => {});
+	if (keys.length > 0) invalidateCache(keys).catch((err) => {
+		Logging.dev(`[Event:invalidateNtfyCache] cache invalidation failed: ${err?.message || err}`, "error");
+	});
 });
 
 // ─── Fire-and-forget inbox store ───
@@ -59,7 +63,10 @@ AppEvents.on("storeInbox", (payload: {
 	type: string;
 	data: Record<string, any>;
 }) => {
-	notificationInboxService.addToInbox(payload).catch(() => {});
+	Logging.dev(`[Event:storeInbox] project=${payload.project_id} title=${payload.title}`);
+	notificationInboxService.addToInbox(payload).catch((err) => {
+		Logging.dev(`[Event:storeInbox] DB insert failed: ${err?.message || err}`, "error");
+	});
 });
 
 // ─── Fire-and-forget activity tracking ───
@@ -72,6 +79,7 @@ AppEvents.on("trackActivity", (payload: {
 	visitor_id?: string;
 	metadata?: Record<string, any>;
 }) => {
+	Logging.dev(`[Event:trackActivity] project=${payload.project_id} event=${payload.event_type} visitor=${payload.visitor_id || "anonymous"}`);
 	visitorActivityService.trackEvent({
 		project_id: payload.project_id,
 		visitor_id: payload.visitor_id || "anonymous",
@@ -80,12 +88,16 @@ AppEvents.on("trackActivity", (payload: {
 		page_title: payload.page_title,
 		referrer: payload.referrer,
 		metadata: payload.metadata,
-	}).catch(() => {});
+	}).catch((err) => {
+		Logging.dev(`[Event:trackActivity] DB upsert failed: ${err?.message || err}`, "error");
+	});
 });
 
 // ─── Unified notification lifecycle handler ───
 // ONE event → Kafka log + webhook dispatch + flow execution (all fire-and-forget)
 AppEvents.on("notificationLifecycle", async (payload: LifecycleEventPayload) => {
+	console.log(payload)
+	Logging.dev(`[Event:notificationLifecycle] event=${payload.event} project=${payload.projectId} notificationId=${payload.notificationId || "N/A"}`);
 	const ts = Date.now();
 
 	// 1. Log to Kafka (analytics / activity tracking)
@@ -99,7 +111,9 @@ AppEvents.on("notificationLifecycle", async (payload: LifecycleEventPayload) => 
 	}, {
 		removeOnComplete: true,
 		jobId: `${payload.projectId}-${ts}-${payload.event}`,
-	}).catch(() => {});
+	}).catch((err) => {
+		Logging.dev(`[Event:notificationLifecycle] Kafka queue add failed: ${err?.message || err}`, "error");
+	});
 
 	// 2. Dispatch matching active flows (event-driven)
 	dispatchFlows(
@@ -107,7 +121,9 @@ AppEvents.on("notificationLifecycle", async (payload: LifecycleEventPayload) => 
 		payload.event,
 		{ ...payload.data, projectId: payload.projectId, event: payload.event },
 		payload.userId,
-	).catch(() => {});
+	).catch((err) => {
+		Logging.dev(`[Event:notificationLifecycle] flow dispatch failed: ${err?.message || err}`, "error");
+	});
 
 	// 2. Dispatch matching webhooks
 	const webhookEvent = LIFECYCLE_TO_WEBHOOK[payload.event as NotificationLifecycleEvent];
@@ -145,10 +161,12 @@ AppEvents.on("notificationLifecycle", async (payload: LifecycleEventPayload) => 
 					attempts: 3,
 					backoff: { type: "exponential", delay: 5000 },
 				},
-			).catch(() => {});
+			).catch((err) => {
+				Logging.dev(`[Event:notificationLifecycle] webhook queue add failed for wh=${wh.id}: ${err?.message || err}`, "error");
+			});
 		}
-	} catch (err) {
-		console.error("notificationLifecycle webhook dispatch error:", err);
+	} catch (err: any) {
+		Logging.dev(`[Event:notificationLifecycle] webhook dispatch error: ${err?.message || err}`, "error");
 	}
 });
 

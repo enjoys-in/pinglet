@@ -52,7 +52,7 @@ class PushNtfyController {
 				notificationId: body?.notification_id,
 				data: body,
 			});
-		} else {
+		} else if (body?.project_id) {
 			// Activity / interaction event (click, scroll, pageview, etc.)
 			// → Store as visitor activity tracking
 			AppEvents.emit("trackActivity", {
@@ -171,14 +171,14 @@ class PushNtfyController {
 	loadTemplates = async (req: Request, res: Response) => {
 		try {
 			const query = req.query as { projectId: string; templatesIds: string };
-			 
-			if (!query.projectId ) {
+
+			if (!query.projectId) {
 				throw new Error("Missing projectId or templatesIds");
 			}
-			if (!query.templatesIds ) {
-				 
-				 res.json({ message: "OK", result: {}, success: true }).end();
-				 return
+			if (!query.templatesIds) {
+
+				res.json({ message: "OK", result: {}, success: true }).end();
+				return
 			}
 			const duplicationKey = Buffer.from(
 				`${query.projectId}-${query.templatesIds}`,
@@ -332,7 +332,7 @@ class PushNtfyController {
 				reason: body.reason || null,
 				feedback: body.feedback || null,
 				user_agent: req.headers["user-agent"] || "",
-			}).catch(() => {});
+			}).catch(() => { });
 			AppEvents.emit(
 				"triggerWebhook",
 				JSON.stringify({
@@ -386,18 +386,18 @@ class PushNtfyController {
 
 		// Track live presence
 		const connectionId = `${projectId}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-		livePresenceService.connect(projectId, connectionId).catch(() => {});
+		livePresenceService.connect(projectId, connectionId).catch(() => { });
 
 		// Heartbeat to keep presence alive
 		const heartbeatInterval = setInterval(() => {
 			res.write(":heartbeat\n\n");
-			livePresenceService.heartbeat(projectId, connectionId).catch(() => {});
+			livePresenceService.heartbeat(projectId, connectionId).catch(() => { });
 		}, 30_000);
 
 		req.on("close", () => {
 			clients.get(projectId)?.delete(res);
 			clearInterval(heartbeatInterval);
-			livePresenceService.disconnect(projectId, connectionId).catch(() => {});
+			livePresenceService.disconnect(projectId, connectionId).catch(() => { });
 		});
 	};
 	triggerNotification = async (
@@ -487,6 +487,7 @@ class PushNtfyController {
 				event: NotificationLifecycleEvent.REQUEST,
 				projectId,
 				userId: project?.user?.id,
+				notificationId:projectId + "-" + Date.now(),
 				type: rest.type || "0",
 				data: rest,
 			});
@@ -515,6 +516,7 @@ class PushNtfyController {
 					event: NotificationLifecycleEvent.QUEUED,
 					projectId,
 					userId: project?.user?.id,
+					notificationId:projectId + "-" + Date.now(),
 					type: rest.type,
 					data: rest,
 				});
@@ -543,6 +545,7 @@ class PushNtfyController {
 				event: NotificationLifecycleEvent.SENT,
 				projectId,
 				userId: project?.user?.id,
+				notificationId:projectId + "-" + Date.now(),
 				type: rest.type || "0",
 				data: rest,
 			});

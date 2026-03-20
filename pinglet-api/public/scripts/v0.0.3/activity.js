@@ -64,6 +64,7 @@ function _getPerf() {
 }
 
 function _track(type, extra = {}) {
+	if (!_projectId) return;
 	_getFingerprint().then((fingerprint) => {
 		_send({
 			event: "activity",
@@ -98,10 +99,6 @@ function _bindListeners() {
 
 	window.addEventListener("beforeunload", () => {
 		_track("page_exit", { scrollDepth: _maxScroll, sessionTime: Date.now() - _startTime });
-	});
-
-	document.addEventListener("visibilitychange", () => {
-		_track("visibility_change", { visibility: document.visibilityState });
 	});
 
 	window.addEventListener("load", () => {
