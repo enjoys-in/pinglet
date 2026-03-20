@@ -40,6 +40,15 @@ const statusConfig: Record<string, { label: string; icon: typeof Play; className
   draft:  { label: "Draft",  icon: Edit, className: "bg-muted text-muted-foreground border-border" },
 }
 
+function formatDate(val: string | undefined, style: 'short' | 'full' = 'short'): string {
+  if (!val) return "—"
+  const d = new Date(val)
+  if (isNaN(d.getTime())) return "—"
+  return style === 'full'
+    ? d.toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+    : d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+}
+
 export default function FlowsPage() {
   const [flows, setFlows] = useState<FlowExport[]>([])
   const [search, setSearch] = useState("")
@@ -399,7 +408,7 @@ export default function FlowsPage() {
                     <span>{notifs} notifications</span>
                   </div>
                   <p className="text-[11px] text-muted-foreground mt-2">
-                    Updated {new Date(flow.updatedAt).toLocaleDateString()}
+                    Updated {formatDate(flow.updatedAt || flow.updated_at)}
                   </p>
                   <Button
                     variant="outline"
@@ -481,7 +490,7 @@ export default function FlowsPage() {
                 <div><span className="text-muted-foreground">Project:</span> <Badge variant="secondary" className="ml-1">{viewTarget.projectId?.replace("project_", "") || "—"}</Badge></div>
                 <div><span className="text-muted-foreground">Nodes:</span> <span className="font-medium ml-1">{viewTarget.nodes.length}</span></div>
                 <div><span className="text-muted-foreground">Edges:</span> <span className="font-medium ml-1">{viewTarget.edges.length}</span></div>
-                <div><span className="text-muted-foreground">Created:</span> <span className="ml-1">{new Date(viewTarget.createdAt).toLocaleString()}</span></div>
+                <div><span className="text-muted-foreground">Created:</span> <span className="ml-1">{formatDate(viewTarget.createdAt || viewTarget.created_at, 'full')}</span></div>
               </div>
               <div>
                 <p className="text-xs font-medium mb-1">Flow Payload</p>

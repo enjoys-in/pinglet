@@ -193,8 +193,10 @@ export interface FlowExport {
   description?: string
   projectId: string
   status: "draft" | "active" | "paused"
-  createdAt: string
-  updatedAt: string
+  createdAt?: string
+  updatedAt?: string
+  created_at?: string
+  updated_at?: string
   nodes: Array<{
     id: string
     type: "event_trigger" | "condition" | "delay" | "notification" | "webhook" | "ab_split" | "filter" | "schedule" | "rate_limit" | "presence_check" | "transform" | "email" | "merge" | "diverge" | "note"

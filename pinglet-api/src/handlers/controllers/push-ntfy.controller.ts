@@ -26,7 +26,6 @@ import { DEFAULT_SW_FILE_CONTENT } from "../services/default/swFileContent";
 import { KafkaAnalyticsConsumer } from "../services/kafka/notificationConsumer";
 import { templateService } from "../services/template.service";
 import { WidgetService } from "../services/widget.service";
-import { dispatchFlows } from "@/utils/services/flow-engine";
 import { cached } from "@/utils/helpers/cache";
 import { CacheKeys, CacheTTL } from "@/utils/types/cache";
 import { NotificationLifecycleEvent } from "@/utils/services/kafka/topics";
@@ -459,7 +458,7 @@ class PushNtfyController {
 				}
 			}
 
-			// Log "request" event — fire-and-forget (Kafka + webhooks handled by event-listener)
+			// Log "request" event — fire-and-forget (Kafka + webhooks + flows handled by event-listener)
 			AppEvents.emit("notificationLifecycle", {
 				event: NotificationLifecycleEvent.REQUEST,
 				projectId,
@@ -467,9 +466,6 @@ class PushNtfyController {
 				type: rest.type || "0",
 				data: rest,
 			});
-
-			// Fire-and-forget: dispatch matching active flows (runs in worker, never blocks)
-			dispatchFlows(projectId, "notification_sent", { ...rest, projectId }, project?.user?.id).catch(() => {});
 
 			if (projectId && rest.type === "-1" && rest?.data) {
 				sendPushQueue.add(

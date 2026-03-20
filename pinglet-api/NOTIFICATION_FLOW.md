@@ -1,5 +1,14 @@
 # Notification Send Flow
 
+## Event-Driven Architecture
+
+Every notification lifecycle event flows through a **single centralized handler** (`notificationLifecycle`) that automatically triggers:
+1. **Kafka analytics logging** — activity tracking
+2. **Webhook dispatch** — to all matching user webhooks (API, Slack, Discord, Telegram, Teams)
+3. **Flow execution** — triggers matching active automation flows
+
+Nothing blocks the main thread. Everything is fire-and-forget via `AppEvents.emit()`.
+
 ```mermaid
 flowchart TD
     A["📨 API Request<br/><code>POST /api/v1/notifications/send</code>"] --> B{"Zod Schema<br/>Validation"}
@@ -14,26 +23,34 @@ flowchart TD
     E -->|Feature blocked| E2["❌ 403 Feature Unavailable"]
     E -->|All OK| F["🎯 Cleared to Send"]
 
-    F --> G["🔥 Fire-and-Forget Events"]
-    G --> G1["📊 <b>notificationLifecycle</b><br/><code>event: request</code><br/><i>→ Kafka log + Webhook dispatch</i>"]
-    G --> G2["⚡ <b>dispatchFlows</b><br/><i>→ BullMQ EXECUTE_FLOW queue</i>"]
+    F --> G["🔥 <b>notificationLifecycle</b><br/><code>event: request</code>"]
+    G --> EH["🧠 Event Handler<br/><i>(centralized, async)</i>"]
 
     F --> H{"Notification Type?"}
 
     H -->|"type = -1<br/>(Browser Push)"| I["📤 BullMQ Queue<br/><code>SEND_BROWSER_NOTIFICATION</code>"]
     I --> I1["✅ 200 OK Response<br/><i>(immediate)</i>"]
-    I1 --> I2["📊 <b>notificationLifecycle</b><br/><code>event: queued</code>"]
+    I1 --> I2["🔥 <b>notificationLifecycle</b><br/><code>event: queued</code>"]
+    I2 --> EH
 
     I --> J["👷 Push Worker"]
-    J -->|Success| K["📊 <b>notificationLifecycle</b><br/><code>event: sent</code><br/><i>→ Kafka + Webhook</i>"]
-    J -->|Failure| L["📊 <b>notificationLifecycle</b><br/><code>event: failed</code><br/><i>→ Kafka + Webhook</i>"]
+    J -->|Success| K["🔥 <b>notificationLifecycle</b><br/><code>event: sent</code>"]
+    K --> EH
+    J -->|Failure| L["🔥 <b>notificationLifecycle</b><br/><code>event: failed</code>"]
+    L --> EH
 
     H -->|"type = 0, 1, 2<br/>(SSE / Custom)"| M["📡 SSE Broadcast<br/><i>to all connected clients</i>"]
-    M --> N["📥 <b>storeInbox</b><br/><i>fire-and-forget event</i>"]
-    M --> O["📊 <b>notificationLifecycle</b><br/><code>event: sent</code><br/><i>→ Kafka + Webhook</i>"]
+    M --> N["🔥 <b>storeInbox</b><br/><i>fire-and-forget</i>"]
+    M --> O["🔥 <b>notificationLifecycle</b><br/><code>event: sent</code>"]
+    O --> EH
     M --> P["✅ 200 OK Response"]
 
-    Q["📱 SDK Client Events<br/><code>POST /log/track</code>"] --> R["📊 <b>notificationLifecycle</b><br/><code>event: clicked / dismissed / closed</code><br/><i>→ Kafka + Webhook</i>"]
+    Q["📱 SDK Client Events<br/><code>POST /log/track</code>"] --> R["🔥 <b>notificationLifecycle</b><br/><code>event: clicked / dismissed / closed</code>"]
+    R --> EH
+
+    EH --> EH1["📊 Kafka Analytics Log"]
+    EH --> EH2["🔗 Webhook Dispatch<br/><i>API · Slack · Discord · Telegram · Teams</i>"]
+    EH --> EH3["⚡ Flow Execution<br/><i>BullMQ EXECUTE_FLOW queue</i>"]
 
     style A fill:#4CAF50,color:#fff
     style B1 fill:#f44336,color:#fff
@@ -45,13 +62,16 @@ flowchart TD
     style P fill:#4CAF50,color:#fff
     style K fill:#4CAF50,color:#fff
     style L fill:#f44336,color:#fff
-    style G1 fill:#9C27B0,color:#fff
-    style G2 fill:#9C27B0,color:#fff
+    style G fill:#9C27B0,color:#fff
     style I2 fill:#9C27B0,color:#fff
     style N fill:#9C27B0,color:#fff
     style O fill:#9C27B0,color:#fff
     style R fill:#9C27B0,color:#fff
     style Q fill:#607D8B,color:#fff
+    style EH fill:#FF5722,color:#fff
+    style EH1 fill:#795548,color:#fff
+    style EH2 fill:#795548,color:#fff
+    style EH3 fill:#795548,color:#fff
 ```
 
 ## Legend

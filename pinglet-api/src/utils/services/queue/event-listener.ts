@@ -11,6 +11,7 @@ import { CacheInvalidation } from "@/utils/types/cache";
 import { MailService } from "@/utils/services/mail/mailService";
 import { AppEvents } from "@/utils/services/Events";
 import { NotificationLifecycleEvent } from "@/utils/services/kafka/topics";
+import { dispatchFlows } from "@/utils/services/flow-engine";
 import { QueueService } from ".";
 import { QUEUE_JOBS } from "./name";
 const triggerWebhookQueue = QueueService.createQueue("TRIGGER_WEBHOOK");
@@ -61,7 +62,7 @@ AppEvents.on("storeInbox", (payload: {
 });
 
 // ─── Unified notification lifecycle handler ───
-// ONE event → Kafka log + webhook dispatch (both fire-and-forget)
+// ONE event → Kafka log + webhook dispatch + flow execution (all fire-and-forget)
 AppEvents.on("notificationLifecycle", async (payload: LifecycleEventPayload) => {
 	const ts = Date.now();
 
@@ -77,6 +78,14 @@ AppEvents.on("notificationLifecycle", async (payload: LifecycleEventPayload) => 
 		removeOnComplete: true,
 		jobId: `${payload.projectId}-${ts}-${payload.event}`,
 	}).catch(() => {});
+
+	// 2. Dispatch matching active flows (event-driven)
+	dispatchFlows(
+		payload.projectId,
+		payload.event,
+		{ ...payload.data, projectId: payload.projectId, event: payload.event },
+		payload.userId,
+	).catch(() => {});
 
 	// 2. Dispatch matching webhooks
 	const webhookEvent = LIFECYCLE_TO_WEBHOOK[payload.event as NotificationLifecycleEvent];
