@@ -32,8 +32,12 @@ export class AppMiddlewares {
 	public static isApiProtected() {
 		Logging.dev("API Route are Protected");
 		return (req: Request, res: Response, next: NextFunction) => {
+			if (req.path.startsWith("/public") && req.path.includes(".html")) {
+				return next();
+			}
+
 			const headers = req.headers;
-			
+
 			const apiKey = headers["x-api-key"] || undefined;
 			if (typeof apiKey === "undefined") {
 				res.status(400).json({
