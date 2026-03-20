@@ -9,7 +9,7 @@ import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Switch } from "@/components/ui/switch"
-import { Settings, User, Shield, Bell, Key, Loader2, CheckCircle2 } from "lucide-react"
+import { Settings, User, Shield, Bell, Loader2, CheckCircle2 } from "lucide-react"
 import { API } from "@/lib/api/handler"
 import { useAuthStore } from "@/store/auth.store"
 
@@ -70,9 +70,6 @@ export default function SettingsClient({ profile }: { profile: Profile | null })
           </TabsTrigger>
           <TabsTrigger value="security" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm text-sm gap-2">
             <Shield className="w-4 h-4" /> Security
-          </TabsTrigger>
-          <TabsTrigger value="api" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm text-sm gap-2">
-            <Key className="w-4 h-4" /> API Keys
           </TabsTrigger>
         </TabsList>
 
@@ -230,39 +227,6 @@ export default function SettingsClient({ profile }: { profile: Profile | null })
                 </div>
                 <Button variant="destructive" size="sm">Delete Account</Button>
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* API Keys Tab */}
-        <TabsContent value="api" className="mt-6 space-y-6">
-          <Card className="rounded-2xl border border-border/50 bg-card/80 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="text-lg">API Keys</CardTitle>
-              <CardDescription>Manage API keys for programmatic access</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="rounded-lg bg-muted/30 border border-border/40 p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1">Project API Key</p>
-                    <p className="text-sm font-mono font-medium text-foreground">pk_••••••••••••••••</p>
-                  </div>
-                  <Button variant="outline" size="sm">Reveal</Button>
-                </div>
-              </div>
-              <div className="rounded-lg bg-muted/30 border border-border/40 p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1">Secret Key</p>
-                    <p className="text-sm font-mono font-medium text-foreground">sk_••••••••••••••••</p>
-                  </div>
-                  <Button variant="outline" size="sm">Reveal</Button>
-                </div>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Keep your secret key safe. Do not share it in public repositories or client-side code.
-              </p>
             </CardContent>
           </Card>
         </TabsContent>

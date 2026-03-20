@@ -69,10 +69,10 @@ const examples = {
         ],
     },
     "0": {
-        label: "In-Tab",
+        label: "Glassmorphism",
         tag: "Live",
         description:
-            "Custom styled notifications shown inside open tabs. No service worker needed.",
+            "Glassmorphism frosted-glass card notification. Stacking queue, 4-corner positioning, tag dedup, rich media, and dark mode. The primary in-app renderer in v0.0.3.",
         endpoint: "https://pinglet.enjoys.in/api/v1/notifications/send",
         method: "POST",
         headers: {
@@ -124,7 +124,6 @@ const examples = {
             { name: "overrides.maxVisible", type: "number", required: false, desc: "Max visible notifications" },
             { name: "overrides.stacking", type: "boolean", required: false, desc: "Stack multiple notifications" },
             { name: "overrides.dismissible", type: "boolean", required: false, desc: "Allow manual dismiss" },
-            { name: "overrides.pauseOnHover", type: "boolean", required: false, desc: "Pause timer on hover" },
             { name: "overrides.sound.play", type: "boolean", required: false, desc: "Play notification sound" },
             { name: "overrides.sound.src", type: "string", required: false, desc: "Sound URL" },
             { name: "overrides.sound.volume", type: "number", required: false, desc: "0 to 1" },
@@ -182,10 +181,10 @@ const examples = {
         ],
     },
     "2": {
-        label: "Glassmorphism HTML",
+        label: "Glassmorphism (Compat)",
         tag: "Live",
         description:
-            "Modern glassmorphism card notification rendered as an HTML overlay. Supports rich media, action buttons, tag-based deduplication, and config overrides.",
+            "Backward compatible alias for Type 0. Both types render identically via showHtmlNotification() in v0.0.3. Use Type 0 for new integrations.",
         endpoint: "https://pinglet.enjoys.in/api/v1/notifications/send",
         method: "POST",
         headers: {
@@ -286,8 +285,8 @@ const sidebarSections = [
     {
         title: "Notification Types",
         items: [
-            { id: "type-0", label: "Type 0 — In-App Toast" },
-            { id: "type-2", label: "Type 2 — Glassmorphism" },
+            { id: "type-0", label: "Type 0 — Glassmorphism" },
+            { id: "type-2", label: "Type 2 — Compat Alias" },
             { id: "type--1", label: "Type -1 — Browser Push" },
             { id: "type-1", label: "Type 1 — Custom Template" },
         ],
@@ -370,6 +369,11 @@ const PingletDocs = () => {
                                 <Layers className="w-3.5 h-3.5" /> Live Demo
                             </Button>
                         </Link>
+                        <Link href="/payload-creator">
+                            <Button variant="outline" size="sm" className="rounded-full gap-2">
+                                <Code2 className="w-3.5 h-3.5" /> Payload Creator
+                            </Button>
+                        </Link>
                     </div>
                 </div>
             </div>
@@ -409,13 +413,13 @@ const PingletDocs = () => {
                         <section data-section="overview" className="scroll-mt-24">
                             <h2 className="text-2xl font-bold text-foreground mb-4">Overview</h2>
                             <p className="text-muted-foreground mb-6 leading-relaxed">
-                                Pinglet is a real-time notification platform that lets you send push notifications, in-app toasts, glassmorphism cards,
-                                and custom template notifications to your users with a single API call. The SDK connects via SSE (Server-Sent Events)
+                                Pinglet is a real-time notification platform that lets you send push notifications, glassmorphism card notifications,
+                                and custom template notifications to your users with a single API call. In v0.0.3, all in-app types use a unified glassmorphism renderer. The SDK connects via SSE (Server-Sent Events)
                                 for instant delivery.
                             </p>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 {[
-                                    { icon: Bell, title: "4 Notification Types", desc: "Browser push, in-app toast, glassmorphism card, and custom templates" },
+                                    { icon: Bell, title: "4 Notification Types", desc: "Browser push, glassmorphism card (Type 0 & 2), and custom templates" },
                                     { icon: Zap, title: "Real-time via SSE", desc: "Instant delivery through Server-Sent Events — no polling needed" },
                                     { icon: Palette, title: "Fully Customizable", desc: "Override position, theme, sounds, branding, progress bars, and more" },
                                     { icon: MousePointerClick, title: "Custom Events", desc: "Trigger frontend JS events from notification button clicks" },
@@ -458,7 +462,7 @@ const PingletDocs = () => {
                                         <p className="text-sm text-muted-foreground mb-3">
                                             Add the Pinglet SDK to your HTML, before the closing <code className="px-1.5 py-0.5 rounded bg-muted text-foreground text-xs">&lt;/body&gt;</code> tag.
                                         </p>
-                                        <CodeBlock code={`<!-- Service Worker (handles browser push) -->\n<script\n  crossorigin="anonymous"\n  src="https://pinglet.enjoys.in/api/v1/public/scripts/v0.0.2/sw.js"\n></script>\n\n<!-- Main SDK -->\n<script\n  type="module"\n  crossorigin="anonymous"\n  src="https://pinglet.enjoys.in/api/v1/public/libs/pinglet-sse.js"\n  data-endpoint="https://pinglet.enjoys.in/api/v1/notifications"\n  data-configured-domain="yourdomain.com"\n  data-project-id="YOUR_PROJECT_ID"\n  data-pinglet-id="YOUR_PINGLET_ID"\n  data-checksum="sha384-XXXXXXX"\n></script>`} lang="html" />
+                                        <CodeBlock code={`<!-- Service Worker (handles browser push) -->\n<script\n  crossorigin="anonymous"\n  src="https://pinglet.enjoys.in/api/v1/public/scripts/v0.0.3/sw.js"\n></script>\n\n<!-- Main SDK -->\n<script\n  type="module"\n  crossorigin="anonymous"\n  src="https://pinglet.enjoys.in/api/v1/public/libs/pinglet-sse.js"\n  data-endpoint="https://pinglet.enjoys.in/api/v1/notifications"\n  data-configured-domain="yourdomain.com"\n  data-project-id="YOUR_PROJECT_ID"\n  data-pinglet-id="YOUR_PINGLET_ID"\n  data-checksum="sha384-XXXXXXX"\n></script>`} lang="html" />
                                     </div>
                                 </div>
 
@@ -522,8 +526,8 @@ const PingletDocs = () => {
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
                                 {[
-                                    { type: "0", name: "In-App Toast", desc: "Lightweight in-page notifications with slide/fade/zoom animations", tag: "Live", color: "from-blue-500 to-cyan-500" },
-                                    { type: "2", name: "Glassmorphism HTML", desc: "Modern glass card with rich media, action buttons, and stacking", tag: "Live", color: "from-purple-500 to-pink-500" },
+                                    { type: "0", name: "Glassmorphism", desc: "Frosted-glass card with rich media, stacking, tag dedup, and dark mode. Primary renderer in v0.0.3.", tag: "Live", color: "from-blue-500 to-cyan-500" },
+                                    { type: "2", name: "Glassmorphism (Compat)", desc: "Backward compatible alias — maps to Type 0. Both render identically.", tag: "Live", color: "from-purple-500 to-pink-500" },
                                     { type: "1", name: "Custom Template", desc: "Server-stored HTML/CSS templates with variable injection", tag: "Upcoming", color: "from-amber-500 to-orange-500" },
                                     { type: "-1", name: "Browser Push", desc: "Native OS push notifications via Web Push API & service worker", tag: "Upcoming", color: "from-emerald-500 to-teal-500" },
                                 ].map((item) => (
@@ -546,9 +550,9 @@ const PingletDocs = () => {
                                     <span className="text-xs font-bold bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text text-transparent">TYPE 0</span>
                                     <span className="text-[10px] px-1.5 py-0.5 rounded-full font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">Live</span>
                                 </div>
-                                <h3 className="text-xl font-bold text-foreground mb-2">In-App Toast Notification</h3>
+                                <h3 className="text-xl font-bold text-foreground mb-2">Glassmorphism Notification</h3>
                                 <p className="text-sm text-muted-foreground mb-6">
-                                    Simple, lightweight in-page notifications with slide/fade/zoom animations. Supports icon (emoji/base64), logo (URL), rich media, action buttons, and dark mode.
+                                    Modern frosted-glass card notification with stacking queue, 4-corner positioning, tag dedup, rich media, action buttons, branding footer, progress bar, and dark mode. This is the primary in-app renderer in SDK v0.0.3.
                                 </p>
                                 <div className="space-y-6">
                                     <CodeBlock code={`POST /api/v1/notifications/send\n\n{\n  "projectId": "your-project-id",\n  "type": "0",\n  "body": {\n    "title": "New Message",\n    "description": "You have 3 unread messages",\n    "icon": "🔔",\n    "logo": "https://cdn.example.com/logo.png",\n    "url": "https://example.com/inbox",\n    "media": { "type": "image", "src": "https://cdn.example.com/banner.jpg" },\n    "buttons": [\n      { "text": "View", "action": "redirect", "src": "https://..." },\n      { "text": "Dismiss", "action": "close" }\n    ]\n  }\n}`} lang="json" />
@@ -559,7 +563,7 @@ const PingletDocs = () => {
                                             <table className="w-full text-xs">
                                                 <thead><tr className="border-b border-border/50 text-left"><th className="pb-2 pr-4 font-medium text-foreground">Field</th><th className="pb-2 pr-4 font-medium text-foreground">Required</th><th className="pb-2 font-medium text-foreground">Notes</th></tr></thead>
                                                 <tbody className="divide-y divide-border/30">
-                                                    {[["title","Yes","Min 3 chars"],["description","No","Body text"],["icon","No","Emoji, SVG, or base64. NOT a URL."],["logo","No","URL to an image. Used as card logo."],["url","No","Click-through URL (must be valid)"],["media","No","{type, src} — type: image|video|audio|iframe"],["buttons","No","Array, max 3 buttons"]].map(([f,r,n],i)=>(
+                                                    {[["title","Yes","Min 3 chars"],["description","No","Body text"],["icon","No","URL, emoji, SVG, or base64"],["logo","No","URL to an image. Used as fallback if no icon."],["url","No","Click-through URL (must be valid)"],["media","No","{type, src} — type: image|video|audio|iframe"],["buttons","No","Array, max 3 buttons"]].map(([f,r,n],i)=>(
                                                         <tr key={i}><td className="py-2 pr-4"><code className="font-mono text-primary">{f}</code></td><td className="py-2 pr-4"><span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${r==="Yes"?"bg-red-500/10 text-red-500":"bg-muted text-muted-foreground"}`}>{r}</span></td><td className="py-2 text-muted-foreground">{n}</td></tr>
                                                     ))}
                                                 </tbody>
@@ -571,8 +575,9 @@ const PingletDocs = () => {
                                         <h4 className="text-sm font-semibold text-foreground mb-3">What Happens</h4>
                                         <ol className="space-y-1.5 text-xs text-muted-foreground list-decimal list-inside">
                                             <li>SSE delivers to all connected clients for this projectId</li>
-                                            <li>SDK calls <code className="text-primary">createVariant(body, globalConfig)</code> → builds HTML card</li>
-                                            <li><code className="text-primary">renderToast()</code> slides it into the toast container</li>
+                                            <li>SDK calls <code className="text-primary">showHtmlNotification({'{'}...{'}'})</code> — unified glassmorphism renderer</li>
+                                            <li>Card rendered with glassmorphism CSS, icon prefetched</li>
+                                            <li>If &gt; maxVisible (default 3), notification is queued</li>
                                             <li>Auto-dismisses after config.duration (default 5000ms)</li>
                                         </ol>
                                     </div>
@@ -591,9 +596,9 @@ const PingletDocs = () => {
                                 <span className="text-xs font-bold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">TYPE 2</span>
                                 <span className="text-[10px] px-1.5 py-0.5 rounded-full font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">Live</span>
                             </div>
-                            <h2 className="text-2xl font-bold text-foreground mb-2">Glassmorphism HTML Notification</h2>
+                            <h2 className="text-2xl font-bold text-foreground mb-2">Glassmorphism (Backward Compatible)</h2>
                             <p className="text-muted-foreground mb-6">
-                                Rich, premium-looking notifications with glassmorphism blur effect. Stacking queue (max 3 visible), branding footer, progress bar, 4-corner positioning, tag dedup, pause-on-hover, and dark mode.
+                                Type 2 is a backward compatible alias — in v0.0.3, it renders identically to Type 0 via <code className="px-1.5 py-0.5 rounded bg-muted text-foreground text-xs">showHtmlNotification()</code>. Use Type 0 for new integrations. Existing Type 2 payloads will continue to work.
                             </p>
                             <div className="space-y-6">
                                 <CodeBlock code={`POST /api/v1/notifications/send\n\n{\n  "projectId": "your-project-id",\n  "type": "2",\n  "body": {\n    "title": "Flash Sale 🔥",\n    "description": "50% off all items.",\n    "icon": "https://cdn.example.com/icon.png",\n    "url": "https://example.com/sale",\n    "media": { "type": "image", "src": "https://cdn.example.com/hero.jpg" },\n    "buttons": [\n      { "text": "Shop", "action": "redirect", "src": "https://..." },\n      { "text": "Track", "action": "event", "event": "sale:click", "data": {} },\n      { "text": "Close", "action": "close" }\n    ]\n  }\n}`} lang="json" />
@@ -613,14 +618,13 @@ const PingletDocs = () => {
                                 </div>
 
                                 <div className="rounded-xl border border-blue-500/30 bg-blue-500/5 p-5">
-                                    <h4 className="text-sm font-semibold text-foreground mb-3">Key Differences from Type 0</h4>
+                                    <h4 className="text-sm font-semibold text-foreground mb-3">v0.0.3 — Type 2 = Type 0</h4>
                                     <ul className="space-y-1.5 text-xs text-muted-foreground">
-                                        <li className="flex gap-2"><span className="text-blue-500 shrink-0">•</span><code className="text-primary">icon</code> allows URLs (type 0 icon is emoji/SVG/base64 only)</li>
-                                        <li className="flex gap-2"><span className="text-blue-500 shrink-0">•</span>No <code className="text-primary">logo</code> field — use <code className="text-primary">icon</code> for the image</li>
-                                        <li className="flex gap-2"><span className="text-blue-500 shrink-0">•</span>No <code className="text-primary">variant</code> field allowed</li>
-                                        <li className="flex gap-2"><span className="text-blue-500 shrink-0">•</span>Glassmorphism blur UI with border-radius 16px</li>
-                                        <li className="flex gap-2"><span className="text-blue-500 shrink-0">•</span>Built-in stacking queue + branding footer + progress bar</li>
-                                        <li className="flex gap-2"><span className="text-blue-500 shrink-0">•</span>4-corner positioning + tag dedup (same tag replaces existing)</li>
+                                        <li className="flex gap-2"><span className="text-blue-500 shrink-0">•</span>Both types use the same <code className="text-primary">showHtmlNotification()</code> renderer</li>
+                                        <li className="flex gap-2"><span className="text-blue-500 shrink-0">•</span>Type 2 exists for backward compatibility — no functional difference</li>
+                                        <li className="flex gap-2"><span className="text-blue-500 shrink-0">•</span>Same body schema, same overrides, same rendering</li>
+                                        <li className="flex gap-2"><span className="text-blue-500 shrink-0">•</span>Use Type 0 for all new integrations</li>
+                                        <li className="flex gap-2"><span className="text-blue-500 shrink-0">•</span>Old toast/variant system was removed in v0.0.3</li>
                                     </ul>
                                 </div>
 
@@ -715,7 +719,7 @@ const PingletDocs = () => {
                                         <li>SSE delivers {'{'} type: &quot;1&quot;, template_id, custom_template {'}'}</li>
                                         <li>SDK looks up template from <code className="text-primary">globalConfig.templates[template_id]</code></li>
                                         <li>Executes compiled_text as a function(data, config, globalConfig)</li>
-                                        <li>Wraps result in <code className="text-primary">createWrapper()</code> for slide animation</li>
+                                        <li>Result passed as <code className="text-primary">customContent</code> — wrapped in glassmorphism container with stacking, close button, and progress bar</li>
                                     </ol>
                                 </div>
                             </div>
@@ -1206,7 +1210,6 @@ const PingletDocs = () => {
                                                 ["maxVisible", "number", "Max visible notifications at once"],
                                                 ["stacking", "boolean", "Stack multiple notifications"],
                                                 ["dismissible", "boolean", "Allow manual dismiss"],
-                                                ["pauseOnHover", "boolean", "Pause timer on hover"],
                                                 ["sound.play", "boolean", "Play notification sound"],
                                                 ["sound.src", "string", "Custom sound URL"],
                                                 ["sound.volume", "number", "Volume 0 to 1"],
@@ -1214,7 +1217,7 @@ const PingletDocs = () => {
                                                 ["theme.rounded", "boolean", "Rounded corners"],
                                                 ["theme.shadow", "boolean", "Drop shadow"],
                                                 ["progressBar.show", "boolean", "Show progress bar"],
-                                                ["progressBar.color", "string", "Hex/RGB color"],
+                                ["progressBar.color", "string", "Hex/RGB color"],
                                                 ["branding.show", "boolean", "Show branding"],
                                             ].map(([prop, type, desc], i) => (
                                                 <tr key={i}>
@@ -1287,26 +1290,17 @@ const PingletDocs = () => {
                         {/* ── Stacking & Queue ── */}
                         <section data-section="stacking" className="scroll-mt-24">
                             <h2 className="text-2xl font-bold text-foreground mb-4">Stacking &amp; Queue Behavior</h2>
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                <div className="rounded-xl border border-border/50 bg-card/80 p-5">
-                                    <h4 className="text-sm font-semibold text-foreground mb-3">Type 0 (Toast)</h4>
-                                    <ul className="space-y-1.5 text-xs text-muted-foreground">
-                                        <li>• Renders into a fixed container at globalConfig.config.position</li>
-                                        <li>• Multiple toasts stack vertically</li>
-                                        <li>• Auto-dismiss removes each independently</li>
-                                        <li>• Branding element appears once at the bottom of the container</li>
-                                    </ul>
-                                </div>
-                                <div className="rounded-xl border border-border/50 bg-card/80 p-5">
-                                    <h4 className="text-sm font-semibold text-foreground mb-3">Type 2 (Glassmorphism)</h4>
-                                    <ul className="space-y-1.5 text-xs text-muted-foreground">
-                                        <li>• maxVisible = 3 (default, configurable via config or overrides)</li>
-                                        <li>• When &gt; maxVisible, notifications are QUEUED</li>
-                                        <li>• When a visible notification is dismissed, the next queued one appears</li>
-                                        <li>• Queue is per-position (top-right queue is separate from bottom-left)</li>
-                                        <li>• Tag dedup: same tag replaces the existing notification</li>
-                                    </ul>
-                                </div>
+                            <div className="rounded-xl border border-border/50 bg-card/80 p-5">
+                                <h4 className="text-sm font-semibold text-foreground mb-3">Glassmorphism (Type 0 &amp; 2 — unified renderer)</h4>
+                                <ul className="space-y-1.5 text-xs text-muted-foreground">
+                                    <li>• maxVisible = 3 (default, configurable via config or overrides)</li>
+                                    <li>• When &gt; maxVisible, notifications are QUEUED (FIFO)</li>
+                                    <li>• When a visible notification is dismissed, the next queued one appears</li>
+                                    <li>• Queue is per-position (top-right queue is separate from bottom-left)</li>
+                                    <li>• Tag dedup: same tag replaces the existing notification with smooth crossfade</li>
+                                    <li>• Each card has its own branding footer, close button, and progress bar</li>
+                                    <li>• Hover pauses the auto-dismiss timer (always enabled in v0.0.3)</li>
+                                </ul>
                             </div>
                             <div className="rounded-xl border border-border/50 bg-card/80 p-5 mt-6">
                                 <h4 className="text-sm font-semibold text-foreground mb-3">Example — Fire 6 type 2 notifications rapidly</h4>
@@ -1319,25 +1313,15 @@ const PingletDocs = () => {
                         {/* ── Branding ── */}
                         <section data-section="branding" className="scroll-mt-24">
                             <h2 className="text-2xl font-bold text-foreground mb-4">Branding</h2>
-                            <p className="text-muted-foreground mb-6">Branding appears as a footer on notifications.</p>
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                <div className="rounded-xl border border-border/50 bg-card/80 p-5">
-                                    <h4 className="text-sm font-semibold text-foreground mb-3">Type 0 (Toast)</h4>
-                                    <ul className="space-y-1.5 text-xs text-muted-foreground">
-                                        <li>• <code className="text-primary">createBrandingElement()</code> renders once</li>
-                                        <li>• Placed at the bottom of the toast container</li>
-                                        <li>• Controlled by <code className="text-primary">branding.show</code> and <code className="text-primary">branding.once</code></li>
-                                    </ul>
-                                </div>
-                                <div className="rounded-xl border border-border/50 bg-card/80 p-5">
-                                    <h4 className="text-sm font-semibold text-foreground mb-3">Type 2 (Glassmorphism)</h4>
-                                    <ul className="space-y-1.5 text-xs text-muted-foreground">
-                                        <li>• Each card has its own branding footer</li>
-                                        <li>• Default: &quot;Notifications by Pinglet&quot; (with link)</li>
-                                        <li>• Override via <code className="text-primary">branding.html</code></li>
-                                        <li>• Set <code className="text-primary">branding.show = false</code> to hide</li>
-                                    </ul>
-                                </div>
+                            <p className="text-muted-foreground mb-6">Branding appears as a footer on all glassmorphism notifications (Type 0, 1, &amp; 2).</p>
+                            <div className="rounded-xl border border-border/50 bg-card/80 p-5">
+                                <ul className="space-y-1.5 text-xs text-muted-foreground">
+                                    <li>• Each card has its own branding footer</li>
+                                    <li>• Server provides branding HTML via project config</li>
+                                    <li>• Override via <code className="text-primary">branding.html</code> in overrides or dashboard config</li>
+                                    <li>• Set <code className="text-primary">branding.show = false</code> to hide</li>
+                                    <li>• <code className="text-primary">branding.once = true</code> shows branding only on first notification</li>
+                                </ul>
                             </div>
                             <div className="mt-4">
                                 <CodeBlock code={`// Custom branding (via overrides or dashboard config)\n{\n  "branding": {\n    "show": true,\n    "html": "Powered by <b>Enjoys</b> 🚀"\n  }\n}`} lang="json" />
@@ -1363,9 +1347,12 @@ const PingletDocs = () => {
                             <div className="rounded-xl border border-border/50 bg-card/80 p-5 mt-4">
                                 <h4 className="text-sm font-semibold text-foreground mb-3">How It Works</h4>
                                 <ul className="space-y-1.5 text-xs text-muted-foreground">
-                                    <li>• <strong>Type 0:</strong> Detected via <code className="text-primary">isDarkMode(globalConfig.theme.mode)</code> — card background, text, borders adapt</li>
-                                    <li>• <strong>Type 2:</strong> <code className="text-primary">.pn-dark</code> class added when dark = true — all sub-elements restyle including branding footer</li>
+                                    <li>• <strong>All in-app types:</strong> <code className="text-primary">.pn-dark</code> class added when dark = true — all sub-elements restyle including branding footer, media players, and buttons</li>
+                                    <li>• <strong>&quot;auto&quot; (default):</strong> System preference via <code className="text-primary">matchMedia(&apos;prefers-color-scheme: dark&apos;)</code></li>
+                                    <li>• <strong>&quot;dark&quot;:</strong> Always dark — <code className="text-primary">.pn-dark</code> class always applied</li>
+                                    <li>• <strong>&quot;light&quot;:</strong> Always light — no dark class</li>
                                     <li>• <strong>Set via:</strong> Dashboard config → <code className="text-primary">theme.mode = &quot;auto&quot;</code> or per-notification → <code className="text-primary">overrides.theme.mode</code></li>
+                                    <li>• <strong>v0.0.3:</strong> Explicit <code className="text-primary">theme</code> param on showHtmlNotification() — deep-merged with global config</li>
                                 </ul>
                             </div>
                         </section>
@@ -1386,7 +1373,7 @@ const PingletDocs = () => {
                                 <div className="rounded-xl border border-border/50 bg-card/80 p-5">
                                     <h4 className="text-sm font-semibold text-foreground mb-3">Image Caching</h4>
                                     <ul className="space-y-1.5 text-xs text-muted-foreground">
-                                        <li>• Type 2 icon URLs are prefetched via <code className="text-primary">link rel=&quot;prefetch&quot;</code></li>
+                                        <li>• Icon URLs are prefetched via <code className="text-primary">link rel=&quot;prefetch&quot;</code> (all in-app types)</li>
                                         <li>• Each unique icon URL is prefetched only once (deduped)</li>
                                         <li>• All <code className="text-primary">&lt;img&gt;</code> elements use <code className="text-primary">decoding=&quot;async&quot;</code></li>
                                         <li>• Media images use <code className="text-primary">loading=&quot;lazy&quot;</code></li>
@@ -1443,16 +1430,16 @@ const PingletDocs = () => {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {[
                                         "projectId MUST be exactly 24 characters.",
-                                        "Type 0 icon does NOT allow URLs — use emoji, SVG, or base64. Type 2 icon DOES allow URLs.",
+                                        "In v0.0.3, Type 0 and Type 2 are identical — both use glassmorphism renderer. Icon allows URLs, emoji, SVG, or base64.",
                                         "Type -1 uses \"data\" (not \"body\"). Type 0/2 use \"body\" (not \"data\").",
                                         "Type 1 requires BOTH template_id AND custom_template. Neither body nor data should be present.",
                                         "Max buttons: 3 for types 0/2, 2 for type -1 (browser limitation).",
                                         "Button action \"event\" requires the \"event\" field (event name string). The \"data\" field is optional.",
-                                        "Overrides only apply for premium projects (is_tff = true). Free tier uses dashboard config only.",
+                                        "Overrides in v0.0.3 are non-mutating — fresh copy per notification. Premium flag: is_tff. Theme overrides are deep-merged.",
                                         "SSE auto-reconnects on disconnect. No manual retry needed.",
                                         "Push permission (type -1) must be granted by the user. The SDK asks automatically on load.",
-                                        "Tag dedup (type 2): sending same tag replaces the existing notification.",
-                                        "Stacking (type 2): maxVisible defaults to 3. Excess goes to queue. Queue drains on dismiss.",
+                                        "Tag dedup (type 0 &amp; 2): sending same tag replaces the existing notification with smooth crossfade.",
+                                        "Stacking (type 0 &amp; 2): maxVisible defaults to 3. Excess goes to queue. Queue drains on dismiss.",
                                         "Branding footer is ALWAYS shown unless config.branding.show = false.",
                                         "Font: Manrope is loaded from Google Fonts with display=swap.",
                                         "Images with the same URL are prefetched only once (deduped by SDK).",

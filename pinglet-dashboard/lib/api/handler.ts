@@ -280,4 +280,30 @@ export class API {
     static getPresenceAll() {
         return instance.get<ApiResponse<any>>('/api/v1/presence/all')
     }
+
+    // Flows
+    static getFlows() {
+        return instance.get<ApiResponse<any[]>>('/api/v1/flows')
+    }
+    static getFlowStats() {
+        return instance.get<ApiResponse<any>>('/api/v1/flows/stats')
+    }
+    static getFlowById(id: string) {
+        return instance.get<ApiResponse<any>>('/api/v1/flows/' + id)
+    }
+    static createFlow(data: any) {
+        return instance.post<ApiResponse<any>>('/api/v1/flows', data)
+    }
+    static updateFlow(id: string, data: any) {
+        return instance.put<ApiResponse<any>>('/api/v1/flows/' + id, data)
+    }
+    static deleteFlow(id: string) {
+        return instance.delete<ApiResponse<any>>('/api/v1/flows/' + id)
+    }
+    static toggleFlowStatus(id: string, status: string) {
+        return instance.patch<ApiResponse<any>>('/api/v1/flows/' + id + '/status', { status })
+    }
+    static getFlowLogs(id: string) {
+        return instance.get<ApiResponse<any[]>>('/api/v1/flows/' + id + '/logs')
+    }
 }

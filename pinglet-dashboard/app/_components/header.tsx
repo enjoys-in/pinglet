@@ -14,6 +14,7 @@ const navLinks = [
   { href: "/pricing", label: "Pricing" },
   { href: "/docs", label: "Docs" },
   { href: "/demo", label: "Demo" },
+  { href: "/payload-creator", label: "Payload" },
 ]
 
 export default function Header() {

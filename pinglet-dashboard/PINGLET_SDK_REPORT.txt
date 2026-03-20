@@ -1,0 +1,495 @@
+================================================================================
+           PINGLET SDK — CONFIGURATION & PAYLOAD REPORT
+                        Generated: 2026-03-20
+================================================================================
+
+
+
+████████████████████████████████████████████████████████████████████████████████
+█                                                                              █
+█                         SDK v0.0.2 REPORT                                    █
+█                                                                              █
+████████████████████████████████████████████████████████████████████████████████
+
+
+────────────────────────────────────────────────────────────────────────────────
+  NOTIFICATION TYPES SUPPORTED
+────────────────────────────────────────────────────────────────────────────────
+
+  Type "-1"  →  Browser Push (native OS notification via Service Worker)
+  Type "0"   →  In-App Toast (slide/fade card via createVariant + renderToast)
+  Type "1"   →  Custom Template (user-provided JS compiled via new Function())
+  Type "2"   →  Glassmorphism HTML (frosted-glass card via showHtmlNotification)
+
+
+────────────────────────────────────────────────────────────────────────────────
+  RENDERING ENGINES
+────────────────────────────────────────────────────────────────────────────────
+
+  Type 0:  variants.js → createVariant()  +  default.js → renderToast()
+           - Toast card with icon/logo, title, description, media, buttons
+           - Dark mode via system preference (CSS + JS matchMedia)
+           - Stacking via toastStack container (bottom-left/right)
+
+  Type 2:  html-notification.js → showHtmlNotification()
+           - Glassmorphism frosted-glass card
+           - Stacking queue (max 3 visible, FIFO drain)
+           - 4-corner positioning, branding footer, progress bar
+           - Dark mode via @media(prefers-color-scheme:dark) CSS only
+           - Tag dedup (replaces existing notification with same tag)
+
+  Type 1:  wrapper-v2.js → createWrapper()
+           - Template compiled via: new Function(`return ${template.compiled_text}`)()
+           - Wrapped in a dismissible container with auto-close
+
+  Type -1: Web Push API → Service Worker
+           - Handled by sw.js, uses push-notification.js for subscription
+
+
+────────────────────────────────────────────────────────────────────────────────
+  PROJECT CONFIG (loaded from server, merged with defaultConfig)
+────────────────────────────────────────────────────────────────────────────────
+
+  These are stored in the database per-project and loaded via
+  GET /load/projects?projectId=...&domain=...
+
+  Field                     Type        Default
+  ─────────────────────────────────────────────────────────────
+  position                  string      "bottom-left"
+  transition                string      "fade"   (or "slide", "zoom")
+  duration                  number      2000     (ms, auto-dismiss timer)
+  maxVisible                number      3        (max visible toasts)
+  stacking                  boolean     true     (stack new toasts vertically)
+  auto_dismiss              boolean     true     (auto-dismiss after duration)
+  dismissible               boolean     true     (show close X button)
+  website                   string      "https://pinglet.enjoys.in"
+  time                      boolean     true     (show timestamp)
+  favicon                   boolean     true     (show favicon)
+  pauseOnHover              boolean     true     (pause timer on hover)
+  sound.play                boolean     false
+  sound.src                 string      ""       (derived from endpoint if empty)
+  sound.volume              number      0.6
+  branding.show             boolean     true
+  branding.once             boolean     true     (show only on first notification)
+  branding.html             string      "Notifications by Pinglet - Enjoys"
+  theme.mode                string      "light"  ("light"|"dark"|"auto")
+  theme.customClass         string      ""
+  theme.rounded             boolean     true
+  theme.shadow              boolean     true
+  theme.border              boolean     false
+  iconDefaults.show         boolean     true
+  iconDefaults.size         number      20
+  iconDefaults.position     string      "left"   ("left"|"right"|"top")
+  progressBar.show          boolean     true
+  progressBar.color         string      "#4da6ff"
+  progressBar.height        number      3
+
+
+────────────────────────────────────────────────────────────────────────────────
+  TEMPLATE STYLES (defaultStyles — for type 0 toast rendering)
+────────────────────────────────────────────────────────────────────────────────
+
+  Field                     Type        Default
+  ─────────────────────────────────────────────────────────────
+  duration                  number      3000
+  btn1.color                string      "#ffffff"
+  btn1.backgroundColor      string      "#007bff"
+  btn1.borderRadius         string      "6px"
+  btn1.fontSize             string      "14px"
+  btn2.color                string      "#333333"
+  btn2.backgroundColor      string      "#f0f0f0"
+  btn2.border               string      "1px solid #ccc"
+  title.color               string      "#111111"
+  title.fontSize            string      "14px"
+  description.color         string      "#444444"
+  description.fontSize      string      "13px"
+  controls.video.autoplay   boolean     false
+  controls.video.muted      boolean     false
+  controls.video.loop       boolean     false
+  controls.video.controls   boolean     false
+  controls.audio.autoplay   boolean     false
+  controls.audio.muted      boolean     false
+  controls.audio.loop       boolean     false
+  controls.audio.controls   boolean     false
+  media.image.width         string      "100%"
+  media.image.height        string      "200px"
+  media.image.borderRadius  string      "6px"
+  media.image.objectFit     string      "cover"
+  media.video.width         string      "100%"
+  media.video.height        string      "140px"
+  media.icon.width          string      "24px"
+  media.icon.height         string      "24px"
+  media.logo.width          string      "50px"
+  media.logo.height         string      "50px"
+  media.audio.width         string      "100%"
+
+
+────────────────────────────────────────────────────────────────────────────────
+  SEND API PAYLOAD — POST /api/v1/notifications/send
+────────────────────────────────────────────────────────────────────────────────
+
+  ┌─ Top-Level Fields ──────────────────────────────────────────────────────┐
+  │                                                                         │
+  │  projectId        string (24 chars)           REQUIRED                  │
+  │  type             "-1" | "0" | "1" | "2"      REQUIRED                  │
+  │  variant          string                      optional (type 0 only)    │
+  │  template_id      string                      required for type 1       │
+  │  tag              string                      optional (dedup)          │
+  │  overrides        object                      optional (premium)        │
+  │  body             object                      required for type 0/2     │
+  │  data             object                      required for type -1      │
+  │  custom_template  Record<any,any>             required for type 1       │
+  │                                                                         │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+  ┌─ body (for type 0 and 2) ───────────────────────────────────────────────┐
+  │                                                                         │
+  │  title            string (min 3 chars)        REQUIRED                  │
+  │  description      string                      optional                  │
+  │  icon             string (text/emoji/svg/b64)  optional (NO URL for 0)  │
+  │  logo             string (URL)                optional (type 0 only)    │
+  │  url              string (URL)                optional (click target)   │
+  │  media.type       "image"|"video"|"audio"|"iframe"   optional           │
+  │  media.src        string (https:// URL)       required with media.type  │
+  │  buttons[]        array (max 3)               optional                  │
+  │                                                                         │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+  ┌─ buttons[] actions ─────────────────────────────────────────────────────┐
+  │                                                                         │
+  │  { text, action: "redirect", src: "https://..." }                       │
+  │  { text, action: "link",     src: "https://..." }                       │
+  │  { text, action: "reload" }                                             │
+  │  { text, action: "close" }                                              │
+  │  { text, action: "alert",    src: "message" }                           │
+  │  { text, action: "onClick",  onClick: "functionString" }                │
+  │  { text, action: "event",    event: "name", data: {...} }               │
+  │                                                                         │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+  ┌─ overrides (premium per-notification) ──────────────────────────────────┐
+  │                                                                         │
+  │  position          string     ("top-right","bottom-left", etc.)         │
+  │  transition        "fade"|"slide"|"zoom"                                │
+  │  duration          number     (ms)                                      │
+  │  maxVisible        number                                               │
+  │  stacking          boolean                                              │
+  │  auto_dismiss      boolean    (false = requireInteraction)              │
+  │  dismissible       boolean                                              │
+  │  website           string                                               │
+  │  time              boolean                                              │
+  │  favicon           boolean                                              │
+  │  pauseOnHover      boolean                                              │
+  │  sound.play        boolean                                              │
+  │  sound.src         string     (optional)                                │
+  │  sound.volume      number     (optional)                                │
+  │  branding.show     boolean                                              │
+  │  branding.html     string                                               │
+  │  theme.mode        "light"|"dark"|"auto"                                │
+  │  theme.customClass string                                               │
+  │  theme.rounded     boolean                                              │
+  │  theme.shadow      boolean                                              │
+  │  theme.border      boolean                                              │
+  │  iconDefaults.show     boolean                                          │
+  │  iconDefaults.size     number                                           │
+  │  iconDefaults.position "left"|"right"|"top"                             │
+  │  progressBar.show      boolean                                          │
+  │  progressBar.color     string                                           │
+  │  progressBar.height    number                                           │
+  │  vibration         any[]                                                │
+  │                                                                         │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+  ┌─ data (for type -1 browser push) ───────────────────────────────────────┐
+  │                                                                         │
+  │  title              string (1-100)       default: "Default Title"       │
+  │  body               string (max 500)     default: "Default message"     │
+  │  icon               string (URL)         default: "/default-icon.png"   │
+  │  badge              string (URL)         optional                       │
+  │  image              string (URL)         optional                       │
+  │  tag                string               default: "notification-tag"    │
+  │  requireInteraction boolean              default: false                 │
+  │  silent             boolean              default: false                 │
+  │  renotify           boolean              default: false                 │
+  │  timestamp          number (positive int) optional                      │
+  │  vibrate            number | number[]    optional                       │
+  │  dir                "auto"|"ltr"|"rtl"   default: "auto"               │
+  │  lang               string (2-5 chars)   optional                       │
+  │  data.url           string (URL)         default: "/"                   │
+  │  data.duration      number (int >= 0)    optional                       │
+  │  data.userId        string               optional                       │
+  │  data.notificationId string              optional                       │
+  │  data.metadata      object               optional                       │
+  │  actions[]          max 2 items          default: View + Dismiss        │
+  │    actions[].action string               required                       │
+  │    actions[].title  string               required                       │
+  │    actions[].icon   string (URL)         optional                       │
+  │                                                                         │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+
+────────────────────────────────────────────────────────────────────────────────
+  showHtmlNotification() OPTIONS (type 2 renderer)
+────────────────────────────────────────────────────────────────────────────────
+
+  Option              Type                          Default
+  ─────────────────────────────────────────────────────────────
+  title               string                        ""
+  body                string                        ""
+  icon                string                        ""
+  badge               string                        ""
+  image               string                        ""
+  media               { type, src }                 null
+  buttons             array                         []
+  domain              string                        window.location.hostname
+  tag                 string                        ""
+  url                 string                        ""
+  silent              boolean                       false
+  requireInteraction  boolean                       false
+  duration            number                        6000
+  position            string                        "top-right"
+  dir                 string                        "ltr"
+  timestamp           number                        Date.now()
+  data                object                        {}
+  notification_id     string                        ""
+  notification_type   string                        "0"
+  branding            { show?, html? }              null
+  maxVisible          number                        3
+  onClick             function                      null
+  onClose             function                      null
+  onAction            function                      null
+
+  Dark mode: CSS @media(prefers-color-scheme:dark) only,
+             NO explicit theme param.
+
+  Returns: { close(reason?, reasonText?), element }
+
+
+────────────────────────────────────────────────────────────────────────────────
+  CONFIG MERGE BEHAVIOR (v0.0.2)
+────────────────────────────────────────────────────────────────────────────────
+
+  1. defaultConfig   ← shallow-merged with server project config
+  2. Sound URL derived from endpoint if not set
+  3. Overrides applied ONLY if premium (is_tff flag):
+     Object.assign(globalConfig.config, overrides)
+     ⚠ This MUTATES globalConfig — affects all subsequent notifications
+  4. Type 2 position: "bottom-left" auto-remapped to "top-right"
+
+
+────────────────────────────────────────────────────────────────────────────────
+  MEDIA PLAYERS (v0.0.2)
+────────────────────────────────────────────────────────────────────────────────
+
+  Audio:  Custom themed player (play/pause, seekable progress bar, time)
+          - Dark/light variants (.pn-a-dark / .pn-a-light)
+          - Indigo accent on light, purple on dark
+
+  Video:  Custom themed player (glass play-button overlay)
+          - Click to play → reveals native controls
+          - Dark/light glass button (.pn-v-dark / .pn-v-light)
+          - Paused state shows frosted-glass overlay with play icon
+
+  Used by: variants.js (type 0) and html-notification.js (type 2)
+
+
+
+████████████████████████████████████████████████████████████████████████████████
+█                                                                              █
+█                         SDK v0.0.3 REPORT                                    █
+█                                                                              █
+████████████████████████████████████████████████████████████████████████████████
+
+
+────────────────────────────────────────────────────────────────────────────────
+  NOTIFICATION TYPES SUPPORTED
+────────────────────────────────────────────────────────────────────────────────
+
+  Type "-1"  →  Browser Push (native OS notification via Service Worker)
+  Type "0"   →  Glassmorphism HTML (the ONLY in-app renderer)
+  Type "1"   →  Custom Template (user JS inside glass container)
+  Type "2"   →  Backward compat — maps to Type 0 (same glassmorphism)
+
+  ⚠ Old toast/variant system REMOVED in v0.0.3.
+    All in-app notifications use showHtmlNotification() exclusively.
+
+
+────────────────────────────────────────────────────────────────────────────────
+  RENDERING ENGINE (unified)
+────────────────────────────────────────────────────────────────────────────────
+
+  All types:  html-notification.js → showHtmlNotification()
+              - Glassmorphism frosted-glass card for everything
+              - Stacking queue (max N visible, FIFO drain)
+              - 4-corner positioning, branding footer, progress bar
+              - Explicit dark mode via `theme` param (.pn-dark class)
+              - Tag dedup with smooth crossfade animation
+              - Icon prefetching via <link rel="prefetch">
+              - Hover-pause timer per card
+              - Max 3 buttons with event dispatch support
+
+  Type 0/2:  Full SDK-built content (title, body, icon, media, buttons)
+  Type 1:    customContent option — user-provided HTMLElement inside
+             glass container. SDK provides container chrome:
+             header, close button, branding, progress bar, stacking,
+             auto-close, dismiss tracking.
+  Type -1:   Service Worker (unchanged from v0.0.2)
+
+
+────────────────────────────────────────────────────────────────────────────────
+  CHANGES FROM v0.0.2
+────────────────────────────────────────────────────────────────────────────────
+
+  REMOVED:
+    - Toast system (renderToast, createVariant, variant.js)
+    - Wrapper system (createWrapper, wrapper.js)
+    - prepareEventBody from toast.js
+    - pauseOnHover config (always enabled)
+    - iconDefaults config
+    - progressBar.height config
+    - Type 0 toast rendering
+    - All inline Object.assign style for media
+
+  CHANGED:
+    - duration:    2000 → 5000 ms
+    - sound.volume: 0.6 → 0.5
+    - theme.mode:  "light" → "auto"
+    - website:     string URL → boolean
+    - branding.html: populated → empty (server provides)
+    - video controls: false → true
+    - audio controls: false → true
+    - media styling:  height → maxHeight approach
+    - media borderRadius: "6px" → "8px"
+    - Config merge: non-mutating (per-notification fresh copy)
+    - Deep-merge for theme overrides
+
+  ADDED:
+    - Explicit `theme` param on showHtmlNotification()
+    - `customContent` option for type 1 templates
+    - Smooth tag dedup crossfade (.pn-replace animation)
+    - Icon prefetching
+    - Themed audio/video players (dark/light variants)
+    - Manrope font (was Segoe UI)
+    - SDK_VERSION = "1.3.0"
+
+
+────────────────────────────────────────────────────────────────────────────────
+  PROJECT CONFIG (loaded from server, merged with defaultConfig)
+────────────────────────────────────────────────────────────────────────────────
+
+  Field                     Type        Default
+  ─────────────────────────────────────────────────────────────
+  position                  string      "bottom-left"
+  transition                string      "fade"
+  duration                  number      5000
+  maxVisible                number      3
+  stacking                  boolean     true
+  auto_dismiss              boolean     true
+  dismissible               boolean     true
+  website                   boolean     true
+  favicon                   boolean     true
+  time                      boolean     true
+  sound.play                boolean     false
+  sound.src                 string      ""
+  sound.volume              number      0.5
+  theme.mode                string      "auto" ("light"|"dark"|"auto")
+  theme.customClass         string      ""
+  theme.rounded             boolean     true
+  theme.shadow              boolean     true
+  theme.border              boolean     false
+  branding.show             boolean     true
+  branding.once             boolean     true
+  branding.html             string      ""
+  progressBar.show          boolean     true
+  progressBar.color         string      ""
+
+
+────────────────────────────────────────────────────────────────────────────────
+  SEND API PAYLOAD — POST /api/v1/notifications/send
+────────────────────────────────────────────────────────────────────────────────
+
+  Same schema as v0.0.2 (shared server validation).
+  Type "2" still accepted for backward compatibility.
+  On the client, type "0" and "2" both render identically via
+  showHtmlNotification(). No functional difference.
+
+  See v0.0.2 section above for full payload schema.
+
+
+────────────────────────────────────────────────────────────────────────────────
+  showHtmlNotification() OPTIONS (unified renderer)
+────────────────────────────────────────────────────────────────────────────────
+
+  Option              Type                          Default
+  ─────────────────────────────────────────────────────────────
+  title               string                        ""
+  body                string                        ""
+  icon                string                        ""
+  badge               string                        ""
+  image               string                        ""
+  media               { type, src }                 null
+  buttons             array                         []
+  domain              string                        window.location.hostname
+  tag                 string                        ""
+  url                 string                        ""
+  silent              boolean                       false
+  requireInteraction  boolean                       false
+  duration            number                        6000
+  position            string                        "top-right"
+  dir                 string                        "ltr"
+  timestamp           number                        Date.now()
+  data                object                        {}
+  notification_id     string                        ""
+  notification_type   string                        "0"
+  theme               "light"|"dark"|"auto"         "auto"     ← NEW
+  branding            { show?, html? }              null
+  maxVisible          number                        3
+  customContent       HTMLElement                   null       ← NEW
+  onClick             function                      null
+  onClose             function                      null
+  onAction            function                      null
+
+  Dark mode: Determined by `theme` param.
+             "dark" → adds .pn-dark class
+             "auto" → system preference via matchMedia
+             "light" → no dark class
+
+  customContent: When provided (type 1 templates), SDK wraps it
+                 in a .pn-custom div inside the glass card.
+                 Skips SDK-built content/media/buttons.
+                 Container chrome still works (header, close,
+                 branding, progress bar, stacking, timer).
+
+  Returns: { close(reason?, reasonText?), element }
+
+
+────────────────────────────────────────────────────────────────────────────────
+  CONFIG MERGE BEHAVIOR (v0.0.3)
+────────────────────────────────────────────────────────────────────────────────
+
+  1. defaultConfig   ← shallow-merged with server project config
+  2. Sound URL derived from endpoint if not set
+  3. Per-notification overrides are NON-MUTATING:
+     cfg = Object.assign({}, globalConfig.config, overrides)
+     → fresh copy per notification, globalConfig never mutated
+  4. Nested theme deep-merged:
+     cfg.theme = Object.assign({}, globalConfig.config.theme, overrides.theme)
+  5. No position remapping — uses cfg.position || "top-right" directly
+
+
+────────────────────────────────────────────────────────────────────────────────
+  MEDIA PLAYERS (v0.0.3)
+────────────────────────────────────────────────────────────────────────────────
+
+  Identical to v0.0.2 (same audio-player.js rewrite).
+
+  Audio:  Custom themed player (play/pause, seekable progress bar, time)
+          - Dark/light variants (.pn-a-dark / .pn-a-light)
+
+  Video:  Custom themed player (glass play-button overlay)
+          - Click to play → reveals native controls
+          - Dark/light glass button (.pn-v-dark / .pn-v-light)
+
+================================================================================
+                         END OF REPORT
+================================================================================

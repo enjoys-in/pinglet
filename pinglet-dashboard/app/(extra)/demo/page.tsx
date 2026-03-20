@@ -35,9 +35,9 @@ const NOTIFICATION_TYPES = [
   },
   {
     id: "0",
-    label: "In-Tab Toast",
-    icon: Monitor,
-    description: "Custom styled toast notification inside open browser tabs.",
+    label: "Glassmorphism",
+    icon: Layers,
+    description: "Frosted-glass card notification with rich media, stacking, tag dedup, and dark mode.",
     badge: "Live",
     color: "from-purple-600 to-pink-500",
     gradient: "bg-gradient-to-br from-purple-600/10 to-pink-500/10 border-purple-500/20",
@@ -53,10 +53,10 @@ const NOTIFICATION_TYPES = [
   },
   {
     id: "2",
-    label: "Glassmorphism",
-    icon: Layers,
-    description: "Modern glassmorphism card with rich media, buttons, and tag dedup.",
-    badge: "New",
+    label: "Compat Alias",
+    icon: Monitor,
+    description: "Backward compatible alias for Type 0. Both render identically in v0.0.3.",
+    badge: "Compat",
     color: "from-emerald-500 to-teal-500",
     gradient: "bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border-emerald-500/20",
   },
@@ -278,6 +278,10 @@ export default function PlaygroundPage() {
                 {d.label}
               </button>
             ))}
+            <a href="/payload-creator" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full border border-primary/30 bg-primary/5 text-sm font-medium text-primary hover:bg-primary/10 transition-all duration-200">
+              <Code2 className="w-3.5 h-3.5" />
+              Payload Creator
+            </a>
           </div>
         </div>
       </div>
@@ -392,21 +396,21 @@ export default function PlaygroundPage() {
                   </Card>
                 )}
 
-                {/* Type 0 & 2: In-Tab / Glassmorphism */}
+                {/* Type 0 & 2: Glassmorphism */}
                 {(selectedType === "0" || selectedType === "2") && (
                   <Card className={`shadow-sm ${selectedType === "2" ? "border-emerald-500/20" : "border-purple-500/20"}`}>
                     <CardContent className="p-6 space-y-5">
                       <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
                         {selectedType === "2"
-                          ? <Layers className="w-4 h-4 text-emerald-500" />
-                          : <Monitor className="w-4 h-4 text-purple-500" />}
-                        {selectedType === "2" ? "Glassmorphism Options" : "In-Tab Options"}
+                          ? <Monitor className="w-4 h-4 text-emerald-500" />
+                          : <Layers className="w-4 h-4 text-purple-500" />}
+                        Glassmorphism Options
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <FormField control={form.control} name="bodyIcon" render={({ field }) => (
                           <FormItem>
-                            <FormLabel>{selectedType === "0" ? "Icon (emoji/text)" : "Icon URL"}</FormLabel>
-                            <FormControl><Input placeholder={selectedType === "0" ? "🔥 or URL" : "https://..."} className="bg-muted/30" {...field} /></FormControl>
+                            <FormLabel>Icon (URL, emoji, or text)</FormLabel>
+                            <FormControl><Input placeholder="https://... or 🔥" className="bg-muted/30" {...field} /></FormControl>
                           </FormItem>
                         )} />
                         <FormField control={form.control} name="bodyLogo" render={({ field }) => (
@@ -422,7 +426,7 @@ export default function PlaygroundPage() {
                           <FormControl><Input placeholder="https://example.com" className="bg-muted/30" {...field} /></FormControl>
                         </FormItem>
                       )} />
-                      {selectedType === "2" && (
+                      {(selectedType === "0" || selectedType === "2") && (
                         <FormField control={form.control} name="tag" render={({ field }) => (
                           <FormItem>
                             <FormLabel>Tag (dedup key)</FormLabel>

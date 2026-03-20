@@ -11,6 +11,7 @@ import { Switch } from "@/components/ui/switch"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import { EVENT_PRESETS, type FlowNode, type EventTriggerData, type ConditionData, type DelayData, type NotificationData, type WebhookData, type ABSplitData, type FilterData, type ScheduleData, type RateLimitData, type PresenceCheckData, type TransformData, type EmailData, type MergeData, type NoteData } from "./types"
+import JsonEditor from "./json-editor"
 
 interface FlowConfigPanelProps {
   node: FlowNode
@@ -49,7 +50,7 @@ export default function FlowConfigPanel({ node, updateNodeData, onClose }: FlowC
   }
 
   return (
-    <div className="w-80 border-l border-border bg-card flex flex-col h-full">
+    <div className="w-80 min-w-0 max-w-80 border-l border-border bg-card flex flex-col h-full overflow-hidden">
       <div className="flex items-center justify-between px-4 py-3 border-b border-border">
         <h3 className="text-sm font-semibold">{TITLES[node.type!] || "Configure"}</h3>
         <Button variant="ghost" size="icon" className="size-7" onClick={onClose}>
@@ -109,10 +110,10 @@ export default function FlowConfigPanel({ node, updateNodeData, onClose }: FlowC
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs">Sample Payload (JSON)</Label>
-                <Textarea
+                <JsonEditor
                   value={(data.payload as string) || "{}"}
-                  onChange={e => update("payload", e.target.value)}
-                  className="h-32 text-xs font-mono"
+                  onChange={val => update("payload", val)}
+                  height="h-32"
                   placeholder='{"userId": "{{userId}}"}'
                 />
               </div>
@@ -219,19 +220,19 @@ export default function FlowConfigPanel({ node, updateNodeData, onClose }: FlowC
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs">Headers (JSON)</Label>
-                <Textarea
+                <JsonEditor
                   value={(data.headers as string) || "{}"}
-                  onChange={e => update("headers", e.target.value)}
-                  className="h-20 text-xs font-mono"
+                  onChange={val => update("headers", val)}
+                  height="h-20"
                   placeholder='{"Authorization": "Bearer ..."}'
                 />
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs">Body (JSON)</Label>
-                <Textarea
+                <JsonEditor
                   value={(data.body as string) || "{}"}
-                  onChange={e => update("body", e.target.value)}
-                  className="h-24 text-xs font-mono"
+                  onChange={val => update("body", val)}
+                  height="h-24"
                   placeholder='{"key": "{{value}}"}'
                 />
               </div>
@@ -471,10 +472,10 @@ export default function FlowConfigPanel({ node, updateNodeData, onClose }: FlowC
           {node.type === "transform" && (
             <div className="space-y-1.5">
               <Label className="text-xs">Mappings (JSON)</Label>
-              <Textarea
+              <JsonEditor
                 value={(data.mappings as string) || "{}"}
-                onChange={e => update("mappings", e.target.value)}
-                className="h-36 text-xs font-mono"
+                onChange={val => update("mappings", val)}
+                height="h-36"
                 placeholder='{"newField": "payload.oldField", "computed": "payload.price * payload.qty"}'
               />
             </div>

@@ -6,13 +6,15 @@ import { GitFork } from "lucide-react"
 import type { DivergeData } from "./types"
 
 export const DivergeNode = memo(({ data, selected }: NodeProps<DivergeData>) => {
-  const count = data.outputCount || 3
+  const count = data.outputCount || 2
   const labels = data.outputLabels || []
   const positions = count === 2
     ? [30, 70]
     : count === 3
       ? [20, 50, 80]
       : Array.from({ length: count }, (_, i) => (100 / (count + 1)) * (i + 1))
+
+  const hasLabels = labels.some(l => l && l.trim())
 
   return (
     <div className={`min-w-[180px] rounded-xl border-2 bg-card shadow-md transition-all ${selected ? "border-purple-500 shadow-purple-500/20" : "border-purple-500/30"}`}>
@@ -26,14 +28,18 @@ export const DivergeNode = memo(({ data, selected }: NodeProps<DivergeData>) => 
       <div className="px-3 py-2.5">
         <p className="text-sm font-medium truncate">{data.label || "Fork / Diverge"}</p>
         <span className="mt-1 block text-[11px] text-muted-foreground">
-          Parallel → {count} outputs
+          {count} parallel output{count !== 1 ? "s" : ""}
         </span>
       </div>
-      <div className="flex justify-around px-3 pb-2">
-        {positions.map((_, i) => (
-          <span key={i} className="text-[10px] text-purple-500 font-medium">{labels[i] || `#${i + 1}`}</span>
-        ))}
-      </div>
+      {hasLabels && (
+        <div className="flex justify-around px-3 pb-2">
+          {positions.map((_, i) => (
+            <span key={i} className="text-[10px] text-purple-500 font-medium truncate max-w-[60px]">
+              {labels[i] || ""}
+            </span>
+          ))}
+        </div>
+      )}
       {positions.map((left, i) => (
         <Handle
           key={`out-${i}`}

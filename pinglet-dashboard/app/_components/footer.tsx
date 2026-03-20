@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { Bell, Heart } from "lucide-react"
+import { Bell, Heart, Github } from "lucide-react"
 
 const footerSections = {
   Product: [
@@ -11,6 +11,7 @@ const footerSections = {
   Developers: [
     { label: "Documentation", href: "/docs" },
     { label: "API Reference", href: "/docs" },
+    { label: "Payload Creator", href: "/payload-creator" },
     { label: "Guides", href: "/guides" },
     { label: "Status", href: "/status" },
   ],
@@ -44,6 +45,15 @@ export default function Footer() {
               The modern push notification platform for developers.
               Simple to integrate, powerful to use.
             </p>
+            <Link
+              href="https://github.com/enjoys-in/pinglet"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-4 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <Github className="size-4" />
+              GitHub
+            </Link>
           </div>
 
           {/* Link columns */}

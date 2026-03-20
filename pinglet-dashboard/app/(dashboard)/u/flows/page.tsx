@@ -18,7 +18,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   Plus, Search, GitBranch, Play, Pause, MoreHorizontal,
-  Eye, Edit, Trash2, Download, Zap, Copy,
+  Eye, Edit, Trash2, Download, Zap, Copy, Loader2,
 } from "lucide-react"
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
@@ -28,9 +28,8 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { useToast } from "@/hooks/use-toast"
-import {
-  type FlowExport, getAllFlows, saveFlow, deleteFlow as removeFlow, generateFlowId,
-} from "@/components/workflow/notification-flow/types"
+import type { FlowExport } from "@/components/workflow/notification-flow/types"
+import JsonEditor from "@/components/workflow/notification-flow/json-editor"
 import { API } from "@/lib/api/handler"
 import { db } from "@/lib/db"
 import type { AllProjectsResponse } from "@/lib/interfaces/project.interface"
@@ -44,19 +43,49 @@ const statusConfig: Record<string, { label: string; icon: typeof Play; className
 export default function FlowsPage() {
   const [flows, setFlows] = useState<FlowExport[]>([])
   const [search, setSearch] = useState("")
+  const [loading, setLoading] = useState(true)
   const [createOpen, setCreateOpen] = useState(false)
+  const [creating, setCreating] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState(false)
   const [viewTarget, setViewTarget] = useState<FlowExport | null>(null)
   const [newName, setNewName] = useState("")
   const [newDesc, setNewDesc] = useState("")
   const [newProject, setNewProject] = useState("")
   const [projects, setProjects] = useState<AllProjectsResponse[]>([])
   const [projectsLoading, setProjectsLoading] = useState(false)
+  const [stats, setStats] = useState<{ totalFlows: number; activeFlows: number; totalTriggers: number; totalNotifications: number }>({ totalFlows: 0, activeFlows: 0, totalTriggers: 0, totalNotifications: 0 })
   const { toast } = useToast()
   const router = useRouter()
 
-  const reload = useCallback(() => setFlows(getAllFlows()), [])
-  useEffect(reload, [reload])
+  // Fetch flows from API
+  const fetchFlows = useCallback(async () => {
+    setLoading(true)
+    try {
+      const { data } = await API.getFlows()
+      if (data.success && data.result) {
+        setFlows(data.result)
+      }
+    } catch {
+      toast({ title: "Failed to load flows", variant: "destructive" })
+    } finally {
+      setLoading(false)
+    }
+  }, [toast])
+
+  // Fetch stats from API
+  const fetchStats = useCallback(async () => {
+    try {
+      const { data } = await API.getFlowStats()
+      if (data.success && data.result) {
+        setStats(data.result)
+      }
+    } catch {
+      // Stats are non-critical, compute locally as fallback
+    }
+  }, [])
+
+  useEffect(() => { fetchFlows(); fetchStats() }, [fetchFlows, fetchStats])
 
   // Load projects from API, cache in IndexedDB
   const fetchProjects = useCallback(async () => {
@@ -68,7 +97,6 @@ export default function FlowsPage() {
         await db.bulkPutItems("projects", data.result as any[])
       }
     } catch {
-      // Fallback: load from IndexedDB
       try {
         const cached = await db.getAllItems("projects")
         if (cached?.length) setProjects(cached as unknown as AllProjectsResponse[])
@@ -85,60 +113,99 @@ export default function FlowsPage() {
     (f.description || "").toLowerCase().includes(search.toLowerCase()),
   )
 
+  // Compute local stats as fallback
+  const activeCount = stats.activeFlows || flows.filter(f => f.status === "active").length
+  const triggerCount = stats.totalTriggers || flows.reduce((s, f) => s + (f.nodes?.filter(n => n.type === "event_trigger").length || 0), 0)
+  const actionCount = stats.totalNotifications || flows.reduce((s, f) => s + (f.nodes?.filter(n => n.type === "notification").length || 0), 0)
+
   // Create
-  const handleCreate = () => {
+  const handleCreate = async () => {
     if (!newName.trim() || !newProject) return
-    const id = generateFlowId()
-    const flow: FlowExport = {
-      id,
-      name: newName.trim(),
-      description: newDesc.trim() || undefined,
-      projectId: newProject,
-      status: "draft",
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      nodes: [],
-      edges: [],
+    setCreating(true)
+    try {
+      const payload = {
+        name: newName.trim(),
+        description: newDesc.trim() || undefined,
+        projectId: newProject,
+        status: "draft",
+        nodes: [],
+        edges: [],
+      }
+      const { data } = await API.createFlow(payload)
+      if (data.success && data.result) {
+        const created = data.result
+        setCreateOpen(false)
+        setNewName("")
+        setNewDesc("")
+        setNewProject("")
+        toast({ title: "Flow created", description: `"${created.name}" is ready to edit.` })
+        router.push(`/u/flows/manage/build?id=${created.id}&projectId=${newProject}`)
+      } else {
+        throw new Error(data.message || "Create failed")
+      }
+    } catch (err: any) {
+      toast({ title: "Failed to create flow", description: err?.message, variant: "destructive" })
+    } finally {
+      setCreating(false)
     }
-    saveFlow(flow)
-    setCreateOpen(false)
-    setNewName("")
-    setNewDesc("")
-    setNewProject("")
-    toast({ title: "Flow created", description: `"${flow.name}" is ready to edit.` })
-    router.push(`/u/flows/manage/build?id=${id}&projectId=${newProject}`)
   }
 
   // Delete
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!deleteTarget) return
-    removeFlow(deleteTarget)
-    reload()
-    setDeleteTarget(null)
-    toast({ title: "Flow deleted" })
+    setDeleting(true)
+    try {
+      const { data } = await API.deleteFlow(deleteTarget)
+      if (data.success) {
+        setFlows(prev => prev.filter(f => f.id !== deleteTarget))
+        setDeleteTarget(null)
+        toast({ title: "Flow deleted" })
+        fetchStats()
+      } else {
+        throw new Error(data.message || "Delete failed")
+      }
+    } catch (err: any) {
+      toast({ title: "Failed to delete flow", description: err?.message, variant: "destructive" })
+    } finally {
+      setDeleting(false)
+    }
   }
 
   // Toggle status
-  const toggleStatus = (flow: FlowExport) => {
+  const toggleStatus = async (flow: FlowExport) => {
     const next = flow.status === "active" ? "paused" : "active"
-    saveFlow({ ...flow, status: next })
-    reload()
-    toast({ title: `Flow ${next}` })
+    try {
+      const { data } = await API.toggleFlowStatus(flow.id, next)
+      if (data.success) {
+        setFlows(prev => prev.map(f => f.id === flow.id ? { ...f, status: next } : f))
+        toast({ title: `Flow ${next}` })
+        fetchStats()
+      }
+    } catch {
+      toast({ title: "Failed to update status", variant: "destructive" })
+    }
   }
 
   // Duplicate
-  const handleDuplicate = (flow: FlowExport) => {
-    const dup: FlowExport = {
-      ...flow,
-      id: generateFlowId(),
-      name: `${flow.name} (Copy)`,
-      status: "draft",
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+  const handleDuplicate = async (flow: FlowExport) => {
+    try {
+      const payload = {
+        name: `${flow.name} (Copy)`,
+        description: flow.description,
+        projectId: flow.projectId,
+        status: "draft",
+        nodes: flow.nodes || [],
+        edges: flow.edges || [],
+      }
+      const { data } = await API.createFlow(payload)
+      if (data.success && data.result) {
+        setFlows(prev => [...prev, data.result])
+        toast({ title: "Flow duplicated" })
+        fetchStats()
+      }
+    } catch {
+      toast({ title: "Failed to duplicate flow", variant: "destructive" })
     }
-    saveFlow(dup)
-    reload()
-    toast({ title: "Flow duplicated" })
   }
 
   // Export
@@ -152,10 +219,6 @@ export default function FlowsPage() {
     URL.revokeObjectURL(url)
     toast({ title: "Exported" })
   }
-
-  const activeCount = flows.filter(f => f.status === "active").length
-  const triggerCount = flows.reduce((s, f) => s + f.nodes.filter(n => n.type === "event_trigger").length, 0)
-  const actionCount = flows.reduce((s, f) => s + f.nodes.filter(n => n.type === "notification").length, 0)
 
   return (
     <div className="flex-1 space-y-6 p-4 md:p-8 pt-6">
@@ -178,7 +241,7 @@ export default function FlowsPage() {
             <GitBranch className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{flows.length}</div>
+            <div className="text-2xl font-bold">{stats.totalFlows || flows.length}</div>
             <p className="text-xs text-muted-foreground">{activeCount} active</p>
           </CardContent>
         </Card>
@@ -226,7 +289,14 @@ export default function FlowsPage() {
       </div>
 
       {/* Flow Cards */}
-      {filtered.length === 0 ? (
+      {loading ? (
+        <Card className="border-dashed">
+          <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+            <Loader2 className="size-12 text-muted-foreground/40 mb-4 animate-spin" />
+            <p className="text-sm text-muted-foreground">Loading flows...</p>
+          </CardContent>
+        </Card>
+      ) : filtered.length === 0 ? (
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center justify-center py-16 text-center">
             <GitBranch className="size-12 text-muted-foreground/40 mb-4" />
@@ -301,7 +371,7 @@ export default function FlowsPage() {
                     </Badge>
                     {flow.projectId && (
                       <Badge variant="secondary" className="text-[10px]">
-                        {projects.find(p => String(p.id) === flow.projectId)?.name || flow.projectId}
+                        {projects.find(p => p.unique_id === flow.projectId)?.name || flow.projectId}
                       </Badge>
                     )}
                   </div>
@@ -349,7 +419,7 @@ export default function FlowsPage() {
                     </div>
                   )}
                   {projects.map(p => (
-                    <SelectItem key={p.id} value={String(p.id)}>
+                    <SelectItem key={p.id} value={p.unique_id}>
                       <span className="flex items-center gap-2">
                         <span className={`size-2 rounded-full ${p.is_active ? "bg-emerald-500" : "bg-gray-400"}`} />
                         {p.name}
@@ -370,7 +440,10 @@ export default function FlowsPage() {
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancel</Button>
-              <Button disabled={!newName.trim() || !newProject} onClick={handleCreate}>Create & Edit</Button>
+              <Button disabled={!newName.trim() || !newProject || creating} onClick={handleCreate}>
+                {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {creating ? "Creating..." : "Create & Edit"}
+              </Button>
             </div>
           </div>
         </DialogContent>
@@ -394,9 +467,12 @@ export default function FlowsPage() {
               </div>
               <div>
                 <p className="text-xs font-medium mb-1">Flow Payload</p>
-                <pre className="rounded-lg bg-muted p-3 text-xs font-mono overflow-auto max-h-60">
-                  {JSON.stringify(viewTarget, null, 2)}
-                </pre>
+                <JsonEditor
+                  value={JSON.stringify(viewTarget, null, 2)}
+                  onChange={() => {}}
+                  readOnly
+                  height="h-60"
+                />
               </div>
             </div>
           )}
@@ -411,9 +487,10 @@ export default function FlowsPage() {
             <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Delete
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} disabled={deleting} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {deleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {deleting ? "Deleting..." : "Delete"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

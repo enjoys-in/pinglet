@@ -195,37 +195,7 @@ export interface FlowExport {
   }>
 }
 
-// ─── localStorage helpers ────────────────────────────────────────────────────────
-
-const STORAGE_KEY = "pinglet_flows"
-
-export function getAllFlows(): FlowExport[] {
-  if (typeof window === "undefined") return []
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? JSON.parse(raw) : []
-  } catch { return [] }
-}
-
-export function getFlowById(id: string): FlowExport | undefined {
-  return getAllFlows().find(f => f.id === id)
-}
-
-export function saveFlow(flow: FlowExport): void {
-  const all = getAllFlows()
-  const idx = all.findIndex(f => f.id === flow.id)
-  if (idx >= 0) {
-    all[idx] = { ...flow, updatedAt: new Date().toISOString() }
-  } else {
-    all.push({ ...flow, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() })
-  }
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(all))
-}
-
-export function deleteFlow(id: string): void {
-  const all = getAllFlows().filter(f => f.id !== id)
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(all))
-}
+// ─── Flow ID generator (used before API call) ───────────────────────────────────
 
 export function generateFlowId(): string {
   return `flow_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`

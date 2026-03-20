@@ -2,37 +2,186 @@ import { Badge } from "@/components/ui/badge"
 
 const changelog = [
   {
-    version: "v0.0.3",
-    date: "June 2025",
+    version: "v1.0.0",
+    date: "March 2026",
     tag: "Latest",
-    changes: [
-      "Added Type 2 Glassmorphism HTML notifications",
-      "Custom event button action support",
-      "Tag-based notification deduplication",
-      "Overrides for sound, theme, and progress bar",
-      "Improved stacking & queue behavior",
+    sections: [
+      {
+        title: "Flows Engine",
+        changes: [
+          "Visual notification flow builder with 15 node types (Event Trigger, Condition, Delay, Notification, Webhook, A/B Split, Filter, Schedule, Rate Limit, Presence Check, Transform, Email, Merge, Diverge, Note)",
+          "Flows backend — entity, service, controller, routes, stats API",
+          "Flows CRUD with real backend API integration (create, update, delete, toggle status)",
+          "Flow stats dashboard (total flows, active, triggers, notifications)",
+          "Context menu & keyboard shortcuts (Ctrl+S save, Ctrl+Z undo, Ctrl+C/V copy-paste)",
+          "SmoothStep edges, transitions, CSS animations on flow canvas",
+          "Flow export/import as JSON",
+        ],
+      },
+      {
+        title: "Payload Creator",
+        changes: [
+          "Visual payload builder for all 4 notification types",
+          "JSON / cURL / fetch output tabs with copy support",
+        ],
+      },
+      {
+        title: "Tracking & Events",
+        changes: [
+          "Emit 'request' event to Kafka for total_request tracking",
+          "Activity & session tracking integrated into SDK v0.0.3 bundle",
+          "Custom Events documentation tab in docs + event fields in demo playground",
+        ],
+      },
     ],
   },
   {
-    version: "v0.0.2",
-    date: "May 2025",
+    version: "v0.4.0",
+    date: "November 2025",
     tag: "",
-    changes: [
-      "Browser push notifications (Type -1) via service worker",
-      "SRI checksum validation",
-      "Domain whitelisting security",
-      "Rate limiting (30 req/min)",
+    sections: [
+      {
+        title: "SDK v0.0.3",
+        changes: [
+          "Custom video player, playSound fix, scoping fix",
+          "Type 0 → Glassmorphism rename, Type 2 → Compat renderer",
+          "Custom event button action support",
+          "Tag-based notification deduplication",
+          "Overrides for sound, theme, and progress bar",
+          "Improved stacking & queue behavior",
+        ],
+      },
+      {
+        title: "Pages & Navigation",
+        changes: [
+          "Added Docs, Demo, Pricing, Changelog, Privacy, Terms extra pages",
+          "Navbar active state indicator & Home link",
+          "Full-fledged demo with all 4 notification types",
+          "Demo playground redesign with type selector and live preview",
+        ],
+      },
     ],
   },
   {
-    version: "v0.0.1",
-    date: "April 2025",
+    version: "v0.3.0",
+    date: "October 2025",
     tag: "",
-    changes: [
-      "Initial release with Type 0 in-app toast notifications",
-      "SSE real-time connection",
-      "Basic notification API with Zod validation",
-      "Dashboard for project management",
+    sections: [
+      {
+        title: "Dashboard Features",
+        changes: [
+          "Activity, sessions, inbox, unsubscribe analytics pages",
+          "Project settings (quiet hours, rate limiting, fallback channels)",
+          "Live presence widget",
+          "16 new API methods for dashboard endpoints",
+          "Sidebar nav updates with all new sections",
+        ],
+      },
+      {
+        title: "Backend",
+        changes: [
+          "CORS split (public/protected routes)",
+          "New entities & services: inbox, activity, presence, session-recording, unsubscribe-analytics, notification-guards, fallback-channel",
+          "Webhook event listener & dispatch",
+          "Protected routes enforcement",
+        ],
+      },
+      {
+        title: "Analytics & Dashboard",
+        changes: [
+          "Dashboard & analytics endpoints with subscriber enrichment",
+          "Replace mock data with real API calls on dashboard & analytics",
+          "Webhook endpoints return tracking stats with success_rate",
+          "Webhook dispatch, tracking & notification stats",
+          "Chart bucket filling & stats neutral state",
+          "Settings page and error pages",
+        ],
+      },
+      {
+        title: "Bug Fixes",
+        changes: [
+          "Hydration errors, null safety, webhook 404, template layout fixes",
+          "Project details page redesign with theme-aware colors + error state",
+          "Cookies not being set in browser",
+          "Smooth sidebar animation + analytics redesign with modern chart colors",
+        ],
+      },
+    ],
+  },
+  {
+    version: "v0.2.0",
+    date: "September 2025",
+    tag: "",
+    sections: [
+      {
+        title: "Caching & Plans",
+        changes: [
+          "Redis caching layer with typed keys/TTLs",
+          "Seed 43 default templates migration",
+          "Cache all GET API endpoints with invalidation on writes",
+          "Plan-based feature enforcement, quota middleware, white-label gates",
+          "Plan seeding migration",
+        ],
+      },
+      {
+        title: "Dashboard Redesign",
+        changes: [
+          "Glassmorphism, gradients, animations across all dashboard pages",
+          "Auth pages redesign matching purple theme",
+          "Fresh landing page with purple theme, dot grid, bento features, vertical timeline",
+          "NextTopLoader color update",
+          "Notification stats computed from data + responsive layout",
+        ],
+      },
+      {
+        title: "Infrastructure",
+        changes: [
+          "Docker images & Dockerfile with memory optimizations",
+          "Build scripts & deployment pipeline",
+          "Database migrations — enum fixes, template escaping, PostgreSQL compatibility",
+          "Buffer-equal-constant-time patch for Node.js v25",
+          "Reset password flow fixes",
+        ],
+      },
+    ],
+  },
+  {
+    version: "v0.1.0",
+    date: "August 2025",
+    tag: "",
+    sections: [
+      {
+        title: "Templates & Webhooks",
+        changes: [
+          "Custom template support in SDK npm package",
+          "Webhook and template support backend",
+          "Template reference error fixes",
+          "Tracking event API URL fixes",
+          "Dump & load templates from production DB via .sql",
+        ],
+      },
+      {
+        title: "Core Notifications",
+        changes: [
+          "Browser push notifications (Type -1) via service worker",
+          "Kafka event stream introduced",
+          "SRI checksum validation & domain whitelisting",
+          "Rate limiting (30 req/min)",
+          "Notification API routes for send & subscribe",
+          "Service worker ready for push",
+        ],
+      },
+      {
+        title: "Initial Release",
+        changes: [
+          "Type 0 in-app toast notifications with SSE real-time connection",
+          "Basic notification API with Zod validation",
+          "Project, website, and template management UI",
+          "Dashboard layout with sidebar navigation",
+          "Authentication (login, signup, logout, password reset)",
+          "JS SDK builder with versioning and checksum/hash",
+        ],
+      },
     ],
   },
 ]
@@ -50,25 +199,32 @@ export default function ChangelogPage() {
       </div>
 
       <div className="mx-auto max-w-3xl px-6 py-16">
-        <div className="space-y-12">
+        <div className="space-y-14">
           {changelog.map((release) => (
             <div key={release.version} className="relative pl-8 border-l-2 border-border/50">
               <div className="absolute -left-2 top-0 w-4 h-4 rounded-full bg-primary border-4 border-background" />
-              <div className="flex items-center gap-3 mb-3">
+              <div className="flex items-center gap-3 mb-4">
                 <h2 className="text-xl font-bold text-foreground">{release.version}</h2>
                 <span className="text-sm text-muted-foreground">{release.date}</span>
                 {release.tag && (
                   <Badge variant="secondary" className="text-xs">{release.tag}</Badge>
                 )}
               </div>
-              <ul className="space-y-2">
-                {release.changes.map((change, i) => (
-                  <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
-                    <span className="text-primary mt-1.5 shrink-0">•</span>
-                    {change}
-                  </li>
+              <div className="space-y-4">
+                {release.sections.map((section, si) => (
+                  <div key={si}>
+                    <h3 className="text-sm font-semibold text-foreground mb-2">{section.title}</h3>
+                    <ul className="space-y-1.5">
+                      {section.changes.map((change, i) => (
+                        <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
+                          <span className="text-primary mt-1.5 shrink-0">•</span>
+                          {change}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 ))}
-              </ul>
+              </div>
             </div>
           ))}
         </div>

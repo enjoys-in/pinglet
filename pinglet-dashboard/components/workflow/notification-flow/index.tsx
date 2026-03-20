@@ -11,10 +11,13 @@ import ReactFlow, {
   Panel,
   useNodesState,
   useEdgesState,
+  ConnectionLineType,
+  MarkerType,
   type Connection,
   type Edge,
   type NodeTypes,
   type Node,
+  type DefaultEdgeOptions,
 } from "reactflow"
 // @ts-ignore - CSS import works at build time
 import "reactflow/dist/style.css"
@@ -40,7 +43,18 @@ import { MergeNode } from "./merge-node"
 import { NoteNode } from "./note-node"
 import { DivergeNode } from "./diverge-node"
 import FlowConfigPanel from "./flow-config-panel"
-import { type FlowNode, type FlowExport, getFlowById, saveFlow, generateFlowId } from "./types"
+import { type FlowNode, type FlowExport, generateFlowId } from "./types"
+import { API } from "@/lib/api/handler"
+import JsonEditor from "./json-editor"
+
+// ─── Edge defaults ──────────────────────────────────────────────────────────────
+
+const defaultEdgeOptions: DefaultEdgeOptions = {
+  type: "smoothstep",
+  animated: true,
+  style: { stroke: "hsl(var(--primary))", strokeWidth: 2 },
+  markerEnd: { type: MarkerType.ArrowClosed, width: 16, height: 16, color: "hsl(var(--primary))" },
+}
 
 // ─── Node Type Registry ─────────────────────────────────────────────────────────
 
@@ -103,7 +117,7 @@ const defaultData: Record<string, Record<string, unknown>> = {
   transform: { label: "Transform", mappings: "{}" },
   email: { label: "Send Email", to: "", subject: "", body: "", templateId: "", replyTo: "" },
   merge: { label: "Merge", mergeMode: "all" },
-  diverge: { label: "Diverge", outputCount: 3, outputLabels: ["Email", "Webhook", "Push"] },
+  diverge: { label: "Diverge", outputCount: 2, outputLabels: [] },
   note: { label: "Note", content: "" },
 }
 
@@ -129,19 +143,21 @@ export default function NotificationFlowBuilder({ flowId, projectId }: Notificat
   // Load existing flow
   useEffect(() => {
     if (flowId) {
-      const existing = getFlowById(flowId)
-      if (existing) {
-        setFlowName(existing.name)
-        setNodes(existing.nodes.map(n => ({ ...n, data: n.data })) as Node[])
-        setEdges(existing.edges.map(e => ({ ...e, animated: true, style: { stroke: "hsl(var(--primary))", strokeWidth: 2 } })))
-      }
+      API.getFlowById(flowId).then(({ data }) => {
+        if (data.success && data.result) {
+          const existing = data.result
+          setFlowName(existing.name)
+          setNodes(existing.nodes.map((n: any) => ({ ...n, data: n.data })) as Node[])
+          setEdges(existing.edges.map((e: any) => ({ ...e, animated: true, style: { stroke: "hsl(var(--primary))", strokeWidth: 2 } })))
+        }
+      }).catch(() => {})
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [flowId])
 
   // Connect edges
   const onConnect = useCallback(
-    (params: Edge | Connection) => setEdges(eds => addEdge({ ...params, animated: true, style: { stroke: "hsl(var(--primary))", strokeWidth: 2 } }, eds)),
+    (params: Edge | Connection) => setEdges(eds => addEdge({ ...params, type: "smoothstep", animated: true, style: { stroke: "hsl(var(--primary))", strokeWidth: 2 }, markerEnd: { type: MarkerType.ArrowClosed, width: 16, height: 16, color: "hsl(var(--primary))" } }, eds)),
     [setEdges],
   )
 
@@ -335,7 +351,7 @@ export default function NotificationFlowBuilder({ flowId, projectId }: Notificat
   const flowPayload = useMemo<FlowExport>(() => ({
     id: currentFlowId,
     name: flowName,
-    projectId: projectId || getFlowById(currentFlowId)?.projectId || "",
+    projectId: projectId || "",
     status: "draft",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -352,7 +368,7 @@ export default function NotificationFlowBuilder({ flowId, projectId }: Notificat
       sourceHandle: e.sourceHandle,
       label: typeof e.label === "string" ? e.label : undefined,
     })),
-  }), [currentFlowId, flowName, nodes, edges])
+  }), [currentFlowId, flowName, nodes, edges, projectId])
 
   // Save flow
   const handleSave = useCallback(() => {
@@ -360,14 +376,26 @@ export default function NotificationFlowBuilder({ flowId, projectId }: Notificat
       toast({ title: "Nothing to save", description: "Add nodes first.", variant: "destructive" })
       return
     }
-    const existing = getFlowById(currentFlowId)
-    saveFlow({
+    const payload = {
       ...flowPayload,
-      status: existing?.status || "draft",
-      createdAt: existing?.createdAt || new Date().toISOString(),
-    })
-    toast({ title: "Flow saved", description: `"${flowName}" saved successfully.` })
-  }, [flowPayload, nodes.length, toast, currentFlowId, flowName])
+      status: flowPayload.status || "draft",
+    }
+    const apiCall = flowId
+      ? API.updateFlow(currentFlowId, payload)
+      : API.createFlow(payload)
+
+    apiCall
+      .then(({ data }) => {
+        if (data.success) {
+          toast({ title: "Flow saved", description: `"${flowName}" saved successfully.` })
+        } else {
+          throw new Error(data.message || "Save failed")
+        }
+      })
+      .catch((err: any) => {
+        toast({ title: "Failed to save", description: err?.message, variant: "destructive" })
+      })
+  }, [flowPayload, nodes.length, toast, currentFlowId, flowName, flowId])
 
   // Export JSON
   const handleExport = useCallback(() => {
@@ -456,9 +484,15 @@ export default function NotificationFlowBuilder({ flowId, projectId }: Notificat
               onNodeContextMenu={onNodeContextMenu}
               onPaneContextMenu={onPaneContextMenu}
               nodeTypes={nodeTypes}
+              defaultEdgeOptions={defaultEdgeOptions}
+              connectionLineType={ConnectionLineType.SmoothStep}
+              connectionLineStyle={{ stroke: "hsl(var(--primary))", strokeWidth: 2, strokeDasharray: "8 4" }}
               fitView
+              fitViewOptions={{ duration: 500 }}
               snapToGrid
               snapGrid={[20, 20]}
+              minZoom={0.2}
+              maxZoom={2}
               proOptions={{ hideAttribution: true }}
             >
               <Background gap={20} size={1} />
@@ -527,7 +561,12 @@ export default function NotificationFlowBuilder({ flowId, projectId }: Notificat
               </div>
             </div>
             <pre className="p-4 text-xs font-mono text-muted-foreground whitespace-pre-wrap">
-              {JSON.stringify(flowPayload, null, 2)}
+              <JsonEditor
+                value={JSON.stringify(flowPayload, null, 2)}
+                onChange={() => {}}
+                readOnly
+                height="h-48"
+              />
             </pre>
           </div>
         )}
