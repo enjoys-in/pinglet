@@ -460,6 +460,17 @@ class PushNtfyController {
 				}
 			}
 
+			// Log "request" event — the pipeline is wired but nobody was producing it
+			sendToKafkaQueue.add(QUEUE_JOBS.SEND_KAFKA_NOTIFICATION, {
+				project_id: projectId,
+				timestamp: Date.now(),
+				type: rest.type || "0",
+				event: "request",
+			}, {
+				removeOnComplete: true,
+				jobId: `${projectId}-${Date.now()}-request`,
+			});
+
 			if (projectId && rest.type === "-1" && rest?.data) {
 				sendPushQueue.add(
 					"send-browser-notification",
