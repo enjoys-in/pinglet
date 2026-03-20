@@ -138,10 +138,13 @@ const overridesSchema = z
 	})
 	.strict();
 // Main Schema
+// Icon that allows URLs (for type 2 glassmorphism notifications)
+const iconUrlSchema = z.string().url().optional();
+
 export const notificationSchema = z
 	.object({
 		projectId: z.string().length(24),
-		type: z.union([z.literal("-1"), z.literal("0"), z.literal("1")]),
+		type: z.union([z.literal("-1"), z.literal("0"), z.literal("1"), z.literal("2")]),
 		variant: z.string().optional(),
 		template_id: z.string().optional(),
 		tag: z.string().optional(),
@@ -153,13 +156,13 @@ export const notificationSchema = z
 				media: mediaSchema.optional(),
 				buttons: z
 					.array(buttonSchema)
-					.max(2, "Maximum 2 actions allowed")
+					.max(3, "Maximum 3 actions allowed")
 					.optional(),
-				icon: iconSchema.optional(),
-				logo: logoSchema.optional(),
+				icon: z.string().optional(),
+				logo: z.string().optional(),
 				url: z.string().url().optional(),
 			})
-			.optional(), // for type 0
+			.optional(), // for type 0 and 2
 		data: NotificationPayloadSchema.optional(), // for type -1
 		custom_template: z.record(z.any(), z.any()).optional(), // for type 1
 	})
@@ -189,6 +192,15 @@ export const notificationSchema = z
 				code: z.ZodIssueCode.custom,
 				path: ["template_id"],
 				message: "`template_id` must not be provided unless type is '1'",
+			});
+		}
+
+		// 2b. type "2" must not use variant
+		if (data.type === "2" && isVariant) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				path: ["variant"],
+				message: "`variant` is not supported for type '2'",
 			});
 		}
 
@@ -226,12 +238,12 @@ export const notificationSchema = z
 
 		// 5. If template_id is NOT present: body is required,custom_template, data is not allowed
 		if (!isTemplate) {
-			if (!data.body && data.type === "0") {
+			if (!data.body && (data.type === "0" || data.type === "2")) {
 				ctx.addIssue({
 					code: z.ZodIssueCode.custom,
 					path: ["body"],
 					message:
-						"`body` is required when not using `template_id` and `type` is  '0'",
+						"`body` is required when not using `template_id` and `type` is '0' or '2'",
 				});
 			}
 
@@ -250,6 +262,30 @@ export const notificationSchema = z
 				path: ["data"],
 				message: "`data` is required when type is '-1'",
 			});
+		}
+		// 7. Type "2" (glassmorphism HTML notification): body required, no template_id, no custom_template
+		if (data.type === "2") {
+			if (isTemplate) {
+				ctx.addIssue({
+					code: z.ZodIssueCode.custom,
+					path: ["template_id"],
+					message: "`template_id` is not supported for type '2'",
+				});
+			}
+			if (data.custom_template) {
+				ctx.addIssue({
+					code: z.ZodIssueCode.custom,
+					path: ["custom_template"],
+					message: "`custom_template` is not supported for type '2'",
+				});
+			}
+			if (data.data) {
+				ctx.addIssue({
+					code: z.ZodIssueCode.custom,
+					path: ["data"],
+					message: "`data` (browser push payload) is not used for type '2'. Use `body` instead.",
+				});
+			}
 		}
 	})
 	.strict(); // ❗ Disallow unknown top-level keys

@@ -270,11 +270,9 @@ function CodeBlock({ code, lang }: { code: string; lang?: string }) {
 }
 
 const PingletApiUsage = () => {
-    const [activeTab, setActiveTab] = useState<ExampleKey>("0");
+    const [activeTab, setActiveTab] = useState<ExampleKey | "events">("0");
     const params = useParams();
     const projectId = params?.project_id;
-
-    const current = examples[activeTab];
 
     return (
         <div className="space-y-6">
@@ -296,7 +294,7 @@ const PingletApiUsage = () => {
             </div>
 
             {/* Tabs */}
-            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as ExampleKey)} className="w-full">
+            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as ExampleKey | "events")} className="w-full">
                 <TabsList className="bg-muted/50 border border-border/50 p-1 rounded-xl">
                     {(Object.entries(examples) as [ExampleKey, typeof examples[ExampleKey]][]).map(([key, val]) => (
                         <TabsTrigger
@@ -314,6 +312,15 @@ const PingletApiUsage = () => {
                             </span>
                         </TabsTrigger>
                     ))}
+                    <TabsTrigger
+                        value="events"
+                        className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm text-sm gap-2"
+                    >
+                        Custom Events
+                        <span className="text-[10px] px-1.5 py-0.5 rounded-full font-medium bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                            Guide
+                        </span>
+                    </TabsTrigger>
                 </TabsList>
 
                 {(Object.entries(examples) as [ExampleKey, typeof examples[ExampleKey]][]).map(([key, val]) => (
@@ -394,6 +401,230 @@ const PingletApiUsage = () => {
                         </div>
                     </TabsContent>
                 ))}
+
+                {/* ── Custom Events Guide ── */}
+                <TabsContent value="events" className="mt-6 space-y-6">
+                    {/* Overview */}
+                    <div className="rounded-2xl border border-border/50 bg-card/80 backdrop-blur-sm p-6">
+                        <div className="flex items-start gap-3 mb-4">
+                            <div className="p-2 rounded-lg bg-blue-500/10 shrink-0">
+                                <Zap className="w-4 h-4 text-blue-500" />
+                            </div>
+                            <div>
+                                <h2 className="text-lg font-semibold text-foreground">Custom Event Button Action</h2>
+                                <p className="text-sm text-muted-foreground mt-1">
+                                    Trigger real DOM CustomEvents on the user&apos;s browser when they click a notification button.
+                                    Your frontend JavaScript listens for the event and executes any logic — add to cart, open modal,
+                                    track conversion, navigate, and more.
+                                </p>
+                            </div>
+                        </div>
+                        <div className="bg-muted/50 rounded-lg p-4 border border-border/50 text-xs font-mono leading-relaxed text-muted-foreground">
+                            <span className="text-foreground font-semibold block mb-2">How It Works:</span>
+                            1. Backend sends notification with button → action: &quot;event&quot;<br />
+                            2. SDK renders notification → User clicks button<br />
+                            3. SDK fires: <code className="text-primary">window.dispatchEvent(new CustomEvent(&quot;name&quot;, {'{'}detail: payload{'}'}))</code><br />
+                            4. SDK auto-dismisses notification + tracks click<br />
+                            5. Your JS listener catches the event and runs your logic
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {/* Left Column */}
+                        <div className="space-y-6">
+                            {/* Event Button Schema */}
+                            <div className="rounded-2xl border border-border/50 bg-card/80 backdrop-blur-sm p-6">
+                                <div className="flex items-center gap-2 mb-5">
+                                    <Code2 className="w-4 h-4 text-primary" />
+                                    <h3 className="text-sm font-semibold text-foreground">Event Button Schema</h3>
+                                </div>
+                                <div className="space-y-0 divide-y divide-border/40">
+                                    {[
+                                        { name: "text", type: "string", required: true, desc: "Button label shown to the user" },
+                                        { name: "action", type: '"event"', required: true, desc: 'Must be exactly "event"' },
+                                        { name: "event", type: "string", required: true, desc: 'Custom event name (e.g. "pinglet:addToCart")' },
+                                        { name: "data", type: "any", required: false, desc: "Payload sent as event.detail — object, array, string, number" },
+                                    ].map((field, i) => (
+                                        <div key={i} className="py-3 first:pt-0">
+                                            <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                                <code className="text-xs font-mono font-medium text-foreground">{field.name}</code>
+                                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">{field.type}</span>
+                                                {field.required && (
+                                                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-500/10 text-red-500 font-medium">required</span>
+                                                )}
+                                            </div>
+                                            <p className="text-xs text-muted-foreground">{field.desc}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* All Button Actions Reference */}
+                            <div className="rounded-2xl border border-border/50 bg-card/80 backdrop-blur-sm p-6">
+                                <div className="flex items-center gap-2 mb-5">
+                                    <BookOpen className="w-4 h-4 text-primary" />
+                                    <h3 className="text-sm font-semibold text-foreground">All Button Actions</h3>
+                                </div>
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-xs">
+                                        <thead>
+                                            <tr className="border-b border-border/50 text-left text-muted-foreground">
+                                                <th className="pb-2 pr-4 font-medium">Action</th>
+                                                <th className="pb-2 pr-4 font-medium">Required Fields</th>
+                                                <th className="pb-2 font-medium">Behavior</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-border/30">
+                                            {[
+                                                ["redirect", "src (valid URL)", "Opens URL in new tab (_blank)"],
+                                                ["link", "src (valid URL)", "Opens URL in same tab"],
+                                                ["alert", "src (string)", "Shows browser alert(src)"],
+                                                ["reload", "—", "Reloads the page"],
+                                                ["close", "—", "Dismisses the notification"],
+                                                ["event", "event (string)", "Fires CustomEvent on window"],
+                                                ["onClick", "onClick (fn string)", "Evaluates inline function"],
+                                            ].map(([action, required, behavior], i) => (
+                                                <tr key={i}>
+                                                    <td className="py-2 pr-4">
+                                                        <code className="text-xs font-mono px-1.5 py-0.5 rounded bg-primary/10 text-primary">{action}</code>
+                                                    </td>
+                                                    <td className="py-2 pr-4 text-muted-foreground">{required}</td>
+                                                    <td className="py-2 text-foreground">{behavior}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            {/* Example: Add to Cart */}
+                            <div className="rounded-2xl border border-border/50 bg-card/80 backdrop-blur-sm p-6 space-y-4">
+                                <div className="flex items-center gap-2">
+                                    <Send className="w-4 h-4 text-primary" />
+                                    <h3 className="text-sm font-semibold text-foreground">Example: Add to Cart</h3>
+                                </div>
+                                <CodeBlock code={JSON.stringify({
+                                    type: "2",
+                                    projectId: "your-project-id",
+                                    body: {
+                                        title: "Flash Sale!",
+                                        description: "50% off — limited time only",
+                                        icon: "https://example.com/sale-icon.png",
+                                        buttons: [
+                                            { text: "Add to Cart", action: "event", event: "pinglet:addToCart", data: { productId: "SKU-123", quantity: 1, discount: 50 } },
+                                            { text: "Maybe Later", action: "close" }
+                                        ]
+                                    }
+                                }, null, 2)} lang="json" />
+                            </div>
+
+                            {/* Example: Multiple Event Buttons */}
+                            <div className="rounded-2xl border border-border/50 bg-card/80 backdrop-blur-sm p-6 space-y-4">
+                                <div className="flex items-center gap-2">
+                                    <Send className="w-4 h-4 text-primary" />
+                                    <h3 className="text-sm font-semibold text-foreground">Example: Multiple Event Buttons</h3>
+                                </div>
+                                <CodeBlock code={JSON.stringify({
+                                    type: "2",
+                                    projectId: "your-project-id",
+                                    body: {
+                                        title: "New Feature: Dark Mode",
+                                        description: "Try our new dark mode theme!",
+                                        buttons: [
+                                            { text: "Enable Dark Mode", action: "event", event: "theme:toggle", data: { theme: "dark" } },
+                                            { text: "Leave Feedback", action: "event", event: "feedback:open", data: { feature: "dark-mode", version: "2.0" } },
+                                            { text: "Not Now", action: "close" }
+                                        ]
+                                    }
+                                }, null, 2)} lang="json" />
+                            </div>
+                        </div>
+
+                        {/* Right Column */}
+                        <div className="space-y-6">
+                            {/* Frontend Listener */}
+                            <div className="rounded-2xl border border-border/50 bg-card/80 backdrop-blur-sm p-6 space-y-4">
+                                <div className="flex items-center gap-2">
+                                    <Code2 className="w-4 h-4 text-primary" />
+                                    <h3 className="text-sm font-semibold text-foreground">Frontend Listener</h3>
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                    Add this after the Pinglet SDK script tag. The <code className="px-1 py-0.5 rounded bg-muted text-foreground">event.detail</code> contains
+                                    whatever you sent in the <code className="px-1 py-0.5 rounded bg-muted text-foreground">data</code> field.
+                                </p>
+                                <CodeBlock code={`<script>\n  // Listen for the custom event by name\n  window.addEventListener("pinglet:addToCart", function (e) {\n    console.log("Payload received:", e.detail);\n\n    // e.detail = { productId: "SKU-123", quantity: 1, discount: 50 }\n    addItemToCart(e.detail.productId, e.detail.quantity);\n  });\n</script>`} lang="html" />
+                            </div>
+
+                            {/* React / SPA Usage */}
+                            <div className="rounded-2xl border border-border/50 bg-card/80 backdrop-blur-sm p-6 space-y-4">
+                                <div className="flex items-center gap-2">
+                                    <Code2 className="w-4 h-4 text-primary" />
+                                    <h3 className="text-sm font-semibold text-foreground">React / SPA Usage</h3>
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                    For React, Vue, Next.js, or Angular — register the listener in a lifecycle hook and clean up on unmount.
+                                </p>
+                                <CodeBlock code={`// React example\nuseEffect(() => {\n  const handler = (e: CustomEvent) => {\n    console.log("Event data:", e.detail);\n    // Your logic here\n  };\n  window.addEventListener("pinglet:addToCart", handler);\n  return () => window.removeEventListener("pinglet:addToCart", handler);\n}, []);`} lang="tsx" />
+                            </div>
+
+                            {/* More Use Cases */}
+                            <div className="rounded-2xl border border-border/50 bg-card/80 backdrop-blur-sm p-6 space-y-4">
+                                <div className="flex items-center gap-2">
+                                    <Zap className="w-4 h-4 text-primary" />
+                                    <h3 className="text-sm font-semibold text-foreground">Use Cases</h3>
+                                </div>
+                                <div className="space-y-3 text-xs">
+                                    {[
+                                        { title: "Open Modal / Dialog", event: "ui:openModal", data: '{ modalId: "product-detail", productSlug: "wireless-headphones" }' },
+                                        { title: "Track Conversion", event: "analytics:conversion", data: '{ campaign: "summer-sale", value: 15.00, currency: "USD" }' },
+                                        { title: "Apply Coupon Code", event: "promo:applyCoupon", data: '{ code: "SAVE20", discount: 20, minOrder: 50 }' },
+                                        { title: "Start Chat / Support", event: "support:openChat", data: '{ department: "sales", priority: "high" }' },
+                                        { title: "SPA Navigation", event: "app:navigate", data: '{ path: "/dashboard/orders", tab: "pending" }' },
+                                        { title: "Theme Toggle", event: "theme:toggle", data: '{ theme: "dark" }' },
+                                    ].map((uc, i) => (
+                                        <div key={i} className="p-3 rounded-lg bg-muted/30 border border-border/30">
+                                            <p className="font-medium text-foreground mb-1">{uc.title}</p>
+                                            <code className="block text-muted-foreground">event: &quot;{uc.event}&quot;</code>
+                                            <code className="block text-muted-foreground">data: {uc.data}</code>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Important Notes */}
+                            <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 backdrop-blur-sm p-6 space-y-3">
+                                <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                                    <span className="text-amber-500">&#9888;</span> Important Notes
+                                </h3>
+                                <ul className="space-y-2 text-xs text-muted-foreground">
+                                    <li className="flex gap-2"><span className="text-amber-500 shrink-0">•</span>You <strong>must</strong> register your listener — the SDK only fires the event</li>
+                                    <li className="flex gap-2"><span className="text-amber-500 shrink-0">•</span>Works with Type 0 (toast), Type 1 (template), and Type 2 (glassmorphism)</li>
+                                    <li className="flex gap-2"><span className="text-amber-500 shrink-0">•</span>Notification auto-dismisses after the event is dispatched</li>
+                                    <li className="flex gap-2"><span className="text-amber-500 shrink-0">•</span>Max 3 buttons per notification — any combination of actions is allowed</li>
+                                    <li className="flex gap-2"><span className="text-amber-500 shrink-0">•</span>Don&apos;t put sensitive data (passwords, tokens) in the payload — it&apos;s visible in the notification</li>
+                                    <li className="flex gap-2"><span className="text-amber-500 shrink-0">•</span>Use namespaced names like &quot;app:action&quot; or &quot;pinglet:action&quot; to avoid collisions</li>
+                                    <li className="flex gap-2"><span className="text-amber-500 shrink-0">•</span>The <code className="px-1 py-0.5 rounded bg-muted text-foreground">data</code> field accepts any JSON type: object, array, string, number</li>
+                                    <li className="flex gap-2"><span className="text-amber-500 shrink-0">•</span>Backend validates: action must be &quot;event&quot;, event must be a string, data is optional</li>
+                                </ul>
+                            </div>
+
+                            {/* Valid / Invalid Quick Ref */}
+                            <div className="rounded-2xl border border-border/50 bg-card/80 backdrop-blur-sm p-6 space-y-4">
+                                <h3 className="text-sm font-semibold text-foreground">Quick Reference</h3>
+                                <div className="space-y-3">
+                                    <div>
+                                        <p className="text-[10px] font-medium text-emerald-500 uppercase tracking-wider mb-2">Valid Payloads</p>
+                                        <CodeBlock code={`// Minimal — just event name\n{ "text": "Click Me", "action": "event", "event": "app:clicked" }\n\n// With object data\n{ "text": "Buy", "action": "event", "event": "shop:buy", "data": { "id": 1 } }\n\n// With array data\n{ "text": "Select", "action": "event", "event": "bulk:select", "data": [1, 2, 3] }`} lang="json" />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-medium text-red-500 uppercase tracking-wider mb-2">Invalid (Rejected)</p>
+                                        <CodeBlock code={`// Missing "event" field\n{ "text": "Click", "action": "event" }\n\n// "event" is not a string\n{ "text": "Click", "action": "event", "event": 123 }\n\n// Wrong action type\n{ "text": "Click", "action": "customEvent", "event": "x" }`} lang="json" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </TabsContent>
             </Tabs>
         </div>
     );

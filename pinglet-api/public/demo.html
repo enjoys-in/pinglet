@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pinglet Type 2 — HTML Notification Demo</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 40px 24px; background: #f5f5f7; color: #1a1a2e; min-height: 100vh; }
+    @media (prefers-color-scheme: dark) { body { background: #0f0f1a; color: #e0e0f0; } }
+    h1 { font-size: 28px; font-weight: 700; margin: 0 0 8px; }
+    .subtitle { color: #6b7280; margin: 0 0 32px; font-size: 15px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; max-width: 1200px; }
+    .card { background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.5); border-radius: 14px; padding: 18px; cursor: pointer; transition: transform .15s, box-shadow .15s; }
+    .card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
+    @media (prefers-color-scheme: dark) { .card { background: rgba(30,30,50,0.6); border-color: rgba(255,255,255,0.08); } .card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.3); } }
+    .card h3 { margin: 0 0 6px; font-size: 15px; font-weight: 600; }
+    .card p { margin: 0; font-size: 12.5px; color: #6b7280; line-height: 1.5; }
+    @media (prefers-color-scheme: dark) { .card p { color: #8888a8; } }
+    .tag { display: inline-block; background: rgba(102,126,234,0.12); color: #667eea; font-size: 10.5px; font-weight: 600; padding: 2px 8px; border-radius: 6px; margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+  <h1>Pinglet Type 2 — Glassmorphism Notifications</h1>
+  <p class="subtitle">Click any card to trigger a live notification. Dark/light mode auto-detected.</p>
+
+  <div class="grid">
+    <div class="card" onclick="demo('minimal')">
+      <span class="tag">CASE 1</span>
+      <h3>Minimal — Title Only</h3>
+      <p>Simplest notification with just a title, no icon, no description.</p>
+    </div>
+    <div class="card" onclick="demo('titleDesc')">
+      <span class="tag">CASE 2</span>
+      <h3>Title + Description</h3>
+      <p>Standard notification with title and a body message.</p>
+    </div>
+    <div class="card" onclick="demo('withIcon')">
+      <span class="tag">CASE 3</span>
+      <h3>With Icon</h3>
+      <p>Displays a small 44×44 icon on the left side.</p>
+    </div>
+    <div class="card" onclick="demo('withUrl')">
+      <span class="tag">CASE 5</span>
+      <h3>Click-Through URL</h3>
+      <p>Clicking opens a link in a new tab.</p>
+    </div>
+    <div class="card" onclick="demo('withImage')">
+      <span class="tag">CASE 6</span>
+      <h3>Image Banner</h3>
+      <p>Full-width image below the text content.</p>
+    </div>
+    <div class="card" onclick="demo('withVideo')">
+      <span class="tag">CASE 7</span>
+      <h3>Video Media</h3>
+      <p>Embedded muted video player inside the card.</p>
+    </div>
+    <div class="card" onclick="demo('oneButton')">
+      <span class="tag">CASE 10</span>
+      <h3>1 Button</h3>
+      <p>Single action button with redirect.</p>
+    </div>
+    <div class="card" onclick="demo('twoButtons')">
+      <span class="tag">CASE 11</span>
+      <h3>2 Buttons</h3>
+      <p>View + Dismiss button pair.</p>
+    </div>
+    <div class="card" onclick="demo('threeButtons')">
+      <span class="tag">CASE 12</span>
+      <h3>3 Buttons (Max)</h3>
+      <p>Accept / Decline / Later — three action buttons.</p>
+    </div>
+    <div class="card" onclick="demo('full')">
+      <span class="tag">CASE 13</span>
+      <h3>Full Body — Everything</h3>
+      <p>Icon + Image + 3 Buttons + URL + Description + Tag dedup.</p>
+    </div>
+    <div class="card" onclick="demo('persistent')">
+      <span class="tag">CASE 15</span>
+      <h3>Persistent (No Auto-Close)</h3>
+      <p>requireInteraction: true — stays until manually dismissed.</p>
+    </div>
+    <div class="card" onclick="demo('topLeft')">
+      <span class="tag">POSITION</span>
+      <h3>Top-Left Position</h3>
+      <p>Slides in from the left side of the screen.</p>
+    </div>
+    <div class="card" onclick="demo('bottomRight')">
+      <span class="tag">POSITION</span>
+      <h3>Bottom-Right Position</h3>
+      <p>Appears at the bottom-right corner.</p>
+    </div>
+    <div class="card" onclick="demo('tagDedup')">
+      <span class="tag">DEDUP</span>
+      <h3>Tag Dedup — Replace</h3>
+      <p>Click twice — second replaces the first using same tag.</p>
+    </div>
+  </div>
+
+  <script type="module">
+    import { showHtmlNotification } from "./scripts/v0.0.2/html-notification.js";
+
+    const DEMOS = {
+      minimal: {
+        title: "New update available!",
+        duration: 5000,
+      },
+      titleDesc: {
+        title: "Order Shipped",
+        body: "Your order #12345 has been shipped and is on its way.",
+        duration: 5000,
+      },
+      withIcon: {
+        title: "New Message from Alice",
+        body: "Hey, are you free for a quick call?",
+        icon: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alice&size=88",
+        duration: 6000,
+      },
+      withUrl: {
+        title: "Flash Sale — 50% Off",
+        body: "Limited time offer on all Pro plans.",
+        icon: "https://api.dicebear.com/7.x/shapes/svg?seed=sale&size=88",
+        url: "https://pinglet.enjoys.in/pricing",
+        duration: 6000,
+      },
+      withImage: {
+        title: "New Feature: Live Presence",
+        body: "See who's online in real-time.",
+        icon: "https://api.dicebear.com/7.x/shapes/svg?seed=pinglet&size=88",
+        image: "https://images.unsplash.com/photo-1557683316-973673baf926?w=760&h=200&fit=crop",
+        duration: 8000,
+      },
+      withVideo: {
+        title: "Tutorial: Getting Started",
+        body: "A quick walkthrough of the SDK setup.",
+        media: { type: "video", src: "https://www.w3schools.com/html/mov_bbb.mp4" },
+        duration: 15000,
+      },
+      oneButton: {
+        title: "Payment Received",
+        body: "Your $29/mo Professional plan is active.",
+        icon: "https://api.dicebear.com/7.x/shapes/svg?seed=check&backgroundColor=22c55e&size=88",
+        buttons: [
+          { text: "View Invoice", action: "redirect", src: "https://pinglet.enjoys.in/billing" },
+        ],
+        duration: 6000,
+      },
+      twoButtons: {
+        title: "New Comment on Your Post",
+        body: 'Alice replied: "Great work on the integration!"',
+        icon: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alice&size=88",
+        buttons: [
+          { text: "View", action: "redirect", src: "https://example.com/posts/123" },
+          { text: "Dismiss", action: "close" },
+        ],
+        duration: 7000,
+      },
+      threeButtons: {
+        title: "Invitation to Join Team",
+        body: "Enjoys Inc. invited you to collaborate.",
+        icon: "https://api.dicebear.com/7.x/shapes/svg?seed=team&size=88",
+        buttons: [
+          { text: "Accept", action: "redirect", src: "https://example.com/invite/accept" },
+          { text: "Decline", action: "redirect", src: "https://example.com/invite/decline" },
+          { text: "Later", action: "close" },
+        ],
+        duration: 10000,
+      },
+      full: {
+        title: "Summer Sale — Upgrade Now",
+        body: "Get 60% off Professional plan. Includes analytics, webhooks, and priority support.",
+        icon: "https://api.dicebear.com/7.x/shapes/svg?seed=summer&backgroundColor=f59e0b&size=88",
+        image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=760&h=200&fit=crop",
+        url: "https://pinglet.enjoys.in/pricing",
+        tag: "promo-summer",
+        buttons: [
+          { text: "Upgrade", action: "redirect", src: "https://pinglet.enjoys.in/pricing" },
+          { text: "Learn More", action: "link", src: "https://pinglet.enjoys.in/blog" },
+          { text: "Not Now", action: "close" },
+        ],
+        notification_id: "0e5c2a5f527acdbe13791234-" + Date.now(),
+        notification_type: "2",
+        duration: 12000,
+      },
+      persistent: {
+        title: "Critical Alert",
+        body: "Server CPU exceeded 95%. Immediate action required.",
+        icon: "https://api.dicebear.com/7.x/shapes/svg?seed=alert&backgroundColor=ef4444&size=88",
+        requireInteraction: true,
+        buttons: [
+          { text: "View Dashboard", action: "redirect", src: "https://dashboard.example.com" },
+          { text: "Acknowledge", action: "close" },
+        ],
+      },
+      topLeft: {
+        title: "Notification — Top Left",
+        body: "This appears at the top-left corner.",
+        position: "top-left",
+        duration: 5000,
+      },
+      bottomRight: {
+        title: "Notification — Bottom Right",
+        body: "This appears at the bottom-right corner.",
+        position: "bottom-right",
+        duration: 5000,
+      },
+      tagDedup: {
+        title: "Delivery Update",
+        body: "Your package is out for delivery.",
+        tag: "delivery-demo",
+        duration: 8000,
+      },
+    };
+
+    let tagDedupCounter = 0;
+    window.demo = function (key) {
+      const opts = { ...DEMOS[key], domain: "pinglet.enjoys.in", timestamp: Date.now() };
+
+      // Tag dedup demo: alternate between two messages
+      if (key === "tagDedup") {
+        tagDedupCounter++;
+        if (tagDedupCounter % 2 === 0) {
+          opts.title = "Package Delivered!";
+          opts.body = "Your order was delivered at 3:42 PM.";
+        }
+      }
+
+      const ntfy = showHtmlNotification(opts);
+      console.log("[Demo]", key, ntfy);
+    };
+  </script>
+</body>
+</html>

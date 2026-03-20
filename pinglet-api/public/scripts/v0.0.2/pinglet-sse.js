@@ -22,6 +22,7 @@ import {
   prepareEventBody,
   renderToast,
 } from "./widget.js";
+import { showHtmlNotification } from "./html-notification.js";
 import "./sw.js";
 import "./main.js";
 import { createWrapper } from "./wrapper-v2.js";
@@ -301,6 +302,63 @@ const templatesIds = currentScript?.dataset.templates;
             });
           return;
         }
+        // Glassmorphism HTML notification (type 2)
+        if (parsed?.type === "2" && parsed?.body) {
+          const cfg = globalConfig.config;
+          const notificationId = `${parsed?.project_id || projectId}-${Date.now()}`;
+
+          // Resolve theme mode
+          const themeMode = cfg.theme?.mode || "auto";
+          const prefersDark = themeMode === "dark" || (
+            themeMode === "auto" && window.matchMedia?.("(prefers-color-scheme: dark)").matches
+          );
+
+          if (cfg.sound?.play) playSound();
+
+          // Map position from globalConfig (bottom-left → bottom-left)
+          const position = cfg.position || "top-right";
+
+          // Build branding text
+          const brandingHtml = cfg.branding?.show
+            ? (cfg.branding?.html || "Notifications by Pinglet")
+            : "";
+          // Strip any HTML tags from branding for plain-text badge display
+          const brandingText = brandingHtml.replace(/<[^>]*>/g, "").trim();
+
+          showHtmlNotification({
+            title: parsed.body.title || "",
+            body: parsed.body.description || "",
+            icon: parsed.body.icon || parsed.body.logo || "",
+            image: parsed.body.media?.type === "image" ? parsed.body.media.src : "",
+            media: parsed.body.media?.type && parsed.body.media?.type !== "image"
+              ? { type: parsed.body.media.type, src: parsed.body.media.src }
+              : null,
+            url: parsed.body.url || "",
+            buttons: parsed.body.buttons || [],
+            domain: cfg.website || window.location.hostname,
+            tag: parsed.tag || "",
+            position,
+            duration: cfg.auto_dismiss ? (cfg.duration || 6000) : 0,
+            requireInteraction: !cfg.auto_dismiss,
+            silent: false,
+            dir: "ltr",
+            timestamp: Date.now(),
+            data: parsed.data || {},
+            notification_id: notificationId,
+            notification_type: "2",
+            onClick: (data) => {
+              if (parsed.body.url) {
+                window.open(parsed.body.url, "_blank", "noopener,noreferrer");
+              }
+            },
+            onAction: (action, data) => {
+              const btn = (parsed.body.buttons || []).find(b => b.action === action);
+              if (btn?.src) window.open(btn.src, "_blank", "noopener,noreferrer");
+            },
+          });
+          return;
+        }
+
         // only browser notifications
         if (parsed && parsed?.type === "-1") {
           TriggerBrowserNotificationApi(

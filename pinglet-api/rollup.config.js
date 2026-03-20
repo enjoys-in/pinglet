@@ -2,7 +2,7 @@
 import { terser } from "rollup-plugin-terser";
 
 export default {
-	input: "./public/scripts/v0.0.2/pinglet-sse.js",
+	input: "./public/scripts/v.0.0.3/pinglet-sse.js",
 	output: {
 		file: "./public/libs/pinglet-sse.js",
 		format: "iife",

@@ -83,6 +83,8 @@ const formSchema = z.object({
       text: z.string().min(1, "Required"),
       action: z.string().min(1, "Required"),
       src: z.string().optional(),
+      event: z.string().optional(),
+      eventData: z.string().optional(),
     })
   ).max(3),
 })
@@ -175,6 +177,8 @@ export default function PlaygroundPage() {
         if (data.buttons.length > 0) {
           payload.body.buttons = data.buttons.map((b: any) => ({
             text: b.text, action: b.action, ...(b.src && { src: b.src }),
+            ...(b.action === "event" && b.event && { event: b.event }),
+            ...(b.action === "event" && b.eventData && { data: (() => { try { return JSON.parse(b.eventData) } catch { return b.eventData } })() }),
           }))
         }
         break
@@ -205,6 +209,8 @@ export default function PlaygroundPage() {
         if (data.buttons.length > 0) {
           payload.body.buttons = data.buttons.map((b: any) => ({
             text: b.text, action: b.action, ...(b.src && { src: b.src }),
+            ...(b.action === "event" && b.event && { event: b.event }),
+            ...(b.action === "event" && b.eventData && { data: (() => { try { return JSON.parse(b.eventData) } catch { return b.eventData } })() }),
           }))
         }
         break
@@ -490,7 +496,7 @@ export default function PlaygroundPage() {
                           <span className="text-xs text-muted-foreground font-normal">({buttonFields.length}/{maxButtons})</span>
                         </div>
                         {buttonFields.length < maxButtons && (
-                          <Button type="button" variant="outline" size="sm" onClick={() => append({ text: "", action: "close", src: "" })} className="h-8 text-xs gap-1.5">
+                          <Button type="button" variant="outline" size="sm" onClick={() => append({ text: "", action: "close", src: "", event: "", eventData: "" })} className="h-8 text-xs gap-1.5">
                             <Plus className="w-3 h-3" /> Add
                           </Button>
                         )}
@@ -557,6 +563,33 @@ export default function PlaygroundPage() {
                                     </FormControl>
                                   </FormItem>
                                 )} />
+                              )}
+                              {watchedButtons[index] && watchedButtons[index].action === "event" && (
+                                <div className="space-y-3">
+                                  <FormField control={form.control} name={`buttons.${index}.event`} render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel className="text-xs">Event Name <span className="text-destructive">*</span></FormLabel>
+                                      <FormControl>
+                                        <Input placeholder='pinglet:addToCart' className="bg-background h-9 text-sm font-mono" {...field} />
+                                      </FormControl>
+                                      <p className="text-[10px] text-muted-foreground">The CustomEvent name dispatched on window</p>
+                                    </FormItem>
+                                  )} />
+                                  <FormField control={form.control} name={`buttons.${index}.eventData`} render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel className="text-xs">Event Data <span className="text-muted-foreground">(JSON, optional)</span></FormLabel>
+                                      <FormControl>
+                                        <Textarea
+                                          placeholder='{"productId": "SKU-123", "quantity": 1}'
+                                          rows={3}
+                                          className="bg-background text-sm font-mono resize-none"
+                                          {...field}
+                                        />
+                                      </FormControl>
+                                      <p className="text-[10px] text-muted-foreground">Sent as event.detail to your listener</p>
+                                    </FormItem>
+                                  )} />
+                                </div>
                               )}
                             </div>
                           ))}
