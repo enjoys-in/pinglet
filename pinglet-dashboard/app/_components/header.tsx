@@ -2,21 +2,25 @@
 
 import { useCallback, useEffect, useState } from "react"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { Bell, ChevronRight, Menu, Moon, Sun, X } from "lucide-react"
 import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 
 const navLinks = [
-  { href: "#features", label: "Features" },
-  { href: "#how-it-works", label: "How It Works" },
-  { href: "#pricing", label: "Pricing" },
-  { href: "#faq", label: "FAQ" },
+  { href: "/", label: "Home" },
+  { href: "/features", label: "Features" },
+  { href: "/pricing", label: "Pricing" },
+  { href: "/docs", label: "Docs" },
+  { href: "/demo", label: "Demo" },
 ]
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const { setTheme, resolvedTheme } = useTheme()
+  const pathname = usePathname()
 
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 10)
@@ -49,15 +53,23 @@ export default function Header() {
 
         {/* Desktop Nav - Pill */}
         <nav className="hidden items-center rounded-full border border-border/40 bg-card/50 backdrop-blur-sm p-1 shadow-sm md:flex">
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="rounded-full px-4 py-1.5 text-[13px] font-medium text-muted-foreground transition-all duration-200 hover:text-foreground hover:bg-muted/60"
-            >
-              {link.label}
-            </Link>
-          ))}
+          {navLinks.map((link) => {
+            const isActive = link.href === "/" ? pathname === "/" : pathname.startsWith(link.href)
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={cn(
+                  "rounded-full px-4 py-1.5 text-[13px] font-medium transition-all duration-200",
+                  isActive
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+                )}
+              >
+                {link.label}
+              </Link>
+            )
+          })}
         </nav>
 
         {/* Desktop Actions */}
@@ -106,16 +118,24 @@ export default function Header() {
       {mobileMenuOpen && (
         <div className="absolute inset-x-0 top-16 border-b bg-background/95 backdrop-blur-lg md:hidden">
           <nav className="mx-auto flex max-w-6xl flex-col px-6 py-4">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-                onClick={closeMobile}
-              >
-                {link.label}
-              </Link>
-            ))}
+            {navLinks.map((link) => {
+              const isActive = link.href === "/" ? pathname === "/" : pathname.startsWith(link.href)
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={cn(
+                    "py-2.5 text-sm font-medium transition-colors",
+                    isActive
+                      ? "text-primary"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                  onClick={closeMobile}
+                >
+                  {link.label}
+                </Link>
+              )
+            })}
             <div className="mt-4 flex flex-col gap-2 border-t pt-4">
               <Link href="/auth/login" onClick={closeMobile}>
                 <Button variant="outline" className="w-full rounded-full text-sm">

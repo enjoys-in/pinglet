@@ -1,7 +1,8 @@
 "use client";
 import { ProjectDetailsResponse } from "@/lib/interfaces/project.interface";
 import React, { useEffect, useState } from "react";
-import { Globe, Tag, Activity, Webhook, Users } from "lucide-react";
+import { Globe, Tag, Activity, Webhook, Users, BookOpen, ExternalLink } from "lucide-react";
+import Link from "next/link";
 
 import { toast } from "@/hooks/use-toast";
 import { API } from "@/lib/api/handler";
@@ -152,6 +153,24 @@ const ProjectDetails = ({ project }: { project: ProjectDetailsResponse }) => {
                 StatusBadge={StatusBadge}
                 category={project.category}
             />
+
+            {/* Quick Documentation Link */}
+            <Link href="/docs" target="_blank" className="block group">
+                <div className="rounded-2xl border border-border/50 bg-card/80 backdrop-blur-sm p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/30">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <div className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md">
+                                <BookOpen className="w-5 h-5 text-white" />
+                            </div>
+                            <div>
+                                <h3 className="text-base font-semibold text-foreground group-hover:text-primary transition-colors">SDK Documentation</h3>
+                                <p className="text-sm text-muted-foreground">Integration guides, API reference, and custom events</p>
+                            </div>
+                        </div>
+                        <ExternalLink className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
+                    </div>
+                </div>
+            </Link>
 
             <TemplateCard project={project} getCategoryColor={getCategoryColor} />
             <WebhookCard webhooks={project.webhooks ?? []} />

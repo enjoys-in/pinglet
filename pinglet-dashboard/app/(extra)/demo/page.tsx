@@ -685,6 +685,248 @@ export default function PlaygroundPage() {
             </div>
           </form>
         </Form>
+
+        {/* ── Custom Events Guide ── */}
+        <div className="mt-16 pt-16 border-t border-border/40">
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-500 text-sm font-medium mb-4">
+              <Zap className="w-3.5 h-3.5" />
+              Custom Events
+            </div>
+            <h2 className="text-3xl font-bold tracking-tight text-foreground mb-3">Custom Event Button Action</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Trigger real DOM CustomEvents on the user&apos;s browser when they click a notification button.
+              Your frontend JS listens for the event and runs any logic — add to cart, open a modal, track conversions, and more.
+            </p>
+          </div>
+
+          {/* Flow Diagram */}
+          <Card className="border-border/50 shadow-sm mb-8">
+            <CardContent className="p-6">
+              <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2"><Zap className="w-4 h-4 text-primary" /> How It Works</h3>
+              <div className="bg-muted/50 rounded-lg p-4 border border-border/50 text-xs font-mono leading-relaxed text-muted-foreground">
+                <span className="text-foreground block mb-2">Flow:</span>
+                1. Backend sends notification with button → action: &quot;event&quot;<br />
+                2. SDK renders notification (type 0, 1, or 2 — all supported)<br />
+                3. User clicks the button<br />
+                4. SDK fires: <code className="text-primary">window.dispatchEvent(new CustomEvent(&quot;name&quot;, {'{'} detail: payload {'}'}))</code><br />
+                5. SDK auto-dismisses the notification + tracks the click<br />
+                6. Your JS listener catches the event and runs YOUR logic
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Left: Schema + Actions + Send Example */}
+            <div className="space-y-6">
+              {/* Event Button Schema */}
+              <Card className="border-border/50 shadow-sm">
+                <CardContent className="p-6">
+                  <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2"><Code2 className="w-4 h-4 text-primary" /> Event Button Schema</h3>
+                  <div className="space-y-0 divide-y divide-border/40">
+                    {[
+                      { name: "text", type: "string", req: true, desc: "Button label shown to the user" },
+                      { name: "action", type: "\"event\"", req: true, desc: "Must be exactly \"event\"" },
+                      { name: "event", type: "string", req: true, desc: "Custom event name (e.g. \"pinglet:addToCart\")" },
+                      { name: "data", type: "any", req: false, desc: "Payload sent as event.detail — object, array, string, number" },
+                    ].map((f, i) => (
+                      <div key={i} className="py-3 first:pt-0">
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <code className="text-xs font-mono font-medium text-foreground">{f.name}</code>
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">{f.type}</span>
+                          {f.req && <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-500/10 text-red-500 font-medium">required</span>}
+                        </div>
+                        <p className="text-xs text-muted-foreground">{f.desc}</p>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* All Button Actions */}
+              <Card className="border-border/50 shadow-sm">
+                <CardContent className="p-6">
+                  <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2"><Layers className="w-4 h-4 text-primary" /> All Button Actions</h3>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs">
+                      <thead><tr className="border-b border-border/50 text-left text-muted-foreground"><th className="pb-2 pr-3 font-medium">Action</th><th className="pb-2 pr-3 font-medium">Required</th><th className="pb-2 font-medium">Behavior</th></tr></thead>
+                      <tbody className="divide-y divide-border/30">
+                        {[["redirect","src (URL)","Opens URL in new tab"],["link","src (URL)","Opens URL in same tab"],["alert","src (string)","Shows browser alert"],["reload","—","Reloads the page"],["close","—","Dismisses notification"],["event","event (string)","Fires CustomEvent on window"],["onClick","onClick (fn)","Evaluates inline function"]].map(([a,r,b],i)=>(
+                          <tr key={i}><td className="py-2 pr-3"><code className="text-xs font-mono px-1.5 py-0.5 rounded bg-primary/10 text-primary">{a}</code></td><td className="py-2 pr-3 text-muted-foreground">{r}</td><td className="py-2 text-foreground">{b}</td></tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Send Example: Add to Cart */}
+              <Card className="border-border/50 shadow-sm">
+                <CardContent className="p-6">
+                  <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2"><SendHorizontal className="w-4 h-4 text-primary" /> Example: Send with Event Button</h3>
+                  <pre className="bg-[hsl(240,10%,6%)] text-[hsl(0,0%,85%)] p-4 rounded-xl text-xs font-mono overflow-x-auto leading-relaxed border border-border/30">
+                    <span className="text-muted-foreground/50 text-[10px] uppercase tracking-wider block mb-2">curl</span>
+{`curl -X POST https://your-api/api/v1/notifications/send \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "type": "2",
+    "projectId": "your-project-id",
+    "body": {
+      "title": "Flash Sale!",
+      "description": "50% off — limited time only",
+      "icon": "https://example.com/sale-icon.png",
+      "buttons": [
+        {
+          "text": "Add to Cart",
+          "action": "event",
+          "event": "pinglet:addToCart",
+          "data": {
+            "productId": "SKU-123",
+            "quantity": 1,
+            "discount": 50,
+            "source": "flash-sale-notification"
+          }
+        },
+        { "text": "Maybe Later", "action": "close" }
+      ]
+    }
+  }'`}
+                  </pre>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Right: Listener + React + Examples + Notes */}
+            <div className="space-y-6">
+              {/* Frontend Listener */}
+              <Card className="border-border/50 shadow-sm">
+                <CardContent className="p-6">
+                  <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2"><Code2 className="w-4 h-4 text-primary" /> Step-by-Step Frontend Guide</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-xs font-semibold text-foreground mb-2">1. Include Pinglet SDK (already done if notifications work)</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-foreground mb-2">2. Add your event listener AFTER the SDK script</p>
+                      <pre className="bg-[hsl(240,10%,6%)] text-[hsl(0,0%,85%)] p-4 rounded-xl text-xs font-mono overflow-x-auto leading-relaxed border border-border/30">
+                        <span className="text-muted-foreground/50 text-[10px] uppercase tracking-wider block mb-2">html</span>
+{`<script>
+  window.addEventListener("pinglet:addToCart", function (e) {
+    console.log("Payload received:", e.detail);
+    addItemToCart(e.detail.productId, e.detail.quantity);
+  });
+</script>`}
+                      </pre>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-foreground mb-2">3. Send notification with event button (API / curl / dashboard)</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-foreground mb-2">4. User clicks → your listener fires with <code className="px-1 py-0.5 rounded bg-muted text-foreground">e.detail</code></p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* React / SPA */}
+              <Card className="border-border/50 shadow-sm">
+                <CardContent className="p-6">
+                  <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2"><Code2 className="w-4 h-4 text-primary" /> React / SPA Usage</h3>
+                  <p className="text-xs text-muted-foreground mb-3">Register in a lifecycle hook and clean up on unmount.</p>
+                  <pre className="bg-[hsl(240,10%,6%)] text-[hsl(0,0%,85%)] p-4 rounded-xl text-xs font-mono overflow-x-auto leading-relaxed border border-border/30">
+                    <span className="text-muted-foreground/50 text-[10px] uppercase tracking-wider block mb-2">tsx</span>
+{`useEffect(() => {
+  const handler = (e: CustomEvent) => {
+    console.log("Event data:", e.detail);
+    // Your logic here
+  };
+  window.addEventListener("pinglet:addToCart", handler);
+  return () => window.removeEventListener("pinglet:addToCart", handler);
+}, []);`}
+                  </pre>
+                </CardContent>
+              </Card>
+
+              {/* Real-World Use Cases */}
+              <Card className="border-border/50 shadow-sm">
+                <CardContent className="p-6">
+                  <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2"><Sparkles className="w-4 h-4 text-primary" /> Real-World Examples</h3>
+                  <div className="space-y-3 text-xs">
+                    {[
+                      { title: "Add to Cart", event: "shop:addToCart", data: "{ productId, variant, price }" },
+                      { title: "Open Modal", event: "ui:openModal", data: "{ modalId, productSlug }" },
+                      { title: "Track Conversion", event: "analytics:conversion", data: "{ campaign, value, currency }" },
+                      { title: "SPA Navigation", event: "app:navigate", data: "{ path, tab }" },
+                      { title: "Start Chat", event: "support:openChat", data: "{ department, priority }" },
+                      { title: "Apply Coupon", event: "promo:applyCoupon", data: "{ code, discount, minOrder }" },
+                      { title: "Theme Toggle", event: "theme:toggle", data: "{ theme: \"dark\" }" },
+                    ].map((uc, i) => (
+                      <div key={i} className="p-3 rounded-lg bg-muted/30 border border-border/30">
+                        <p className="font-medium text-foreground mb-1">{uc.title}</p>
+                        <code className="block text-muted-foreground">event: &quot;{uc.event}&quot;</code>
+                        <code className="block text-muted-foreground">data: {uc.data}</code>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Important Notes */}
+              <Card className="border-amber-500/30 bg-amber-500/5 shadow-sm">
+                <CardContent className="p-6">
+                  <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                    <span className="text-amber-500">&#9888;</span> Important Notes
+                  </h3>
+                  <ul className="space-y-2 text-xs text-muted-foreground">
+                    <li className="flex gap-2"><span className="text-amber-500 shrink-0">•</span>You <strong>must</strong> register your listener — the SDK only fires the event</li>
+                    <li className="flex gap-2"><span className="text-amber-500 shrink-0">•</span>Works with Type 0 (toast), Type 1 (template), and Type 2 (glassmorphism)</li>
+                    <li className="flex gap-2"><span className="text-amber-500 shrink-0">•</span>Notification auto-dismisses after the event is dispatched</li>
+                    <li className="flex gap-2"><span className="text-amber-500 shrink-0">•</span>Max 3 buttons per notification — any combo of actions allowed</li>
+                    <li className="flex gap-2"><span className="text-amber-500 shrink-0">•</span>Don&apos;t put sensitive data (passwords, tokens) in payload</li>
+                    <li className="flex gap-2"><span className="text-amber-500 shrink-0">•</span>Use namespaced names like &quot;app:action&quot; to avoid collisions</li>
+                    <li className="flex gap-2"><span className="text-amber-500 shrink-0">•</span><code className="px-1 py-0.5 rounded bg-muted text-foreground">data</code> accepts any JSON type: object, array, string, number</li>
+                    <li className="flex gap-2"><span className="text-amber-500 shrink-0">•</span>Backend validates: action = &quot;event&quot;, event = string, data = optional</li>
+                    <li className="flex gap-2"><span className="text-amber-500 shrink-0">•</span>In DevTools Console, test manually: <code className="text-primary">window.dispatchEvent(new CustomEvent(&quot;your:event&quot;, {'{'} detail: {'{'} test: true {'}'} {'}'}))</code></li>
+                  </ul>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          {/* Valid / Invalid Quick Ref */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+            <Card className="border-emerald-500/30 shadow-sm">
+              <CardContent className="p-6">
+                <h3 className="text-sm font-semibold text-emerald-500 mb-3">&#10003; Valid Payloads</h3>
+                <pre className="bg-[hsl(240,10%,6%)] text-[hsl(0,0%,85%)] p-4 rounded-xl text-xs font-mono overflow-x-auto leading-relaxed border border-border/30">
+{`// Minimal — just event name
+{ "text": "Click Me", "action": "event", "event": "app:clicked" }
+
+// With object data
+{ "text": "Buy", "action": "event", "event": "shop:buy", "data": { "id": 1 } }
+
+// With array data
+{ "text": "Select", "action": "event", "event": "bulk:select", "data": [1, 2, 3] }`}
+                </pre>
+              </CardContent>
+            </Card>
+            <Card className="border-red-500/30 shadow-sm">
+              <CardContent className="p-6">
+                <h3 className="text-sm font-semibold text-red-500 mb-3">&#10007; Invalid (Rejected by Backend)</h3>
+                <pre className="bg-[hsl(240,10%,6%)] text-[hsl(0,0%,85%)] p-4 rounded-xl text-xs font-mono overflow-x-auto leading-relaxed border border-border/30">
+{`// Missing "event" field
+{ "text": "Click", "action": "event" }
+
+// "event" is not a string
+{ "text": "Click", "action": "event", "event": 123 }
+
+// Wrong action type
+{ "text": "Click", "action": "customEvent", "event": "x" }`}
+                </pre>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
     </div>
   )
