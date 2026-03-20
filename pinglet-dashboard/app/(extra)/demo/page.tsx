@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import {
   Bell, Sparkles, SendHorizontal, RotateCcw, Plus, Trash2, Copy, Check,
   Monitor, Smartphone, Layers, Image, Video, Volume2, Code2,
-  ChevronDown, ChevronUp, Zap, Eye
+  ChevronDown, ChevronUp, Zap, Eye, ExternalLink
 } from "lucide-react"
 import { API } from "@/lib/api/handler"
 import { __config } from "@/constants/config"
@@ -260,6 +260,25 @@ export default function PlaygroundPage() {
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Test all Pinglet notification types in real-time. Configure, preview the payload, and send.
           </p>
+
+          {/* Full-fledged demo links */}
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            <span className="text-sm text-muted-foreground mr-1">Try full demos:</span>
+            {[
+              { label: "Demo v1", path: "/api/v1/public/demo.html" },
+              { label: "Demo v2", path: "/api/v1/public/v2-demo.html" },
+              { label: "Demo v3", path: "/api/v1/public/v3-demo.html" },
+            ].map((d) => (
+              <button
+                key={d.path}
+                onClick={() => window.open(`${__config.APP.BASE_URL}${d.path}`, "_blank", "noopener")}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full border border-border/50 bg-card/80 text-sm font-medium text-foreground hover:bg-primary/10 hover:border-primary/30 transition-all duration-200"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                {d.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
