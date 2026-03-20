@@ -107,9 +107,10 @@ const defaultData: Record<string, Record<string, unknown>> = {
 
 interface NotificationFlowBuilderProps {
   flowId?: string
+  projectId?: string
 }
 
-export default function NotificationFlowBuilder({ flowId }: NotificationFlowBuilderProps) {
+export default function NotificationFlowBuilder({ flowId, projectId }: NotificationFlowBuilderProps) {
   const wrapperRef = useRef<HTMLDivElement>(null)
   const [nodes, setNodes, onNodesChange] = useNodesState([])
   const [edges, setEdges, onEdgesChange] = useEdgesState([])
@@ -189,7 +190,7 @@ export default function NotificationFlowBuilder({ flowId }: NotificationFlowBuil
   const flowPayload = useMemo<FlowExport>(() => ({
     id: currentFlowId,
     name: flowName,
-    projectId: getFlowById(currentFlowId)?.projectId || "",
+    projectId: projectId || getFlowById(currentFlowId)?.projectId || "",
     status: "draft",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),

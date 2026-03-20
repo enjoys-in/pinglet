@@ -31,6 +31,9 @@ import { useToast } from "@/hooks/use-toast"
 import {
   type FlowExport, getAllFlows, saveFlow, deleteFlow as removeFlow, generateFlowId,
 } from "@/components/workflow/notification-flow/types"
+import { API } from "@/lib/api/handler"
+import { db } from "@/lib/db"
+import type { AllProjectsResponse } from "@/lib/interfaces/project.interface"
 
 const statusConfig: Record<string, { label: string; icon: typeof Play; className: string }> = {
   active: { label: "Active", icon: Play, className: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" },
@@ -47,11 +50,35 @@ export default function FlowsPage() {
   const [newName, setNewName] = useState("")
   const [newDesc, setNewDesc] = useState("")
   const [newProject, setNewProject] = useState("")
+  const [projects, setProjects] = useState<AllProjectsResponse[]>([])
+  const [projectsLoading, setProjectsLoading] = useState(false)
   const { toast } = useToast()
   const router = useRouter()
 
   const reload = useCallback(() => setFlows(getAllFlows()), [])
   useEffect(reload, [reload])
+
+  // Load projects from API, cache in IndexedDB
+  const fetchProjects = useCallback(async () => {
+    setProjectsLoading(true)
+    try {
+      const { data } = await API.getAllProjects()
+      if (data.success && data.result) {
+        setProjects(data.result)
+        await db.bulkPutItems("projects", data.result as any[])
+      }
+    } catch {
+      // Fallback: load from IndexedDB
+      try {
+        const cached = await db.getAllItems("projects")
+        if (cached?.length) setProjects(cached as unknown as AllProjectsResponse[])
+      } catch {}
+    } finally {
+      setProjectsLoading(false)
+    }
+  }, [])
+
+  useEffect(() => { fetchProjects() }, [fetchProjects])
 
   const filtered = flows.filter(f =>
     f.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -79,7 +106,7 @@ export default function FlowsPage() {
     setNewDesc("")
     setNewProject("")
     toast({ title: "Flow created", description: `"${flow.name}" is ready to edit.` })
-    router.push(`/u/flows/manage/build?id=${id}`)
+    router.push(`/u/flows/manage/build?id=${id}&projectId=${newProject}`)
   }
 
   // Delete
@@ -245,7 +272,7 @@ export default function FlowsPage() {
                         <DropdownMenuItem onClick={() => setViewTarget(flow)}>
                           <Eye className="mr-2 h-4 w-4" /> View Details
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => router.push(`/u/flows/manage/build?id=${flow.id}`)}>
+                        <DropdownMenuItem onClick={() => router.push(`/u/flows/manage/build?id=${flow.id}&projectId=${flow.projectId}`)}>
                           <Edit className="mr-2 h-4 w-4" /> Edit
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => toggleStatus(flow)}>
@@ -274,7 +301,7 @@ export default function FlowsPage() {
                     </Badge>
                     {flow.projectId && (
                       <Badge variant="secondary" className="text-[10px]">
-                        {flow.projectId.replace("project_", "")}
+                        {projects.find(p => String(p.id) === flow.projectId)?.name || flow.projectId}
                       </Badge>
                     )}
                   </div>
@@ -290,7 +317,7 @@ export default function FlowsPage() {
                     variant="outline"
                     size="sm"
                     className="w-full mt-3 text-xs"
-                    onClick={() => router.push(`/u/flows/manage/build?id=${flow.id}`)}
+                    onClick={() => router.push(`/u/flows/manage/build?id=${flow.id}&projectId=${flow.projectId}`)}
                   >
                     <Edit className="size-3.5 mr-1.5" /> Open Editor
                   </Button>
@@ -313,14 +340,23 @@ export default function FlowsPage() {
               <Label>Project <span className="text-destructive">*</span></Label>
               <Select value={newProject} onValueChange={setNewProject}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a project" />
+                  <SelectValue placeholder={projectsLoading ? "Loading projects..." : "Select a project"} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="project_default">Default Project</SelectItem>
-                  <SelectItem value="project_web">Web App</SelectItem>
-                  <SelectItem value="project_mobile">Mobile App</SelectItem>
-                  <SelectItem value="project_saas">SaaS Platform</SelectItem>
-                  <SelectItem value="project_ecommerce">E-Commerce</SelectItem>
+                  {projects.length === 0 && (
+                    <div className="px-2 py-3 text-center text-sm text-muted-foreground">
+                      {projectsLoading ? "Loading..." : "No projects found"}
+                    </div>
+                  )}
+                  {projects.map(p => (
+                    <SelectItem key={p.id} value={String(p.id)}>
+                      <span className="flex items-center gap-2">
+                        <span className={`size-2 rounded-full ${p.is_active ? "bg-emerald-500" : "bg-gray-400"}`} />
+                        {p.name}
+                        <span className="text-xs text-muted-foreground">({p.website_domain})</span>
+                      </span>
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

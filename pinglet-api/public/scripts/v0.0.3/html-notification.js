@@ -445,11 +445,10 @@ export function showHtmlNotification(opts = {}) {
 	}
 
 	// ─ Progress bar ─
-	// If there's a video, use its duration (+ 1.5 s buffer) instead of the config duration
+	// If there's a video, extend the timer to 30 seconds
 	let _effectiveDuration = duration;
 	if (_videoGetDuration) {
-		const vidMs = _videoGetDuration();
-		if (vidMs > 0) _effectiveDuration = vidMs + 1500;
+		_effectiveDuration = 30000;
 	}
 	const autoClose = !requireInteraction && _effectiveDuration > 0;
 	let progressBar = null;
@@ -504,17 +503,6 @@ export function showHtmlNotification(opts = {}) {
 	// ─ Timer with hover pause ─
 	function startTimer() {
 		if (!autoClose) return;
-
-		// Video duration may not be available at mount time (metadata loads async).
-		// Re-check once right before the first timer starts.
-		if (_videoGetDuration && remaining === _effectiveDuration) {
-			const vidMs = _videoGetDuration();
-			if (vidMs > 0) {
-				_effectiveDuration = vidMs + 1500;
-				remaining = _effectiveDuration;
-			}
-		}
-
 		pausedAt = Date.now();
 		progressBar.style.transition = "width " + remaining + "ms linear";
 		progressBar.style.width = "0%";

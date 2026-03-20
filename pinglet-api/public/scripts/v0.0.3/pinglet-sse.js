@@ -22,6 +22,8 @@ import {
 } from "./toast.js";
 import { showHtmlNotification } from "./html-notification.js";
 import { injectFont, getScriptConfig } from "./utils.js";
+import { initActivity } from "./activity.js";
+import { initSessionRecording } from "./session.js";
 import "./sw.js";
 import "./events.js";
 
@@ -179,6 +181,8 @@ const {
 			};
 
 			initSound(globalConfig);
+			initActivity(endpoint, projectId);
+			initSessionRecording(endpoint, projectId);
 
 			// ─── SSE Connection ───
 

@@ -3,10 +3,10 @@ import { __config } from "./config"
 export type SiteConfigType = typeof SiteConfig
 
 export const SiteConfig = {
-    name: "Airsend",
+    name: "Pinglet",
     apiUrl: __config.APP.APP_URL,
     description:
-        "Mails are sent to your inbox. No spam, no tracking. Just the right tools.",
+        "Modern web push notification service. Send real-time toast, glassmorphism, browser push & template notifications with a lightweight SDK.",
     mainNav: [
         {
             title: "Home",
@@ -16,54 +16,45 @@ export const SiteConfig = {
     links: {
         docs: __config.APP.APP_URL,
     },
-    ServerName:"Airsend - Powered by ENJOYS",
-    Keywords :[
-        // Temp mail & email services
-        "temporary email",
-        "temp mail generator",
-        "disposable email address",
-        "anonymous email service",
-        "free temporary inbox",
-        "secure email service",
-        "private email provider",
-        "custom email domain",
-      
-        // IMAP/SMTP/email client features
-        "IMAP email client",
-        "SMTP email sender",
-        "webmail interface",
-        "desktop email client alternative",
-        "sync emails across devices",
-        "encrypted email",
-        "send and receive emails",
-      
-        // Task management
-        "task manager",
-        "to-do list app",
-        "productivity tool",
-        "project planning tool",
-        "task tracker",
-        "team task collaboration",
-        "workflow automation",
-      
-        // Calendar & scheduling
-        "calendar integration",
-        "online calendar app",
-        "schedule meetings",
-        "shared calendar for teams",
-        "event reminders",
-        "daily planner",
-      
-        // Email marketing / campaigns
-        "email marketing tool",
-        "newsletter campaign",
-        "bulk email sender",
-        "automated email sequences",
-        "email list management",
-        "email tracking and analytics",
-        "email campaign scheduler",
-        "marketing automation platform",
-      ]
+    ServerName: "Pinglet - Powered by ENJOYS",
+    Keywords: [
+        // Core product
+        "web push notifications",
+        "push notification service",
+        "in-app notifications",
+        "real-time notifications",
+        "notification SDK",
+        "pinglet",
+        "pinglet SDK",
+
+        // Notification types
+        "toast notifications",
+        "browser push notifications",
+        "glassmorphism notifications",
+        "custom template notifications",
+        "transactional notifications",
+
+        // Developer tools
+        "javascript notification library",
+        "notification API",
+        "lightweight push SDK",
+        "server-sent events",
+        "SSE notifications",
+        "developer notification tool",
+
+        // Features
+        "notification flow builder",
+        "event-driven notifications",
+        "notification automation",
+        "notification workflow",
+        "notification templates",
+
+        // Use cases
+        "user engagement notifications",
+        "SaaS notifications",
+        "onboarding notifications",
+        "marketing notifications",
+        "user retention",
+        "real-time messaging",
+    ],
 }
- 
-  

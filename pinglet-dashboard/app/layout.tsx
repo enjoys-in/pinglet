@@ -157,6 +157,32 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "SoftwareApplication",
+              name: "Pinglet",
+              applicationCategory: "DeveloperApplication",
+              operatingSystem: "Web",
+              description:
+                "Modern web push notification service. Send real-time toast, glassmorphism, browser push & template notifications with a lightweight SDK.",
+              url: SITE_URL,
+              offers: {
+                "@type": "Offer",
+                price: "0",
+                priceCurrency: "INR",
+                description: "Free tier available",
+              },
+              author: {
+                "@type": "Organization",
+                name: "ENJOYS",
+                url: "https://enjoys.in",
+              },
+            }),
+          }}
+        />
         <NextTopLoader color="hsl(262, 83%, 58%)" />
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           {children}
