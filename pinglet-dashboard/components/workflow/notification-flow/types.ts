@@ -156,6 +156,20 @@ export interface EventPreset {
 }
 
 export const EVENT_PRESETS: EventPreset[] = [
+  // Platform Events
+  { name: "Notification Sent", eventName: "notification.sent", category: "Platform", samplePayload: { notificationId: "{{notificationId}}", projectId: "{{projectId}}", userId: "{{userId}}" } },
+  { name: "Notification Delivered", eventName: "notification.delivered", category: "Platform", samplePayload: { notificationId: "{{notificationId}}", projectId: "{{projectId}}", userId: "{{userId}}" } },
+  { name: "Notification Clicked", eventName: "notification.clicked", category: "Platform", samplePayload: { notificationId: "{{notificationId}}", projectId: "{{projectId}}", userId: "{{userId}}", action: "{{action}}" } },
+  { name: "Notification Dismissed", eventName: "notification.dismissed", category: "Platform", samplePayload: { notificationId: "{{notificationId}}", projectId: "{{projectId}}", userId: "{{userId}}" } },
+  { name: "Notification Failed", eventName: "notification.failed", category: "Platform", samplePayload: { notificationId: "{{notificationId}}", projectId: "{{projectId}}", reason: "{{reason}}" } },
+  { name: "Notification Dropped", eventName: "notification.dropped", category: "Platform", samplePayload: { notificationId: "{{notificationId}}", projectId: "{{projectId}}", reason: "{{reason}}" } },
+  { name: "Notification Closed", eventName: "notification.closed", category: "Platform", samplePayload: { notificationId: "{{notificationId}}", projectId: "{{projectId}}", userId: "{{userId}}" } },
+  { name: "Notification Queued", eventName: "notification.queued", category: "Platform", samplePayload: { notificationId: "{{notificationId}}", projectId: "{{projectId}}", queuePosition: 0 } },
+  { name: "User Subscribed", eventName: "user.subscribed", category: "Platform", samplePayload: { userId: "{{userId}}", projectId: "{{projectId}}", endpoint: "{{endpoint}}" } },
+  { name: "User Unsubscribed", eventName: "user.unsubscribed", category: "Platform", samplePayload: { userId: "{{userId}}", projectId: "{{projectId}}" } },
+  { name: "Project Created", eventName: "project.created", category: "Platform", samplePayload: { projectId: "{{projectId}}", name: "{{name}}" } },
+  { name: "Domain Verified", eventName: "domain.verified", category: "Platform", samplePayload: { domain: "{{domain}}", projectId: "{{projectId}}" } },
+  // User/Business Events
   { name: "User Signup", eventName: "user:signup", category: "User", samplePayload: { userId: "{{userId}}", email: "{{email}}", name: "{{name}}" } },
   { name: "User Login", eventName: "user:login", category: "User", samplePayload: { userId: "{{userId}}", ip: "{{ip}}", device: "{{device}}" } },
   { name: "Profile Updated", eventName: "user:profile_updated", category: "User", samplePayload: { userId: "{{userId}}", fields: ["name", "avatar"] } },
@@ -167,6 +181,7 @@ export const EVENT_PRESETS: EventPreset[] = [
   { name: "Subscription Cancelled", eventName: "subscription:cancelled", category: "Billing", samplePayload: { userId: "{{userId}}", plan: "{{plan}}", reason: "{{reason}}" } },
   { name: "Feature Used", eventName: "feature:used", category: "Product", samplePayload: { userId: "{{userId}}", feature: "{{feature}}", count: 1 } },
   { name: "Feedback Submitted", eventName: "feedback:submitted", category: "Product", samplePayload: { userId: "{{userId}}", rating: 5, message: "{{message}}" } },
+  // Custom
   { name: "Custom Event", eventName: "", category: "Custom", samplePayload: {} },
 ]
 

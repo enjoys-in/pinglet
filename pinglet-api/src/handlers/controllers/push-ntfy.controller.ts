@@ -507,8 +507,8 @@ class PushNtfyController {
 				client.write(`data: ${payload}\n\n`);
 			});
 
-			// Store in notification inbox for persistent feed
-			notificationInboxService.addToInbox({
+			// Store in notification inbox — fire-and-forget via event emitter
+			AppEvents.emit("storeInbox", {
 				project_id: projectId,
 				title: rest.data?.title || rest.body?.title || "Notification",
 				body: rest.data?.body || rest.body?.description || "",
@@ -517,7 +517,7 @@ class PushNtfyController {
 				url: rest.body?.url || "",
 				type: rest.type || "0",
 				data: rest.data || rest.body || {},
-			}).catch(() => {});
+			});
 
 			AppEvents.emit("notificationLifecycle", {
 				event: NotificationLifecycleEvent.SENT,

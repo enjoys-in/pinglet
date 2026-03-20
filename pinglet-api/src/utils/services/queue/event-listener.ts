@@ -4,6 +4,7 @@ import {
 } from "@/factory/entities/webhook.entity";
 import { projectService } from "@/handlers/services/project.service";
 import { webhookService } from "@/handlers/services/webhook.service";
+import { notificationInboxService } from "@/handlers/services/notification-inbox.service";
 import { OnEvent } from "@/utils/decorators";
 import { invalidateCache } from "@/utils/helpers/cache";
 import { CacheInvalidation } from "@/utils/types/cache";
@@ -43,6 +44,20 @@ AppEvents.on("invalidateNtfyCache", (payload: { projectId?: string; projectIds?:
 	const ids = payload.projectIds || (payload.projectId ? [payload.projectId] : []);
 	const keys = ids.flatMap((pid) => CacheInvalidation.ntfyProject(pid));
 	if (keys.length > 0) invalidateCache(keys).catch(() => {});
+});
+
+// ─── Fire-and-forget inbox store ───
+AppEvents.on("storeInbox", (payload: {
+	project_id: string;
+	title: string;
+	body: string;
+	icon: string;
+	image: string;
+	url: string;
+	type: string;
+	data: Record<string, any>;
+}) => {
+	notificationInboxService.addToInbox(payload).catch(() => {});
 });
 
 // ─── Unified notification lifecycle handler ───
