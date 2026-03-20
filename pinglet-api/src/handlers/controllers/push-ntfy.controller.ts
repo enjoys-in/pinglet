@@ -1,6 +1,7 @@
 import { createReadStream, readFile } from "node:fs";
 import path from "node:path";
 import type { Request, Response } from "express";
+import { Logging } from "@/logs";
 import { planService } from "../services/plan.service";
 import { projectService } from "../services/project.service";
 
@@ -41,6 +42,7 @@ class PushNtfyController {
 		const event = body?.event;
 
 		if (event && ALLOWED_NOTIFICATION_EVENTS.includes(event) && body?.project_id) {
+			Logging.dev(`[/log/track] lifecycle event=${event} project=${body.project_id} notificationId=${body.notification_id || "N/A"}`);
 			// Notification lifecycle event (clicked, closed, dismissed, etc.)
 			// → Kafka analytics + webhook dispatch + flow execution
 			AppEvents.emit("notificationLifecycle", {
@@ -51,6 +53,7 @@ class PushNtfyController {
 				data: body,
 			});
 		} else if (body?.project_id) {
+			Logging.dev(`[/log/track] activity type=${body?.eventType || event || "custom"} project=${body.project_id} visitor=${body?.anonId || body?.fingerprint || "anon"} page=${body?.page?.url || ""}`);
 			// Activity / interaction event (click, scroll, pageview, etc.)
 			// → Store as visitor activity tracking
 			AppEvents.emit("trackActivity", {

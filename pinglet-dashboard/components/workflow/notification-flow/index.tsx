@@ -582,6 +582,9 @@ export default function NotificationFlowBuilder({ flowId, projectId }: Notificat
           node={selectedNode as FlowNode}
           updateNodeData={updateNodeData}
           onClose={() => setSelectedNode(null)}
+          usedEvents={nodes
+            .filter(n => n.type === "event_trigger" && n.id !== selectedNode.id && (n.data as any).eventName)
+            .map(n => (n.data as any).eventName as string)}
         />
       )}
 

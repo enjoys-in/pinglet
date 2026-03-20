@@ -17,9 +17,10 @@ interface FlowConfigPanelProps {
   node: FlowNode
   updateNodeData: (nodeId: string, data: Record<string, unknown>) => void
   onClose: () => void
+  usedEvents?: string[]
 }
 
-export default function FlowConfigPanel({ node, updateNodeData, onClose }: FlowConfigPanelProps) {
+export default function FlowConfigPanel({ node, updateNodeData, onClose, usedEvents = [] }: FlowConfigPanelProps) {
   const [data, setData] = useState<Record<string, unknown>>({ ...node.data })
 
   useEffect(() => {
@@ -77,12 +78,19 @@ export default function FlowConfigPanel({ node, updateNodeData, onClose }: FlowC
           {node.type === "event_trigger" && (() => {
             const isCustom = !EVENT_PRESETS.some(p => p.eventName && p.eventName === (data.eventName as string))
             const categories = [...new Set(EVENT_PRESETS.map(p => p.category))]
+            const currentEvent = (data.eventName as string) || ""
+            const isDuplicate = currentEvent !== "" && usedEvents.includes(currentEvent)
             return (
             <>
+              {isDuplicate && (
+                <div className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-400">
+                  <strong>Loop detected:</strong> The event <code className="font-mono text-red-300">{currentEvent}</code> is already used by another trigger in this flow. This will cause an infinite loop.
+                </div>
+              )}
               <div className="space-y-1.5">
                 <Label className="text-xs">Event Preset</Label>
                 <Select
-                  value={isCustom ? "__custom__" : ((data.eventName as string) || "")}
+                  value={isCustom ? "__custom__" : (currentEvent || "")}
                   onValueChange={val => {
                     if (val === "__custom__") {
                       update("eventName", "")
@@ -105,11 +113,19 @@ export default function FlowConfigPanel({ node, updateNodeData, onClose }: FlowC
                       return (
                         <div key={cat}>
                           <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{cat}</div>
-                          {presets.map(p => (
-                            <SelectItem key={p.eventName || "__custom__"} value={p.eventName || "__custom__"}>
-                              {p.name}
-                            </SelectItem>
-                          ))}
+                          {presets.map(p => {
+                            const isUsed = p.eventName !== "" && usedEvents.includes(p.eventName)
+                            return (
+                              <SelectItem
+                                key={p.eventName || "__custom__"}
+                                value={p.eventName || "__custom__"}
+                                disabled={isUsed}
+                                className={isUsed ? "opacity-50" : ""}
+                              >
+                                {p.name}{isUsed ? " (already used)" : ""}
+                              </SelectItem>
+                            )
+                          })}
                         </div>
                       )
                     })}
@@ -119,13 +135,16 @@ export default function FlowConfigPanel({ node, updateNodeData, onClose }: FlowC
               <div className="space-y-1.5">
                 <Label className="text-xs">Event Name {isCustom && <span className="text-amber-500 ml-1">(custom)</span>}</Label>
                 <Input
-                  value={(data.eventName as string) || ""}
+                  value={currentEvent}
                   onChange={e => update("eventName", e.target.value)}
                   placeholder={isCustom ? "my.custom.event" : "e.g. notification.sent"}
-                  className="h-8 text-sm font-mono"
+                  className={`h-8 text-sm font-mono ${isDuplicate ? "border-red-500/50 focus-visible:ring-red-500/30" : ""}`}
                 />
-                {isCustom && (data.eventName as string) === "" && (
+                {isCustom && currentEvent === "" && (
                   <p className="text-xs text-amber-500">Enter your custom event name</p>
+                )}
+                {isDuplicate && (
+                  <p className="text-xs text-red-400">This event is already used by another trigger node</p>
                 )}
               </div>
               <div className="space-y-1.5">
