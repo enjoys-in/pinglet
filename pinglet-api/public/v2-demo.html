@@ -440,13 +440,13 @@
   <!-- Pinglet SDK v0.0.2 via ES modules -->
   <script
     crossorigin="anonymous"
-    src="http://localhost:8888/api/v1/public/scripts/v0.0.2/sw.js"
+    src="/api/v1/public/scripts/v0.0.2/sw.js"
   ></script>
   <script
     type="module"
     crossorigin="anonymous"
-    src="http://localhost:8888/api/v1/public/scripts/v0.0.2/pinglet-sse.js"
-    data-endpoint="http://localhost:8888/api/v1/notifications"
+    src="/api/v1/public/scripts/v0.0.2/pinglet-sse.js"
+    data-endpoint="/api/v1/notifications"
     data-testimonials="false"
     data-configured-domain="localhost"
     data-project-id="0e5c2a5f527acdbe13791234"
@@ -455,7 +455,7 @@
   ></script>
 
   <script>
-    const API   = "http://localhost:8888/api/v1/notifications/send";
+    const API   = `${window.location.origin}/api/v1/notifications/send`;
     const PID   = "0e5c2a5f527acdbe13791234";
     const ICON  = "https://cdn.jsdelivr.net/gh/nicedayworld/icons@main/pwa/icon-192x192.png";
     const BADGE = "https://cdn.jsdelivr.net/gh/nicedayworld/icons@main/pwa/icon-72x72.png";
