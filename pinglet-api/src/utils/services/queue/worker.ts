@@ -20,6 +20,8 @@ const kafkaProducer = new KafkaNotificationProducer([
 ]);
 
 export class ListenWorkers extends QueueService {
+	private static workers: Worker[] = [];
+
 	static listen() {
 		console.log("Listening to Queue");
 		kafkaProducer.connect();
@@ -28,6 +30,11 @@ export class ListenWorkers extends QueueService {
 		ListenWorkers.ProcessSendtoKafka();
 		ListenWorkers.ProcessTriggerWebhook();
 		ListenWorkers.ProcessExecuteFlow();
+	}
+
+	static async closeAll(): Promise<void> {
+		await Promise.allSettled(ListenWorkers.workers.map((w) => w.close()));
+		await kafkaProducer.disconnect().catch(() => {});
 	}
 	private static ProcessSendtoKafka() {
 		const worker = new Worker(
@@ -55,6 +62,7 @@ export class ListenWorkers extends QueueService {
 				concurrency: os.cpus().length,
 			},
 		);
+		ListenWorkers.workers.push(worker);
 		worker.on("completed", async (job) => {
 			console.log(`Sent to Kafka ${job.id}`);
 		});
@@ -199,6 +207,7 @@ export class ListenWorkers extends QueueService {
 				concurrency: os.cpus().length,
 			},
 		);
+		ListenWorkers.workers.push(worker);
 		ListenWorkers.workerEventListener(worker);
 	}
 	private static workerEventListener(worker: Worker) {
@@ -355,6 +364,7 @@ export class ListenWorkers extends QueueService {
 		worker.on("error", async (error: Error) => {
 			console.log("Webhook worker error:", error);
 		});
+		ListenWorkers.workers.push(worker);
 	}
 
 	// ── Worker 4: EXECUTE_FLOW (async flow graph execution) ──
@@ -379,5 +389,6 @@ export class ListenWorkers extends QueueService {
 		worker.on("error", async (error: Error) => {
 			console.error("Flow worker error:", error);
 		});
+		ListenWorkers.workers.push(worker);
 	}
 }

@@ -79,4 +79,8 @@ export class KafkaAnalyticsConsumer {
 			}
 		}
 	}
+
+	async stop() {
+		await this.consumer.disconnect();
+	}
 }

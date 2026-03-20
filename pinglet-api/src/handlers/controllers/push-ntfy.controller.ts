@@ -42,7 +42,7 @@ class PushNtfyController {
 		const event = body?.event;
 
 		if (event && ALLOWED_NOTIFICATION_EVENTS.includes(event) && body?.project_id) {
-			Logging.dev(`[/log/track] lifecycle event=${event} project=${body.project_id} notificationId=${body.notification_id || "N/A"}`);
+			Logging.dev(`[/log/track] lifecycle | event=${event} project=${body.project_id}`);
 			// Notification lifecycle event (clicked, closed, dismissed, etc.)
 			// → Kafka analytics + webhook dispatch + flow execution
 			AppEvents.emit("notificationLifecycle", {
@@ -53,7 +53,7 @@ class PushNtfyController {
 				data: body,
 			});
 		} else if (body?.project_id) {
-			Logging.dev(`[/log/track] activity type=${body?.eventType || event || "custom"} project=${body.project_id} visitor=${body?.anonId || body?.fingerprint || "anon"} page=${body?.page?.url || ""}`);
+			Logging.dev(`[/log/track] activity | event=${body?.eventType || event} project=${body.project_id}`);
 			// Activity / interaction event (click, scroll, pageview, etc.)
 			// → Store as visitor activity tracking
 			AppEvents.emit("trackActivity", {
@@ -71,6 +71,7 @@ class PushNtfyController {
 				},
 			});
 		}
+
 
 		res.end("OK");
 	};
@@ -488,7 +489,7 @@ class PushNtfyController {
 				event: NotificationLifecycleEvent.REQUEST,
 				projectId,
 				userId: project?.user?.id,
-				notificationId:projectId + "-" + Date.now(),
+				notificationId: projectId + "-" + Date.now(),
 				type: rest.type || "0",
 				data: rest,
 			});
@@ -517,7 +518,7 @@ class PushNtfyController {
 					event: NotificationLifecycleEvent.QUEUED,
 					projectId,
 					userId: project?.user?.id,
-					notificationId:projectId + "-" + Date.now(),
+					notificationId: projectId + "-" + Date.now(),
 					type: rest.type,
 					data: rest,
 				});
@@ -546,7 +547,7 @@ class PushNtfyController {
 				event: NotificationLifecycleEvent.SENT,
 				projectId,
 				userId: project?.user?.id,
-				notificationId:projectId + "-" + Date.now(),
+				notificationId: projectId + "-" + Date.now(),
 				type: rest.type || "0",
 				data: rest,
 			});

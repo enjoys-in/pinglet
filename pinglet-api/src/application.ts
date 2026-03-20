@@ -23,6 +23,7 @@ import { Modifiers } from "./app/common/Modifiers";
 import { __CONFIG__ } from "./app/config";
 import { AppEvents } from "./utils/services/Events";
 import { Cache } from "./utils/services/redis/cacheService";
+import { QueueService } from "./utils/services/queue";
 import "./handlers/cron-jobs";
 import "./utils/services/queue/event-listener";
 
@@ -218,16 +219,16 @@ class AppServer {
 	 * @private
 	 */
 	private GracefulShutdown(): void {
-		process.on("SIGINT", () => {
-			this.closeAllOpenedConnection();
-			Logging.dev("Manually Shutting Down", "notice");
-			process.exit(1);
-		});
-		process.on("SIGTERM", () => {
-			this.closeAllOpenedConnection();
-			Logging.dev("Error Occured", "error");
-			process.exit(1);
-		});
+		let shuttingDown = false;
+		const shutdown = async (signal: string) => {
+			if (shuttingDown) return;
+			shuttingDown = true;
+			Logging.dev(`${signal} received — shutting down`, "notice");
+			await this.closeAllOpenedConnection();
+			process.exit(0);
+		};
+		process.on("SIGINT", () => shutdown("SIGINT"));
+		process.on("SIGTERM", () => shutdown("SIGTERM"));
 		process.on("uncaughtException", (err, origin) => {
 			AppLifecycleManager.handleAppError(err);
 			Logging.dev(
@@ -244,13 +245,15 @@ class AppServer {
 			);
 		});
 	}
-	private closeAllOpenedConnection() {
+	private async closeAllOpenedConnection() {
 		AppLifecycleManager.destroyModules();
 		BroadCastEvents.sendServerClosed();
 		AppEvents.emit("shutdown");
-		/** NOTE  Close Database/Redis or any opened Connection */
-		CloseConnection();
-		Cache.closeClonnection();
+		// Close all BullMQ queues
+		try { await QueueService.closeAll(); } catch {}
+		// Close Database + Redis
+		try { await CloseConnection(); } catch {}
+		try { await Cache.closeClonnection(); } catch {}
 	}
 	/**
 	 * Closes the given server and exits the process.

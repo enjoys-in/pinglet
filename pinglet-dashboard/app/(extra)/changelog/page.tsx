@@ -2,9 +2,58 @@ import { Badge } from "@/components/ui/badge"
 
 const changelog = [
   {
-    version: "v1.0.0",
+    version: "v1.1.0",
     date: "March 2026",
     tag: "Latest",
+    sections: [
+      {
+        title: "Activity Tracking",
+        changes: [
+          "Activity page fully aligned with backend API response shapes",
+          "Typed interfaces for ActivityEvent, ActivityStats, TopPage",
+          "Fixed Total Events showing [object Object] — now safely sums numeric counts only",
+          "Fixed avgDuration → avgSessionDuration field name",
+          "Fixed Top Pages chart keys (page_url/views instead of page/count)",
+          "Events response now reads { events, total } shape with proper pagination",
+          "Unique Visitors label corrected to 30d",
+        ],
+      },
+      {
+        title: "Flows Engine",
+        changes: [
+          "Duplicate event trigger prevention — used events are disabled in preset dropdown",
+          "Loop detection warning banner when same event is assigned to multiple triggers",
+          "Event name input shows red border + error text for duplicate events",
+          "Fixed JSON editor validation for template variables inside quotes (e.g. \"{{userId}}\")",
+          "Fixed JSON editor width overflow in flow config panel",
+          "Fixed Invalid Date display — supports both camelCase and snake_case date fields",
+        ],
+      },
+      {
+        title: "Widgets",
+        changes: [
+          "Widget configuration system with 11 fields (position, autoDismiss, autoShow, animation, etc.)",
+          "Config badges displayed on widget list cards",
+          "Fixed copy script URL generating undefined — now outputs proper <script> tag",
+          "Widget edit mode (WidgetForm supports update via widgetId prop)",
+        ],
+      },
+      {
+        title: "Data & Sync",
+        changes: [
+          "IDB-first fetch with background API refresh across all CRUD operations",
+          "IDB sync on create/update/delete for projects, websites, widgets, and flows",
+          "Fixed non-functional project delete handler",
+          "WebhookEvent enum expanded to 12 events (added queued, delivered, dismissed)",
+          "Flow EVENT_PRESETS with 24 events across 6 categories + custom event support",
+        ],
+      },
+    ],
+  },
+  {
+    version: "v1.0.0",
+    date: "March 2026",
+    tag: "",
     sections: [
       {
         title: "Flows Engine",

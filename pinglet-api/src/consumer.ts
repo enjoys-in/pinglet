@@ -7,3 +7,11 @@ import { KafkaAnalyticsConsumer } from "./handlers/services/kafka/notificationCo
 
 const analyticsConsumer = new KafkaAnalyticsConsumer();
 analyticsConsumer.start();
+
+const shutdown = async (signal: string) => {
+	console.log(`[Consumer] ${signal} — shutting down`);
+	await analyticsConsumer.stop().catch(() => {});
+	process.exit(0);
+};
+process.on("SIGINT", () => shutdown("SIGINT"));
+process.on("SIGTERM", () => shutdown("SIGTERM"));

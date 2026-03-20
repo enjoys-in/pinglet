@@ -88,10 +88,10 @@ export class CacheService {
 	clearHash(hashKey: string) {
 		this.cache.del(JSON.stringify(hashKey));
 	}
-	public closeClonnection(): void {
-		this.publisher.quit();
-		this.subscriber.quit();
-		this.cache.quit();
+	public async closeClonnection(): Promise<void> {
+		await this.publisher.quit();
+		await this.subscriber.quit();
+		await this.cache.quit();
 	}
 	getPubSub() {
 		return {

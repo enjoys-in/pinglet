@@ -45,4 +45,10 @@ export class QueueService {
 			connection: QueueService.connection,
 		});
 	}
+
+	static async closeAll(): Promise<void> {
+		const promises = Array.from(QueueService.queues.values()).map((q) => q.close());
+		await Promise.allSettled(promises);
+		QueueService.queues.clear();
+	}
 }

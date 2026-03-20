@@ -44,9 +44,9 @@ interface ActivityStats {
   uniqueVisitors: number
 }
 
-function sumEventCounts(stats: Record<string, number> | undefined): number {
-  if (!stats) return 0
-  return Object.values(stats).reduce((sum, n) => sum + (n || 0), 0)
+function sumEventCounts(stats: Record<string, any> | undefined): number {
+  if (!stats || typeof stats !== "object") return 0
+  return Object.values(stats).reduce((sum, n) => sum + (typeof n === "number" ? n : 0), 0)
 }
 
 export function ActivityClient({ projects }: { projects: Project[] }) {

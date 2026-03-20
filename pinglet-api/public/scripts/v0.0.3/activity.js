@@ -48,7 +48,7 @@ function _send(payload) {
 	const url = `${_endpoint}/log/track`;
 	const body = JSON.stringify(payload);
 	if (navigator.sendBeacon) {
-		navigator.sendBeacon(url, body);
+		navigator.sendBeacon(url, new Blob([body], { type: "application/json" }));
 	} else {
 		fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body, credentials: "omit" }).catch(() => {});
 	}
