@@ -3,16 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pinglet SDK v0.0.3 — Notification Playground</title>
+  <title>Pinglet SDK v0.0.2 — Notification Playground</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700;800;900&family=Lato:wght@300;400;700;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* ── Animated gradient background ── */
     body {
-      font-family: 'Lato', sans-serif;
+      font-family: 'Manrope', sans-serif;
       min-height: 100vh;
       background: #06060f;
       color: #e2e2f0;
@@ -22,161 +21,153 @@
       content: '';
       position: fixed; inset: 0; z-index: 0; pointer-events: none;
       background:
-        radial-gradient(ellipse 60% 50% at 15% 20%, rgba(99,102,241,0.12) 0%, transparent 70%),
-        radial-gradient(ellipse 50% 40% at 85% 80%, rgba(236,72,153,0.10) 0%, transparent 70%),
-        radial-gradient(ellipse 40% 30% at 50% 50%, rgba(34,211,238,0.06) 0%, transparent 70%);
+        radial-gradient(ellipse 60% 50% at 15% 20%, rgba(34,211,154,0.10) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 40% at 85% 80%, rgba(59,130,246,0.08) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 30% at 50% 50%, rgba(245,158,11,0.06) 0%, transparent 70%);
       animation: bg-drift 20s ease-in-out infinite alternate;
     }
-    @keyframes bg-drift {
-      0% { filter: hue-rotate(0deg); }
-      100% { filter: hue-rotate(30deg); }
-    }
+    @keyframes bg-drift { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(25deg); } }
 
-    /* ── Noise overlay ── */
     body::after {
       content: '';
-      position: fixed; inset: 0; z-index: 0; pointer-events: none;
-      opacity: 0.025;
+      position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.025;
       background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     }
 
     .page { position: relative; z-index: 1; max-width: 980px; margin: 0 auto; padding: 48px 24px 100px; }
 
-    /* ── Hero ── */
+    /* Hero */
     .hero { text-align: center; margin-bottom: 56px; }
     .hero-badge {
       display: inline-flex; align-items: center; gap: 6px;
-      background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.2);
+      background: rgba(34,211,154,0.12); border: 1px solid rgba(34,211,154,0.2);
       padding: 5px 14px; border-radius: 100px; font-size: 12px; font-weight: 600;
-      color: #818cf8; margin-bottom: 18px; letter-spacing: 0.5px;
+      color: #34d39a; margin-bottom: 18px; letter-spacing: 0.5px;
     }
     .hero-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: #22c55e; animation: pulse-g 2s infinite; }
     @keyframes pulse-g { 0%,100%{opacity:1} 50%{opacity:0.4} }
     .hero h1 {
-      font-family: 'Raleway', sans-serif; font-size: 42px; font-weight: 900; letter-spacing: -1.5px;
-      line-height: 1.15; margin-bottom: 14px;
-      background: linear-gradient(135deg, #e2e2f0 0%, #818cf8 40%, #ec4899 70%, #22d3ee 100%);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      background-clip: text;
+      font-size: 42px; font-weight: 800; letter-spacing: -1.5px; line-height: 1.15; margin-bottom: 14px;
+      background: linear-gradient(135deg, #e2e2f0 0%, #34d39a 40%, #3b82f6 70%, #f59e0b 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
     }
     .hero p { font-size: 15px; color: #7a7a96; line-height: 1.65; max-width: 560px; margin: 0 auto; }
 
-    /* ── Section ── */
+    /* Sections */
     .sec { margin-bottom: 48px; }
     .sec-head { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
-    .sec-head h2 { font-family: 'Raleway', sans-serif; font-size: 20px; font-weight: 800; letter-spacing: -0.3px; }
+    .sec-head h2 { font-size: 20px; font-weight: 800; letter-spacing: -0.3px; }
     .sec-desc { color: #6b6b84; font-size: 13px; margin-bottom: 18px; line-height: 1.5; }
     .type-pill {
       display: inline-flex; align-items: center; justify-content: center;
       min-width: 60px; height: 24px; border-radius: 8px; font-size: 11px; font-weight: 800;
       letter-spacing: 0.5px; color: #fff;
     }
-    .type-pill.t0  { background: linear-gradient(135deg, #3b82f6, #2563eb); }
-    .type-pill.t2  { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+    .type-pill.t0  { background: linear-gradient(135deg, #22c55e, #16a34a); }
+    .type-pill.t2  { background: linear-gradient(135deg, #3b82f6, #2563eb); }
     .type-pill.t-1 { background: linear-gradient(135deg, #ef4444, #dc2626); }
     .type-pill.t1  { background: linear-gradient(135deg, #f59e0b, #d97706); }
-    .type-pill.tP  { background: linear-gradient(135deg, #ec4899, #be185d); }
+    .type-pill.tP  { background: linear-gradient(135deg, #a855f7, #7c3aed); }
 
-    /* ── Grid ── */
+    /* Grid */
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; }
 
-    /* ── Card — Glassy ── */
+    /* Cards */
     .card {
       position: relative; padding: 18px; border-radius: 16px; cursor: pointer;
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
       backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-      transition: all .3s cubic-bezier(.22,1,.36,1);
-      overflow: hidden;
+      transition: all .3s cubic-bezier(.22,1,.36,1); overflow: hidden;
     }
-    /* Gradient glow on hover */
     .card::before {
       content: ''; position: absolute; inset: 0; border-radius: 16px; z-index: 0;
       opacity: 0; transition: opacity .4s;
     }
     .card:hover::before { opacity: 1; }
     .card:hover {
-      transform: translateY(-4px);
-      border-color: rgba(255,255,255,0.12);
+      transform: translateY(-4px); border-color: rgba(255,255,255,0.12);
       box-shadow: 0 16px 48px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.06);
     }
     .card:active { transform: scale(0.98) translateY(-2px); }
     .card > * { position: relative; z-index: 1; }
 
-    /* ── Per-type card hover gradients ── */
-    .card.c0::before  { background: radial-gradient(ellipse at 20% 0%, rgba(59,130,246,0.12), transparent 70%); }
-    .card.c2::before  { background: radial-gradient(ellipse at 20% 0%, rgba(139,92,246,0.12), transparent 70%); }
+    .card.c0::before  { background: radial-gradient(ellipse at 20% 0%, rgba(34,197,94,0.12), transparent 70%); }
+    .card.c2::before  { background: radial-gradient(ellipse at 20% 0%, rgba(59,130,246,0.12), transparent 70%); }
     .card.c-1::before { background: radial-gradient(ellipse at 20% 0%, rgba(239,68,68,0.10), transparent 70%); }
     .card.c1::before  { background: radial-gradient(ellipse at 20% 0%, rgba(245,158,11,0.10), transparent 70%); }
-    .card.cP::before  { background: radial-gradient(ellipse at 20% 0%, rgba(236,72,153,0.12), transparent 70%); }
+    .card.cP::before  { background: radial-gradient(ellipse at 20% 0%, rgba(168,85,247,0.12), transparent 70%); }
 
     .tag {
       display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 1px;
-      padding: 3px 8px; border-radius: 6px; margin-bottom: 8px;
-      text-transform: uppercase;
+      padding: 3px 8px; border-radius: 6px; margin-bottom: 8px; text-transform: uppercase;
     }
-    .tag.t0  { background: rgba(59,130,246,0.12); color: #60a5fa; }
-    .tag.t2  { background: rgba(139,92,246,0.12); color: #a78bfa; }
+    .tag.t0  { background: rgba(34,197,94,0.12); color: #4ade80; }
+    .tag.t2  { background: rgba(59,130,246,0.12); color: #60a5fa; }
     .tag.t-1 { background: rgba(239,68,68,0.10); color: #f87171; }
     .tag.t1  { background: rgba(245,158,11,0.10); color: #fbbf24; }
-    .tag.tP  { background: rgba(236,72,153,0.12); color: #f472b6; }
+    .tag.tP  { background: rgba(168,85,247,0.12); color: #c084fc; }
 
-    .card h3 { font-family: 'Raleway', sans-serif; font-size: 14px; font-weight: 700; margin-bottom: 5px; color: #e8e8f4; }
+    .card h3 { font-size: 14px; font-weight: 700; margin-bottom: 5px; color: #e8e8f4; }
     .card p { font-size: 12px; color: #6b6b84; line-height: 1.5; }
-    .card .meta {
-      display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap;
-    }
+    .card .meta { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
     .chip {
       font-size: 10px; padding: 2px 8px; border-radius: 20px;
       background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
       color: #8888a8; font-weight: 500;
     }
 
-    /* ── Code panel ── */
-    .code-sec { margin-top: 56px; }
-    .code-sec h2 { font-family: 'Raleway', sans-serif; font-size: 20px; font-weight: 800; margin-bottom: 16px; }
-    .code-card {
-      background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 16px; overflow: hidden; margin-bottom: 16px;
+    /* JSON Modal */
+    .json-overlay {
+      display: none; position: fixed; inset: 0; z-index: 2147483640;
+      background: rgba(0,0,0,0.6); backdrop-filter: blur(6px);
+      align-items: center; justify-content: center;
     }
-    .code-card-head {
+    .json-overlay.active { display: flex; }
+    .json-modal {
+      width: 520px; max-width: calc(100vw - 32px); max-height: 80vh;
+      background: rgba(16,16,30,0.96); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px; overflow: hidden; display: flex; flex-direction: column;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+    }
+    .json-modal-head {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 14px 18px; border-bottom: 1px solid rgba(255,255,255,0.04);
+      padding: 14px 18px; border-bottom: 1px solid rgba(255,255,255,0.06);
     }
-    .code-card-head h3 { font-family: 'Raleway', sans-serif; font-size: 14px; font-weight: 700; }
-    .copy-btn {
-      font-size: 11px; padding: 4px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);
+    .json-modal-head h3 { font-size: 14px; font-weight: 700; color: #c0c0d6; }
+    .json-modal-actions { display: flex; gap: 8px; }
+    .json-btn {
+      font-size: 11px; padding: 5px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);
       background: rgba(255,255,255,0.04); color: #8888a8; cursor: pointer; font-weight: 600;
-      transition: all .15s;
+      transition: all .15s; font-family: 'Manrope', sans-serif;
     }
-    .copy-btn:hover { background: rgba(255,255,255,0.08); color: #c0c0d6; }
-    pre {
+    .json-btn:hover { background: rgba(255,255,255,0.08); color: #c0c0d6; }
+    .json-btn.primary { background: linear-gradient(135deg,#22c55e,#16a34a); color: #fff; border: none; }
+    .json-btn.primary:hover { box-shadow: 0 4px 14px rgba(34,197,94,0.3); }
+    .json-modal pre {
       font-family: 'JetBrains Mono', monospace; font-size: 12px; line-height: 1.65;
-      padding: 16px 18px; overflow-x: auto; color: #a8a8c0; margin: 0;
+      padding: 16px 18px; overflow: auto; color: #a8a8c0; margin: 0; flex: 1;
     }
-    .k { color: #c084fc; } .s { color: #34d399; } .n { color: #fb923c; } .c { color: #525272; font-style: italic; }
 
-    /* ── Toast ── */
-    .toast {
+    /* Toast */
+    .toast-bar {
       position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
       padding: 10px 22px; border-radius: 12px; font-size: 12.5px; font-weight: 600;
       z-index: 99999; display: none; letter-spacing: 0.2px;
       background: rgba(16,16,28,0.92); border: 1px solid rgba(255,255,255,0.08);
-      backdrop-filter: blur(16px); color: #c0c0d6;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      backdrop-filter: blur(16px); color: #c0c0d6; box-shadow: 0 8px 32px rgba(0,0,0,0.4);
     }
     @keyframes fadeUp { from { opacity:0; transform: translateX(-50%) translateY(12px); } to { opacity:1; transform: translateX(-50%) translateY(0); } }
 
-    /* ── Footer ── */
+    /* Footer */
     .footer { text-align: center; margin-top: 56px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.04); }
     .footer p { font-size: 12px; color: #4e4e64; }
-    .footer a { color: #818cf8; text-decoration: none; font-weight: 600; }
+    .footer a { color: #34d39a; text-decoration: none; font-weight: 600; }
     .footer a:hover { text-decoration: underline; }
 
-    /* ── Mobile ── */
     @media(max-width:600px) {
       .hero h1 { font-size: 28px; }
       .grid { grid-template-columns: 1fr; }
+      .json-modal { width: calc(100vw - 16px); }
     }
   </style>
 </head>
@@ -184,153 +175,197 @@
 
   <div class="page">
 
-    <!-- ═══════ Hero ═══════ -->
+    <!-- Hero -->
     <div class="hero">
-      <div class="hero-badge"><span class="dot"></span> SDK v0.0.3 — Live Playground</div>
-      <h1>Pinglet Notification<br>Playground</h1>
-      <p>Click any card to fire a live notification via the API. Glassmorphism in-app, browser push, and custom templates — with stacking, branding, dark mode, and premium overrides.</p>
+      <div class="hero-badge"><span class="dot"></span> SDK v0.0.2 — Live Playground</div>
+      <h1>Pinglet v0.0.2<br>Notification Playground</h1>
+      <p>Click any card to fire a live notification. View & copy the full JSON payload. Supports toast, glassmorphism, browser push, templates, and premium overrides.</p>
     </div>
 
-    <!-- ═══════ TYPE 0 — Glassmorphism ═══════ -->
+    <!-- TYPE 0 — Toast -->
     <div class="sec">
-      <div class="sec-head"><span class="type-pill t0">TYPE 0</span><h2>Glassmorphism HTML</h2></div>
-      <p class="sec-desc">Frosted-glass card via <code>showHtmlNotification()</code>. Stacking queue, branding, progress bar, 4 corners, dark mode, media, max 3 buttons.</p>
+      <div class="sec-head"><span class="type-pill t0">TYPE 0</span><h2>In-App Toast</h2></div>
+      <p class="sec-desc">Classic toast via <code>renderToast()</code>. Icon, logo, media, buttons, dark mode, stacking.</p>
       <div class="grid">
         <div class="card c0" onclick="fire('type0_minimal')">
           <span class="tag t0">0-A</span>
-          <h3>Title Only</h3>
-          <p>Minimal glassmorphism, just a title.</p>
-          <div class="meta"><span class="chip">minimal</span></div>
+          <h3>Minimal</h3>
+          <p>Just a title — simplest toast.</p>
+          <div class="meta"><span class="chip">title only</span></div>
         </div>
         <div class="card c0" onclick="fire('type0_full')">
           <span class="tag t0">0-B</span>
-          <h3>Full — Icon + Body</h3>
-          <p>Icon, body text, and relative time.</p>
-          <div class="meta"><span class="chip">icon</span><span class="chip">body</span></div>
+          <h3>Title + Desc + Icon</h3>
+          <p>Title, description, and emoji icon.</p>
+          <div class="meta"><span class="chip">icon</span><span class="chip">description</span></div>
         </div>
-        <div class="card c0" onclick="fire('type0_image')">
+        <div class="card c0" onclick="fire('type0_media_image')">
           <span class="tag t0">0-C</span>
-          <h3>Image Banner</h3>
-          <p>Full-width image below the content.</p>
+          <h3>Image Media</h3>
+          <p>Full-width image banner below text.</p>
           <div class="meta"><span class="chip">media:image</span></div>
         </div>
-        <div class="card c0" onclick="fire('type0_video')">
+        <div class="card c0" onclick="fire('type0_media_video')">
           <span class="tag t0">0-D</span>
           <h3>Video Media</h3>
-          <p>Embedded video player in the card.</p>
+          <p>Embedded video player.</p>
           <div class="meta"><span class="chip">media:video</span></div>
         </div>
-        <div class="card c0" onclick="fire('type0_audio')">
+        <div class="card c0" onclick="fire('type0_media_audio')">
           <span class="tag t0">0-E</span>
           <h3>Audio Media</h3>
-          <p>Embedded audio player in the card.</p>
+          <p>Audio player inside the toast.</p>
           <div class="meta"><span class="chip">media:audio</span></div>
         </div>
         <div class="card c0" onclick="fire('type0_buttons')">
           <span class="tag t0">0-F</span>
-          <h3>3 Buttons</h3>
-          <p>Redirect + event + close actions.</p>
+          <h3>Action Buttons</h3>
+          <p>Redirect + reload + custom event.</p>
           <div class="meta"><span class="chip">3 buttons</span><span class="chip">event</span></div>
         </div>
-        <div class="card c0" onclick="fire('type0_event_button')">
-          <span class="tag t0">0-G</span>
-          <h3>Custom Event Button</h3>
-          <p>Button dispatches CustomEvent on window.</p>
-          <div class="meta"><span class="chip">action:event</span><span class="chip">detail</span></div>
-        </div>
-        <div class="card c0" onclick="fire('type0_positions')">
-          <span class="tag t0">0-H</span>
-          <h3>All 4 Corners</h3>
-          <p>One notification in each screen corner.</p>
-          <div class="meta"><span class="chip">4 positions</span></div>
-        </div>
-        <div class="card c0" onclick="fire('type0_persist')">
-          <span class="tag t0">0-I</span>
-          <h3>No Auto-Close</h3>
-          <p>requireInteraction — stays until dismissed.</p>
-          <div class="meta"><span class="chip">permanent</span></div>
-        </div>
-        <div class="card c0" onclick="fire('type0_stack')">
-          <span class="tag t0">0-J</span>
-          <h3>Stack Test — 6 at once</h3>
-          <p>Max 3 visible, rest queued, FIFO drain.</p>
-          <div class="meta"><span class="chip">×6</span><span class="chip">queue</span></div>
-        </div>
-        <div class="card c0" onclick="fire('type0_dark')">
-          <span class="tag t0">0-K</span>
-          <h3>Force Dark Theme</h3>
-          <p>Explicit dark mode override.</p>
-          <div class="meta"><span class="chip">theme:dark</span></div>
-        </div>
-        <div class="card c0" onclick="fire('type0_branding')">
-          <span class="tag t0">0-L</span>
-          <h3>Custom Branding</h3>
-          <p>Custom branding HTML in footer.</p>
-          <div class="meta"><span class="chip">branding</span></div>
-        </div>
-        <div class="card c0" onclick="fire('type0_tag_dedup')">
-          <span class="tag t0">0-M</span>
-          <h3>Tag Dedup — Replace</h3>
-          <p>Same tag replaces existing notification.</p>
-          <div class="meta"><span class="chip">tag</span><span class="chip">dedup</span></div>
-        </div>
         <div class="card c0" onclick="fire('type0_logo_url')">
-          <span class="tag t0">0-N</span>
+          <span class="tag t0">0-G</span>
           <h3>Logo + Click URL</h3>
           <p>Logo image, body click opens a link.</p>
           <div class="meta"><span class="chip">logo</span><span class="chip">url</span></div>
         </div>
+        <div class="card c0" onclick="fire('type0_stack')">
+          <span class="tag t0">0-H</span>
+          <h3>Stack Test — 5 at once</h3>
+          <p>Fires 5 toasts rapidly to test stacking.</p>
+          <div class="meta"><span class="chip">×5</span><span class="chip">stacking</span></div>
+        </div>
       </div>
     </div>
 
-    <!-- ═══════ PREMIUM OVERRIDES ═══════ -->
+    <!-- TYPE 2 — Glassmorphism -->
+    <div class="sec">
+      <div class="sec-head"><span class="type-pill t2">TYPE 2</span><h2>Glassmorphism HTML</h2></div>
+      <p class="sec-desc">Frosted-glass card via <code>showHtmlNotification()</code>. Stacking, branding, progress bar, 4 corners, dark mode, max 3 buttons.</p>
+      <div class="grid">
+        <div class="card c2" onclick="fire('type2_minimal')">
+          <span class="tag t2">2-A</span>
+          <h3>Title Only</h3>
+          <p>Minimal glassmorphism, just a title.</p>
+          <div class="meta"><span class="chip">minimal</span></div>
+        </div>
+        <div class="card c2" onclick="fire('type2_full')">
+          <span class="tag t2">2-B</span>
+          <h3>Full — Icon + Body</h3>
+          <p>Icon, body text, and branding footer.</p>
+          <div class="meta"><span class="chip">icon</span><span class="chip">body</span></div>
+        </div>
+        <div class="card c2" onclick="fire('type2_image')">
+          <span class="tag t2">2-C</span>
+          <h3>Image Banner</h3>
+          <p>Full-width image below the content.</p>
+          <div class="meta"><span class="chip">media:image</span></div>
+        </div>
+        <div class="card c2" onclick="fire('type2_video')">
+          <span class="tag t2">2-D</span>
+          <h3>Video Media</h3>
+          <p>Embedded video player in the card.</p>
+          <div class="meta"><span class="chip">media:video</span></div>
+        </div>
+        <div class="card c2" onclick="fire('type2_audio')">
+          <span class="tag t2">2-E</span>
+          <h3>Audio Media</h3>
+          <p>Audio player embedded inside.</p>
+          <div class="meta"><span class="chip">media:audio</span></div>
+        </div>
+        <div class="card c2" onclick="fire('type2_buttons')">
+          <span class="tag t2">2-F</span>
+          <h3>3 Buttons</h3>
+          <p>Redirect + event + close actions.</p>
+          <div class="meta"><span class="chip">3 buttons</span><span class="chip">event</span></div>
+        </div>
+        <div class="card c2" onclick="fire('type2_event_button')">
+          <span class="tag t2">2-G</span>
+          <h3>Custom Event Button</h3>
+          <p>Button dispatches CustomEvent on window.</p>
+          <div class="meta"><span class="chip">action:event</span><span class="chip">detail</span></div>
+        </div>
+        <div class="card c2" onclick="fire('type2_persist')">
+          <span class="tag t2">2-H</span>
+          <h3>No Auto-Close</h3>
+          <p>requireInteraction — stays until dismissed.</p>
+          <div class="meta"><span class="chip">permanent</span></div>
+        </div>
+        <div class="card c2" onclick="fire('type2_dark')">
+          <span class="tag t2">2-I</span>
+          <h3>Force Dark Theme</h3>
+          <p>Explicit dark mode override.</p>
+          <div class="meta"><span class="chip">theme:dark</span></div>
+        </div>
+        <div class="card c2" onclick="fire('type2_branding')">
+          <span class="tag t2">2-J</span>
+          <h3>Custom Branding</h3>
+          <p>Custom branding HTML in footer.</p>
+          <div class="meta"><span class="chip">branding</span></div>
+        </div>
+        <div class="card c2" onclick="fire('type2_tag_dedup')">
+          <span class="tag t2">2-K</span>
+          <h3>Tag Dedup — Replace</h3>
+          <p>Same tag replaces existing notification.</p>
+          <div class="meta"><span class="chip">tag</span><span class="chip">dedup</span></div>
+        </div>
+        <div class="card c2" onclick="fire('type2_stack')">
+          <span class="tag t2">2-L</span>
+          <h3>Stack Test — 6 at once</h3>
+          <p>Max 3 visible, rest queued.</p>
+          <div class="meta"><span class="chip">×6</span><span class="chip">queue</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PREMIUM OVERRIDES -->
     <div class="sec">
       <div class="sec-head"><span class="type-pill tP">PREMIUM</span><h2>Override Demos</h2></div>
-      <p class="sec-desc">Premium per-notification overrides: position, theme, duration, sound, branding, media controls. These modify behavior for individual notifications.</p>
+      <p class="sec-desc">Per-notification overrides: position, theme, duration, sound, branding, maxVisible. Modify behavior for individual notifications.</p>
       <div class="grid">
         <div class="card cP" onclick="fire('prem_dark_topright')">
           <span class="tag tP">P-A</span>
-          <h3>Override: Dark + Top-Right</h3>
-          <p>Force dark theme, top-right position, 8s duration.</p>
+          <h3>Dark + Top-Right</h3>
+          <p>Force dark theme, top-right, 8s duration.</p>
           <div class="meta"><span class="chip">theme:dark</span><span class="chip">top-right</span><span class="chip">8s</span></div>
         </div>
         <div class="card cP" onclick="fire('prem_branding')">
           <span class="tag tP">P-B</span>
-          <h3>Override: Custom Branding</h3>
+          <h3>Custom Branding</h3>
           <p>Branding HTML and maxVisible override.</p>
           <div class="meta"><span class="chip">branding</span><span class="chip">maxVisible:5</span></div>
         </div>
         <div class="card cP" onclick="fire('prem_slide')">
           <span class="tag tP">P-C</span>
-          <h3>Override: Slide Transition</h3>
+          <h3>Slide Transition</h3>
           <p>Slide transition with auto-dismiss.</p>
           <div class="meta"><span class="chip">slide</span><span class="chip">auto_dismiss</span></div>
         </div>
-        <div class="card cP" onclick="fire('prem_video_media')">
+        <div class="card cP" onclick="fire('prem_video_sound')">
           <span class="tag tP">P-D</span>
-          <h3>Override: Video + Sound</h3>
+          <h3>Video + Sound</h3>
           <p>Video media with notification sound.</p>
           <div class="meta"><span class="chip">video</span><span class="chip">sound</span></div>
         </div>
-        <div class="card cP" onclick="fire('prem_audio_media')">
+        <div class="card cP" onclick="fire('prem_audio')">
           <span class="tag tP">P-E</span>
-          <h3>Override: Audio Media</h3>
+          <h3>Audio Media</h3>
           <p>Audio player inside the notification.</p>
           <div class="meta"><span class="chip">audio</span><span class="chip">media</span></div>
         </div>
         <div class="card cP" onclick="fire('prem_full')">
           <span class="tag tP">P-F</span>
           <h3>Full Override Stack</h3>
-          <p>All overrides combined: position, theme, duration, branding, sound.</p>
+          <p>All overrides combined.</p>
           <div class="meta"><span class="chip">all overrides</span></div>
         </div>
       </div>
     </div>
 
-    <!-- ═══════ TYPE -1 — Browser Push ═══════ -->
+    <!-- TYPE -1 — Browser Push -->
     <div class="sec">
       <div class="sec-head"><span class="type-pill t-1">TYPE -1</span><h2>Browser Push</h2></div>
-      <p class="sec-desc">Native OS notifications via Web Push → Service Worker. Works when tab is closed. Requires push permission.</p>
+      <p class="sec-desc">Native OS notifications via Web Push → Service Worker. Works when tab is closed.</p>
       <div class="grid">
         <div class="card c-1" onclick="fire('push_basic')">
           <span class="tag t-1">-1-A</span>
@@ -365,7 +400,7 @@
       </div>
     </div>
 
-    <!-- ═══════ TYPE 1 — Template ═══════ -->
+    <!-- TYPE 1 — Template -->
     <div class="sec">
       <div class="sec-head"><span class="type-pill t1">TYPE 1</span><h2>Custom Template</h2></div>
       <p class="sec-desc">Server-stored template by <code>template_id</code> with <code>custom_template</code> data variables.</p>
@@ -379,96 +414,30 @@
       </div>
     </div>
 
-    <!-- ═══════ API Reference ═══════ -->
-    <div class="code-sec">
-      <h2>API Reference</h2>
-
-      <div class="code-card">
-        <div class="code-card-head">
-          <h3>POST /api/v1/notifications/send — Type 0 (Glassmorphism)</h3>
-          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-        </div>
-<pre>{
-  <span class="k">"projectId"</span>: <span class="s">"YOUR_24_CHAR_PROJECT_ID"</span>,
-  <span class="k">"type"</span>: <span class="s">"0"</span>,
-  <span class="k">"body"</span>: {
-    <span class="k">"title"</span>: <span class="s">"Flash Sale 🔥"</span>,
-    <span class="k">"description"</span>: <span class="s">"50% off all items."</span>,
-    <span class="k">"icon"</span>: <span class="s">"https://cdn.example.com/icon.png"</span>,
-    <span class="k">"media"</span>: { <span class="k">"type"</span>: <span class="s">"image"</span>, <span class="k">"src"</span>: <span class="s">"https://..."</span> },
-    <span class="k">"buttons"</span>: [
-      { <span class="k">"text"</span>: <span class="s">"Shop"</span>, <span class="k">"action"</span>: <span class="s">"redirect"</span>, <span class="k">"src"</span>: <span class="s">"https://..."</span> },
-      { <span class="k">"text"</span>: <span class="s">"Track"</span>, <span class="k">"action"</span>: <span class="s">"event"</span>, <span class="k">"event"</span>: <span class="s">"sale:click"</span> },
-      { <span class="k">"text"</span>: <span class="s">"Close"</span>, <span class="k">"action"</span>: <span class="s">"close"</span> }
-    ]
-  }
-}</pre>
-      </div>
-
-      <div class="code-card">
-        <div class="code-card-head">
-          <h3>Premium Overrides (any type)</h3>
-          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-        </div>
-<pre>{
-  <span class="k">"overrides"</span>: {
-    <span class="k">"position"</span>: <span class="s">"top-right"</span>,
-    <span class="k">"transition"</span>: <span class="s">"slide"</span>,
-    <span class="k">"duration"</span>: <span class="n">8000</span>,
-    <span class="k">"maxVisible"</span>: <span class="n">5</span>,
-    <span class="k">"auto_dismiss"</span>: <span class="n">true</span>,
-    <span class="k">"theme"</span>: { <span class="k">"mode"</span>: <span class="s">"dark"</span> },
-    <span class="k">"branding"</span>: { <span class="k">"show"</span>: <span class="n">true</span>, <span class="k">"html"</span>: <span class="s">"Powered by Acme"</span> },
-    <span class="k">"sound"</span>: { <span class="k">"play"</span>: <span class="n">true</span>, <span class="k">"src"</span>: <span class="s">"https://..."</span>, <span class="k">"volume"</span>: <span class="n">0.7</span> }
-  }
-}</pre>
-      </div>
-
-      <div class="code-card">
-        <div class="code-card-head">
-          <h3>POST — Type -1 (Browser Push)</h3>
-          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-        </div>
-<pre>{
-  <span class="k">"projectId"</span>: <span class="s">"..."</span>, <span class="k">"type"</span>: <span class="s">"-1"</span>,
-  <span class="k">"data"</span>: {
-    <span class="k">"title"</span>: <span class="s">"Order Shipped"</span>,
-    <span class="k">"body"</span>: <span class="s">"Your package is on the way."</span>,
-    <span class="k">"icon"</span>: <span class="s">"https://..."</span>,
-    <span class="k">"actions"</span>: [
-      { <span class="k">"action"</span>: <span class="s">"view"</span>, <span class="k">"title"</span>: <span class="s">"View"</span> }
-    ]
-  }
-}</pre>
-      </div>
-
-      <div class="code-card">
-        <div class="code-card-head">
-          <h3>POST — Type 1 (Template)</h3>
-          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-        </div>
-<pre>{
-  <span class="k">"projectId"</span>: <span class="s">"..."</span>, <span class="k">"type"</span>: <span class="s">"1"</span>,
-  <span class="k">"template_id"</span>: <span class="s">"42"</span>,
-  <span class="k">"custom_template"</span>: {
-    <span class="k">"user_name"</span>: <span class="s">"John"</span>,
-    <span class="k">"order_total"</span>: <span class="s">"$49.99"</span>
-  }
-}</pre>
-      </div>
-    </div>
-
     <div class="footer">
-      <p>Notification by <a href="https://pinglet.enjoys.in" target="_blank" rel="noopener">Enjoys</a> — Pinglet SDK v0.0.3</p>
+      <p>Notification by <a href="https://pinglet.enjoys.in" target="_blank" rel="noopener">Enjoys</a> — Pinglet SDK v0.0.2</p>
     </div>
 
   </div>
 
-  <div class="toast" id="apiToast"></div>
+  <!-- JSON Modal -->
+  <div class="json-overlay" id="jsonOverlay" onclick="if(event.target===this)closeJson()">
+    <div class="json-modal">
+      <div class="json-modal-head">
+        <h3 id="jsonTitle">Payload</h3>
+        <div class="json-modal-actions">
+          <button class="json-btn primary" onclick="copyJson()">📋 Copy JSON</button>
+          <button class="json-btn" onclick="sendJson()">🚀 Send</button>
+          <button class="json-btn" onclick="closeJson()">✕</button>
+        </div>
+      </div>
+      <pre id="jsonBody"></pre>
+    </div>
+  </div>
 
-  <!-- ═══════════════════════════════════════════
-       Pinglet SDK — data attributes auto-init
-       ═══════════════════════════════════════════ -->
+  <div class="toast-bar" id="apiToast"></div>
+
+  <!-- Pinglet SDK v0.0.2 via ES modules -->
   <script
     crossorigin="anonymous"
     src="http://localhost:8888/api/v1/public/scripts/v0.0.2/sw.js"
@@ -476,7 +445,7 @@
   <script
     type="module"
     crossorigin="anonymous"
-    src="http://localhost:8888/api/v1/public/scripts/v0.0.3/pinglet-sse.js"
+    src="http://localhost:8888/api/v1/public/scripts/v0.0.2/pinglet-sse.js"
     data-endpoint="http://localhost:8888/api/v1/notifications"
     data-testimonials="false"
     data-configured-domain="localhost"
@@ -486,20 +455,18 @@
   ></script>
 
   <script>
-    // ───────────────────────────────────────
-    // Config — change these to match your setup
-    // ───────────────────────────────────────
     const API   = "http://localhost:8888/api/v1/notifications/send";
     const PID   = "0e5c2a5f527acdbe13791234";
     const ICON  = "https://cdn.jsdelivr.net/gh/nicedayworld/icons@main/pwa/icon-192x192.png";
     const BADGE = "https://cdn.jsdelivr.net/gh/nicedayworld/icons@main/pwa/icon-72x72.png";
     const IMG   = "https://images.unsplash.com/photo-1557683316-973673baf926?w=600&q=80";
     const VID   = "https://www.w3schools.com/html/mov_bbb.mp4";
+    const AUD   = "https://www.w3schools.com/html/horse.mp3";
 
-    // ───────────────────────────────────────
-    // Helpers
-    // ───────────────────────────────────────
-    function toast(msg, ok = true) {
+    let _currentPayload = null;
+
+    // ── Helpers ──
+    function toastMsg(msg, ok = true) {
       const el = document.getElementById("apiToast");
       el.textContent = (ok ? "✅ " : "❌ ") + msg;
       el.style.display = "block";
@@ -516,72 +483,146 @@
           body: JSON.stringify(payload),
         });
         const data = await res.json();
-        toast(data.message || (data.success ? "Sent!" : "Error"), data.success !== false);
+        toastMsg(data.message || (data.success ? "Sent!" : "Error"), data.success !== false);
       } catch (err) {
-        toast("Network error: " + err.message, false);
+        toastMsg("Network error: " + err.message, false);
       }
     }
 
-    function copyCode(btn) {
-      const pre = btn.closest(".code-card").querySelector("pre");
-      navigator.clipboard.writeText(pre.textContent).then(() => {
-        btn.textContent = "Copied!";
-        setTimeout(() => btn.textContent = "Copy", 1500);
+    // ── JSON Modal ──
+    function showJson(title, payload) {
+      _currentPayload = payload;
+      document.getElementById("jsonTitle").textContent = title;
+      document.getElementById("jsonBody").textContent = JSON.stringify(payload, null, 2);
+      document.getElementById("jsonOverlay").classList.add("active");
+    }
+    function closeJson() {
+      document.getElementById("jsonOverlay").classList.remove("active");
+      _currentPayload = null;
+    }
+    function copyJson() {
+      if (!_currentPayload) return;
+      navigator.clipboard.writeText(JSON.stringify(_currentPayload, null, 2)).then(() => {
+        toastMsg("JSON copied to clipboard!");
       });
     }
+    function sendJson() {
+      if (!_currentPayload) return;
+      send(_currentPayload);
+      closeJson();
+    }
 
-    // ─── Listen for custom events (for event button demos) ───
+    // ── Event listeners ──
     window.addEventListener("sale:click", (e) => {
-      toast("🎯 Custom Event received: sale:click — " + JSON.stringify(e.detail));
+      toastMsg("🎯 Custom Event: sale:click — " + JSON.stringify(e.detail));
     });
     window.addEventListener("add-to-cart", (e) => {
-      toast("🛒 Custom Event received: add-to-cart — " + JSON.stringify(e.detail));
+      toastMsg("🛒 Custom Event: add-to-cart — " + JSON.stringify(e.detail));
     });
 
-    // ───────────────────────────────────────
-    // Demo payloads — all types
-    // ───────────────────────────────────────
+    // ── Demo payloads ──
     const demos = {
-      // ══════ TYPE 0 — Glassmorphism ══════
+      // ══════ TYPE 0 — Toast ══════
       type0_minimal: {
         projectId: PID, type: "0",
-        body: { title: "Glassmorphism Minimal" }
+        body: { title: "Hello from Pinglet!" }
       },
       type0_full: {
         projectId: PID, type: "0",
+        body: {
+          title: "New Order Received",
+          description: "You have a new order #1234 from John Doe worth $129.99",
+          icon: "🛒",
+        }
+      },
+      type0_media_image: {
+        projectId: PID, type: "0",
+        body: {
+          title: "Product Spotlight",
+          description: "Check out our latest collection",
+          media: { type: "image", src: IMG },
+        }
+      },
+      type0_media_video: {
+        projectId: PID, type: "0",
+        body: {
+          title: "Video Update",
+          description: "Watch the demo reel",
+          media: { type: "video", src: VID },
+        }
+      },
+      type0_media_audio: {
+        projectId: PID, type: "0",
+        body: {
+          title: "Audio Player",
+          description: "Listen to the audio clip",
+          icon: "🎵",
+          media: { type: "audio", src: AUD },
+        }
+      },
+      type0_buttons: {
+        projectId: PID, type: "0",
+        body: {
+          title: "Action Required",
+          description: "Your subscription is about to expire.",
+          icon: "⚠️",
+          buttons: [
+            { text: "Renew Now", action: "redirect", src: "https://pinglet.enjoys.in" },
+            { text: "Refresh", action: "reload" },
+            { text: "Track", action: "event", event: "sale:click", data: { from: "type0" } },
+          ],
+        }
+      },
+      type0_logo_url: {
+        projectId: PID, type: "0",
+        body: {
+          title: "Visit Our Store",
+          description: "Exclusive deals waiting for you.",
+          logo: ICON,
+          url: "https://pinglet.enjoys.in",
+        }
+      },
+
+      // ══════ TYPE 2 — Glassmorphism ══════
+      type2_minimal: {
+        projectId: PID, type: "2",
+        body: { title: "Glassmorphism Minimal" }
+      },
+      type2_full: {
+        projectId: PID, type: "2",
         body: {
           title: "Flash Sale 🔥",
           description: "50% off on all premium plans. Limited time only!",
           icon: ICON,
         }
       },
-      type0_image: {
-        projectId: PID, type: "0",
+      type2_image: {
+        projectId: PID, type: "2",
         body: {
           title: "New Feature",
           description: "Dark mode is now available across all platforms.",
           media: { type: "image", src: IMG },
         }
       },
-      type0_video: {
-        projectId: PID, type: "0",
+      type2_video: {
+        projectId: PID, type: "2",
         body: {
           title: "Video Tutorial",
           description: "Learn how to integrate Pinglet in 2 minutes.",
           media: { type: "video", src: VID },
         }
       },
-      type0_audio: {
-        projectId: PID, type: "0",
+      type2_audio: {
+        projectId: PID, type: "2",
         body: {
-          title: "Audio Player",
-          description: "Listen to the audio clip",
-          icon: "🎵",
-          media: { type: "audio", src: "https://www.w3schools.com/html/horse.mp3" },
+          title: "Audio Notification",
+          description: "Embedded audio inside a glass card.",
+          icon: ICON,
+          media: { type: "audio", src: AUD },
         }
       },
-      type0_buttons: {
-        projectId: PID, type: "0",
+      type2_buttons: {
+        projectId: PID, type: "2",
         body: {
           title: "Review Purchase",
           description: "Your order #5678 has been delivered.",
@@ -593,8 +634,8 @@
           ],
         }
       },
-      type0_event_button: {
-        projectId: PID, type: "0",
+      type2_event_button: {
+        projectId: PID, type: "2",
         body: {
           title: "Add to Cart?",
           description: "Limited stock — Wireless Headphones only $29.99",
@@ -605,8 +646,8 @@
           ],
         }
       },
-      type0_persist: {
-        projectId: PID, type: "0",
+      type2_persist: {
+        projectId: PID, type: "2",
         overrides: { auto_dismiss: false },
         body: {
           title: "Important Notice",
@@ -614,17 +655,17 @@
           icon: ICON,
         }
       },
-      type0_dark: {
-        projectId: PID, type: "0",
+      type2_dark: {
+        projectId: PID, type: "2",
         overrides: { theme: { mode: "dark" } },
         body: {
           title: "Dark Mode Notification",
-          description: "This is forced dark mode regardless of your system settings.",
+          description: "Forced dark mode regardless of system settings.",
           icon: ICON,
         }
       },
-      type0_branding: {
-        projectId: PID, type: "0",
+      type2_branding: {
+        projectId: PID, type: "2",
         overrides: { branding: { show: true, html: "Powered by <b>Enjoys</b> 🚀" } },
         body: {
           title: "Custom Branding",
@@ -632,26 +673,8 @@
           icon: ICON,
         }
       },
-      type0_tag_dedup: {
-        projectId: PID, type: "0",
-        tag: "promo-update",
-        body: {
-          title: "Promo Updated (click again to replace)",
-          description: "Price changed to $" + (Math.random() * 100).toFixed(2),
-          icon: ICON,
-        }
-      },
-      type0_logo_url: {
-        projectId: PID, type: "0",
-        body: {
-          title: "Visit Our Store",
-          description: "Exclusive deals waiting for you.",
-          icon: ICON,
-          url: "https://pinglet.enjoys.in",
-        }
-      },
 
-      // ══════ TYPE -1 ══════
+      // ══════ TYPE -1 — Browser Push ══════
       push_basic: {
         projectId: PID, type: "-1",
         data: {
@@ -700,7 +723,7 @@
         }
       },
 
-      // ══════ TYPE 1 ══════
+      // ══════ TYPE 1 — Template ══════
       template_basic: {
         projectId: PID, type: "1",
         template_id: "1",
@@ -713,8 +736,8 @@
 
       // ══════ PREMIUM OVERRIDES ══════
       prem_dark_topright: {
-        projectId: PID, type: "0",
-        overrides: { position: "top-right", theme: { mode: "dark" }, duration: 8000 },
+        projectId: PID, type: "2",
+        overrides: { position: "top-right", theme: { mode: "dark" }, duration: 8000, auto_dismiss: true },
         body: {
           title: "Dark + Top-Right",
           description: "Forced dark theme, top-right position, 8s duration.",
@@ -722,7 +745,7 @@
         }
       },
       prem_branding: {
-        projectId: PID, type: "0",
+        projectId: PID, type: "2",
         overrides: { branding: { show: true, html: "Powered by <b>Enjoys</b> 🚀" }, maxVisible: 5 },
         body: {
           title: "Custom Branding Override",
@@ -731,7 +754,7 @@
         }
       },
       prem_slide: {
-        projectId: PID, type: "0",
+        projectId: PID, type: "2",
         overrides: { transition: "slide", auto_dismiss: true, duration: 6000 },
         body: {
           title: "Slide Transition",
@@ -739,8 +762,8 @@
           icon: ICON,
         }
       },
-      prem_video_media: {
-        projectId: PID, type: "0",
+      prem_video_sound: {
+        projectId: PID, type: "2",
         overrides: { sound: { play: true, volume: 0.6 } },
         body: {
           title: "Video + Sound Override",
@@ -749,18 +772,18 @@
           media: { type: "video", src: VID },
         }
       },
-      prem_audio_media: {
-        projectId: PID, type: "0",
+      prem_audio: {
+        projectId: PID, type: "2",
         overrides: {},
         body: {
           title: "Audio Media Override",
           description: "Audio player embedded inside the notification.",
           icon: ICON,
-          media: { type: "audio", src: "https://www.w3schools.com/html/horse.mp3" },
+          media: { type: "audio", src: AUD },
         }
       },
       prem_full: {
-        projectId: PID, type: "0",
+        projectId: PID, type: "2",
         overrides: {
           position: "bottom-left",
           transition: "slide",
@@ -784,52 +807,102 @@
       },
     };
 
-    // ───────────────────────────────────────
-    // Fire handler
-    // ───────────────────────────────────────
+    // ── Card labels for JSON modal title ──
+    const labels = {
+      type0_minimal: "0-A · Minimal Toast",
+      type0_full: "0-B · Title + Desc + Icon",
+      type0_media_image: "0-C · Image Media",
+      type0_media_video: "0-D · Video Media",
+      type0_media_audio: "0-E · Audio Media",
+      type0_buttons: "0-F · Action Buttons",
+      type0_logo_url: "0-G · Logo + Click URL",
+      type0_stack: "0-H · Stack Test ×5",
+      type2_minimal: "2-A · Title Only",
+      type2_full: "2-B · Full — Icon + Body",
+      type2_image: "2-C · Image Banner",
+      type2_video: "2-D · Video Media",
+      type2_audio: "2-E · Audio Media",
+      type2_buttons: "2-F · 3 Buttons",
+      type2_event_button: "2-G · Custom Event Button",
+      type2_persist: "2-H · No Auto-Close",
+      type2_dark: "2-I · Force Dark",
+      type2_branding: "2-J · Custom Branding",
+      type2_tag_dedup: "2-K · Tag Dedup",
+      type2_stack: "2-L · Stack Test ×6",
+      push_basic: "-1-A · Basic Push",
+      push_icon: "-1-B · Icon + Badge",
+      push_image: "-1-C · Push Image",
+      push_actions: "-1-D · Push Actions",
+      push_silent: "-1-E · Silent Push",
+      template_basic: "1-A · Template with Data",
+      prem_dark_topright: "P-A · Dark + Top-Right",
+      prem_branding: "P-B · Custom Branding",
+      prem_slide: "P-C · Slide Transition",
+      prem_video_sound: "P-D · Video + Sound",
+      prem_audio: "P-E · Audio Media",
+      prem_full: "P-F · Full Override Stack",
+    };
+
+    // ── Fire handler ──
     function fire(key) {
-      // Special: stack test fires multiple
+      // Stack tests fire multiple in sequence
       if (key === "type0_stack") {
-        for (let i = 1; i <= 6; i++) {
-          setTimeout(() => send({
+        const stack = [];
+        for (let i = 1; i <= 5; i++) {
+          stack.push({
             projectId: PID, type: "0",
+            body: { title: "Toast #" + i + " of 5", description: "Stacking test — notification " + i, icon: "📦" }
+          });
+        }
+        showJson(labels[key], stack);
+        return;
+      }
+      if (key === "type2_stack") {
+        const stack = [];
+        for (let i = 1; i <= 6; i++) {
+          stack.push({
+            projectId: PID, type: "2",
             body: {
-              title: `Notification ${i} of 6`,
-              description: `Max 3 visible — this is #${i}. The rest are queued.`,
+              title: "Notification " + i + " of 6",
+              description: "Max 3 visible — this is #" + i + ". The rest are queued.",
               icon: ICON,
             }
-          }), i * 200);
+          });
         }
+        showJson(labels[key], stack);
         return;
       }
-      if (key === "type0_positions") {
-        const positions = ["top-right", "top-left", "bottom-right", "bottom-left"];
-        positions.forEach((pos, i) => {
-          setTimeout(() => send({
-            projectId: PID, type: "0",
-            overrides: { position: pos },
-            body: { title: pos, description: `This card is in the ${pos} corner.`, icon: ICON }
-          }), i * 300);
-        });
-        return;
-      }
-      // tag dedup — randomize price each click
-      if (key === "type0_tag_dedup") {
-        send({
-          projectId: PID, type: "0",
+      // Tag dedup — randomize price each click
+      if (key === "type2_tag_dedup") {
+        const payload = {
+          projectId: PID, type: "2",
           tag: "promo-update",
           body: {
             title: "Promo Updated! (click again to replace)",
             description: "Price changed to $" + (Math.random() * 100).toFixed(2),
             icon: ICON,
           }
-        });
+        };
+        showJson(labels[key], payload);
         return;
       }
-      // Default — send payload
+      // Default — show JSON modal
       const payload = demos[key];
-      if (!payload) return toast("Unknown demo: " + key, false);
-      send(payload);
+      if (!payload) return toastMsg("Unknown demo: " + key, false);
+      showJson(labels[key] || key, payload);
+    }
+
+    // Override sendJson to handle array payloads (stack tests)
+    function sendJson() {
+      if (!_currentPayload) return;
+      if (Array.isArray(_currentPayload)) {
+        _currentPayload.forEach((p, i) => {
+          setTimeout(() => send(p), i * 200);
+        });
+      } else {
+        send(_currentPayload);
+      }
+      closeJson();
     }
   </script>
 </body>

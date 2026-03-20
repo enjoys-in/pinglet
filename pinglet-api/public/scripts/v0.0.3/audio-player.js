@@ -1,10 +1,10 @@
 /**
- * Pinglet SDK v0.0.2 — Themed Media Players
- * Compact audio & video players that match the notification card theme.
+ * Pinglet SDK v0.0.3 — Themed Audio Player
+ * Compact audio player that matches the notification card theme.
  * Supports dark/light mode.
  */
 
-const STYLE_ID = "__pinglet_media_player_css__";
+const STYLE_ID = "__pinglet_audio_player_css__";
 
 function _ensureMediaStyles() {
 	if (document.getElementById(STYLE_ID)) return;
@@ -34,18 +34,6 @@ function _ensureMediaStyles() {
 .pn-a-time{display:flex;justify-content:space-between;font-size:10.5px;font-weight:500;line-height:1}
 .pn-a-light .pn-a-time{color:#6b7280}
 .pn-a-dark .pn-a-time{color:#8888a8}
-
-/* ── Video Player ── */
-.pn-vid{position:relative;border-radius:10px;overflow:hidden;width:100%;cursor:pointer}
-.pn-vid video{width:100%;display:block;max-height:200px;object-fit:cover;border-radius:10px}
-.pn-vid-ov{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.2);transition:opacity .25s;border-radius:10px}
-.pn-vid-ov.pn-v-hide{opacity:0;pointer-events:none}
-.pn-v-btn{width:48px;height:48px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);transition:transform .15s;padding:0}
-.pn-v-btn:hover{transform:scale(1.1)}
-.pn-v-btn.pn-v-light{background:rgba(255,255,255,0.75);color:#1a1a2e}
-.pn-v-btn.pn-v-dark{background:rgba(0,0,0,0.5);color:#f0f0f0}
-.pn-v-btn svg{width:22px;height:22px;fill:currentColor}
-.pn-vid.pn-v-border-dark video{border:1px solid rgba(255,255,255,0.06);box-sizing:border-box}
 `;
 	document.head.appendChild(s);
 }
@@ -58,8 +46,8 @@ const PAUSE_ICON = '<svg viewBox="0 0 24 24"><path d="M6 4h4v16H6zm8 0h4v16h-4z"
  * @param {string} src - Audio URL
  * @param {boolean} [isMuted=false]
  * @param {boolean} [isLooping=false]
- * @param {boolean} [showControls=false] - (ignored — custom controls always shown)
- * @param {boolean} [isDark=false] - Dark mode
+ * @param {boolean} [showControls=false]
+ * @param {boolean} [isDark=false]
  * @returns {HTMLDivElement}
  */
 export function audioPlayerElement(src, isMuted = false, isLooping = false, showControls = false, isDark = false) {
@@ -76,14 +64,12 @@ export function audioPlayerElement(src, isMuted = false, isLooping = false, show
 	audio.style.display = "none";
 	player.appendChild(audio);
 
-	// Play button
 	const btn = document.createElement("button");
 	btn.className = "pn-a-btn";
 	btn.innerHTML = PLAY_ICON;
 	btn.setAttribute("aria-label", "Play audio");
 	player.appendChild(btn);
 
-	// Track + time
 	const mid = document.createElement("div");
 	mid.className = "pn-a-mid";
 
@@ -116,7 +102,6 @@ export function audioPlayerElement(src, isMuted = false, isLooping = false, show
 		fill.style.width = (audio.currentTime / audio.duration * 100) + "%";
 	});
 
-	// Seek
 	track.addEventListener("click", (e) => {
 		e.stopPropagation();
 		if (!audio.duration) return;
@@ -124,7 +109,6 @@ export function audioPlayerElement(src, isMuted = false, isLooping = false, show
 		audio.currentTime = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width)) * audio.duration;
 	});
 
-	// Play / Pause
 	btn.addEventListener("click", (e) => {
 		e.stopPropagation();
 		if (audio.paused) {
@@ -143,62 +127,4 @@ export function audioPlayerElement(src, isMuted = false, isLooping = false, show
 	});
 
 	return player;
-}
-
-/**
- * Themed video player with glass play-button overlay.
- * @param {string} src - Video URL
- * @param {boolean} [isMuted=true]
- * @param {boolean} [isDark=false]
- * @returns {HTMLDivElement}
- */
-export function videoPlayerElement(src, isMuted = true, isDark = false) {
-	_ensureMediaStyles();
-
-	const wrap = document.createElement("div");
-	wrap.className = "pn-vid" + (isDark ? " pn-v-border-dark" : "");
-
-	const video = document.createElement("video");
-	video.src = src;
-	video.muted = isMuted;
-	video.playsInline = true;
-	video.preload = "metadata";
-	wrap.appendChild(video);
-
-	// Overlay with play button
-	const overlay = document.createElement("div");
-	overlay.className = "pn-vid-ov";
-	const playBtn = document.createElement("button");
-	playBtn.className = "pn-v-btn " + (isDark ? "pn-v-dark" : "pn-v-light");
-	playBtn.innerHTML = PLAY_ICON;
-	playBtn.setAttribute("aria-label", "Play video");
-	overlay.appendChild(playBtn);
-	wrap.appendChild(overlay);
-
-	function toggle(e) {
-		e.stopPropagation();
-		if (video.paused) {
-			video.play();
-			video.controls = true;
-			overlay.classList.add("pn-v-hide");
-		} else {
-			video.pause();
-			video.controls = false;
-			overlay.classList.remove("pn-v-hide");
-		}
-	}
-
-	playBtn.addEventListener("click", toggle);
-	// Also allow clicking the video area when overlay is hidden
-	video.addEventListener("click", (e) => {
-		if (!overlay.classList.contains("pn-v-hide")) return;
-		toggle(e);
-	});
-
-	video.addEventListener("ended", () => {
-		video.controls = false;
-		overlay.classList.remove("pn-v-hide");
-	});
-
-	return wrap;
 }

@@ -31,15 +31,31 @@
  * @property {(action: string, data?: Object) => void} [onAction] - Callback when a button is clicked
  */
 
+import { audioPlayerElement, videoPlayerElement } from "./audio-player.js";
+
 const STYLE_ID = "__pinglet_html_ntfy_css__";
 const CONTAINER_ID = "__pinglet_html_ntfy_container__";
+const FONT_ID = "__pinglet_html_ntfy_font__";
 
 /* ─── Active tag map for dedup ─── */
 const _activeByTag = new Map();
+const _activeByPosition = new Map();
+const _queueByPosition = new Map();
+
+/* ─── Inject font once (Manrope, browser-cached) ─── */
+function _ensureFont() {
+  if (document.getElementById(FONT_ID)) return;
+  const link = document.createElement("link");
+  link.id = FONT_ID;
+  link.rel = "stylesheet";
+  link.href = "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap";
+  document.head.appendChild(link);
+}
 
 /* ─── Inject styles once ─── */
 function _ensureStyles() {
   if (document.getElementById(STYLE_ID)) return;
+  _ensureFont();
   const s = document.createElement("style");
   s.id = STYLE_ID;
   s.textContent = `
@@ -61,7 +77,7 @@ function _ensureStyles() {
   border:1px solid rgba(255,255,255,0.45);
   box-shadow:0 8px 32px rgba(0,0,0,0.12),0 2px 8px rgba(0,0,0,0.06),inset 0 1px 0 rgba(255,255,255,0.6);
   overflow:hidden;
-  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+  font-family:'Manrope',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
   color:#1a1a2e;
   transform:translateX(0);
   transition:opacity .3s ease,transform .3s ease;
@@ -141,6 +157,17 @@ function _ensureStyles() {
 /* ── Progress bar ── */
 .pn-progress{height:3px;background:rgba(0,0,0,0.04);border-radius:0 0 16px 16px;overflow:hidden}
 .pn-progress-bar{height:100%;background:rgba(0,0,0,0.12);border-radius:0 0 16px 16px;transition:width linear}
+
+/* ── Branding ── */
+.pn-branding{padding:4px 14px 10px;text-align:right;font-size:10.5px;color:#9ca3af;pointer-events:auto;line-height:1.3}
+.pn-branding a{color:#4da6ff;text-decoration:none;font-weight:500}
+.pn-branding a:hover{text-decoration:underline}
+
+/* ── Dark mode branding ── */
+@media(prefers-color-scheme:dark){
+  .pn-branding{color:#686890}
+  .pn-branding a{color:#6da8e0}
+}
 
 /* ── Mobile ── */
 @media(max-width:440px){
@@ -242,6 +269,8 @@ export function showHtmlNotification(opts = {}) {
     data = {},
     notification_id = "",
     notification_type = "0",
+    branding = null,
+    maxVisible = 3,
     onClick = null,
     onClose = null,
     onAction = null,
@@ -250,6 +279,15 @@ export function showHtmlNotification(opts = {}) {
   /* ── Tag dedup: replace existing ── */
   if (tag && _activeByTag.has(tag)) {
     _activeByTag.get(tag).close();
+  }
+
+  /* ── Stacking: queue if over maxVisible ── */
+  if (!_activeByPosition.has(position)) _activeByPosition.set(position, []);
+  if (!_queueByPosition.has(position)) _queueByPosition.set(position, []);
+  const _activeList = _activeByPosition.get(position);
+  if (_activeList.length >= maxVisible) {
+    _queueByPosition.get(position).push(opts);
+    return { close: () => {}, element: null };
   }
 
   const isRight = position.includes("right");
@@ -340,6 +378,7 @@ export function showHtmlNotification(opts = {}) {
   if (mediaType && mediaSrc) {
     const mediaWrap = document.createElement("div");
     mediaWrap.className = "pn-media";
+    const _isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
 
     if (mediaType === "image") {
       const img = document.createElement("img");
@@ -348,19 +387,9 @@ export function showHtmlNotification(opts = {}) {
       img.loading = "lazy";
       mediaWrap.appendChild(img);
     } else if (mediaType === "video") {
-      const vid = document.createElement("video");
-      vid.src = mediaSrc;
-      vid.controls = true;
-      vid.muted = true;
-      vid.playsInline = true;
-      vid.preload = "metadata";
-      mediaWrap.appendChild(vid);
+      mediaWrap.appendChild(videoPlayerElement(mediaSrc, true, _isDark));
     } else if (mediaType === "audio") {
-      const aud = document.createElement("audio");
-      aud.src = mediaSrc;
-      aud.controls = true;
-      aud.preload = "metadata";
-      mediaWrap.appendChild(aud);
+      mediaWrap.appendChild(audioPlayerElement(mediaSrc, false, false, false, _isDark));
     } else if (mediaType === "iframe") {
       const ifr = document.createElement("iframe");
       ifr.src = mediaSrc;
@@ -371,6 +400,14 @@ export function showHtmlNotification(opts = {}) {
     }
 
     card.appendChild(mediaWrap);
+  }
+
+  /* ── Branding footer ── */
+  if (branding && branding.show !== false) {
+    const brandEl = document.createElement("div");
+    brandEl.className = "pn-branding";
+    brandEl.innerHTML = branding.html || 'Notifications by <a href="https://pinglet.enjoys.in" target="_blank" rel="noopener noreferrer">Pinglet</a>';
+    card.appendChild(brandEl);
   }
 
   /* ── Action buttons (max 3) ── */
@@ -434,6 +471,13 @@ export function showHtmlNotification(opts = {}) {
     if (autoCloseTimer) clearTimeout(autoCloseTimer);
     if (tag) _activeByTag.delete(tag);
 
+    /* Remove from active stack */
+    const posActive = _activeByPosition.get(position);
+    if (posActive) {
+      const idx = posActive.indexOf(card);
+      if (idx !== -1) posActive.splice(idx, 1);
+    }
+
     /* Fire Pinglet SDK tracking event */
     _fireEvent(dismissReason, card, dismissReasonText);
 
@@ -441,6 +485,12 @@ export function showHtmlNotification(opts = {}) {
     card.addEventListener("animationend", () => {
       card.remove();
       if (container.children.length === 0) container.remove();
+      /* Dequeue next notification for this position */
+      const queue = _queueByPosition.get(position);
+      if (queue && queue.length > 0) {
+        const nextOpts = queue.shift();
+        showHtmlNotification(nextOpts);
+      }
     }, { once: true });
     if (typeof onClose === "function") onClose(data);
   }
@@ -490,6 +540,7 @@ export function showHtmlNotification(opts = {}) {
 
   /* ── Mount ── */
   container.appendChild(card);
+  _activeList.push(card);
   if (tag) _activeByTag.set(tag, { close: dismiss });
 
   /* Kick off auto-close */

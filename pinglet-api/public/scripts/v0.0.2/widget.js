@@ -15,6 +15,12 @@ export let brandingElement = null;
 
 /** @type {string|null} */
 let soundSrc = null;
+
+/** @type {Array<{contentEl: HTMLElement, globalConfig: GlobalConfig}>} */
+const _toastQueue = [];
+
+/** @type {number} */
+let _visibleToastCount = 0;
 /**
  * Initialize the widget by creating a sound player if the sound config is
  * enabled and has a valid src.
@@ -126,10 +132,25 @@ function createPingletToastContainer(branding) {
 
 /**
  * Renders a new toast notification with a given content element.
+ * Enforces maxVisible with a FIFO queue — excess toasts wait and auto-show on dismiss.
  * @param {HTMLElement} contentEl the content element of the toast notification
  * @param {GlobalConfig} globalConfig the global config object
  */
 export function renderToast(contentEl, globalConfig) {
+	const config = globalConfig.config;
+	const maxVisible = config.maxVisible || 3;
+
+	// Queue if at capacity
+	if (_visibleToastCount >= maxVisible) {
+		_toastQueue.push({ contentEl, globalConfig });
+		return { toastContainer, toastStack };
+	}
+
+	_showToast(contentEl, globalConfig);
+	return { toastContainer, toastStack };
+}
+
+function _showToast(contentEl, globalConfig) {
 	const config = globalConfig.config;
 
 	const { toastContainer, toastStack } = createPingletToastContainer(
@@ -143,26 +164,50 @@ export function renderToast(contentEl, globalConfig) {
 	contentEl.style.pointerEvents = "auto";
 
 	toastStack.appendChild(contentEl);
+	_visibleToastCount++;
+
 	let closeTimeout;
+	let remaining = config.duration || 5000;
+	let pausedAt = 0;
+
 	function startCloseTimer() {
 		if (config?.auto_dismiss) {
+			pausedAt = Date.now();
 			closeTimeout = setTimeout(() => {
-				// Check if the content element is still in the stack
 				if (toastStack.contains(contentEl)) {
 					prepareEventBody("dropped", contentEl, "user doesn't engaged");
-					removeToast(contentEl, config?.transition || "fade");
+					_dismissToast(contentEl, config?.transition || "fade");
 				}
-			}, config.duration || 5000);
+			}, remaining);
 		}
 	}
 
 	function stopCloseTimer() {
 		clearTimeout(closeTimeout);
+		if (pausedAt) {
+			const elapsed = Date.now() - pausedAt;
+			remaining = Math.max(remaining - elapsed, 200);
+		}
 	}
-	toastContainer.addEventListener("mouseenter", stopCloseTimer);
-	toastContainer.addEventListener("mouseleave", startCloseTimer);
+
+	// Per-toast hover pause (not whole container)
+	contentEl.addEventListener("mouseenter", stopCloseTimer);
+	contentEl.addEventListener("mouseleave", startCloseTimer);
 	startCloseTimer();
 	return { toastContainer, toastStack };
+}
+
+function _dismissToast(toast, transition) {
+	_visibleToastCount = Math.max(0, _visibleToastCount - 1);
+	removeToast(toast, transition);
+
+	// After exit animation, dequeue next
+	toast.addEventListener("transitionend", () => {
+		if (_toastQueue.length > 0) {
+			const next = _toastQueue.shift();
+			_showToast(next.contentEl, next.globalConfig);
+		}
+	}, { once: true });
 }
 
 /**
@@ -229,7 +274,7 @@ function removeToast(toast, type) {
 }
 window.addEventListener("pinglet:notificationClosed", (event) => {
 	prepareEventBody("closed", event.detail.contentEl, event.detail.reason);
-	removeToast(event.detail.contentEl, "fade");
+	_dismissToast(event.detail.contentEl, "fade");
 });
 /**
  * Prepares and sends a notification event with the given type and reason.

@@ -98,8 +98,8 @@ const overridesSchema = z
 		sound: z
 			.object({
 				play: z.boolean(),
-				src: z.string(),
-				volume: z.number(),
+				src: z.string().optional(),
+				volume: z.number().optional(),
 			})
 			.optional(),
 		duration: z.number().optional(),

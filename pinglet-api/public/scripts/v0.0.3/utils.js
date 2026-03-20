@@ -103,7 +103,7 @@ export function getScriptConfig() {
 		projectId: el?.dataset.projectId || "",
 		pingletId: el?.dataset.pingletId || "",
 		checksum: el?.dataset.checksum || "",
-		testimonials: el?.dataset.testimonials || "",
+		testimonials: el?.dataset.testimonials === "true",
 		templatesIds: el?.dataset.templates || "",
 	};
 }

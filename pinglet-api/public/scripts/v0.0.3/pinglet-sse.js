@@ -1,7 +1,10 @@
 /**
  * Pinglet SDK v0.0.3 — Main Entry Point
  * Initializes the SDK, loads project config, connects SSE,
- * and dispatches notifications by type (-1, 0, 1, 2).
+ * and dispatches notifications by type.
+ * Type 0: Glassmorphism HTML notification (also handles legacy type 2).
+ * Type 1: Custom template rendered inside glass container.
+ * Type -1: Browser push (handled by service worker).
  */
 
 /** @typedef {import('./types/index.js').NotificationData} NotificationData */
@@ -12,16 +15,12 @@ import { showPopup, handleButtonAction } from "./popup.js";
 import { loadAllTemplates } from "./templates.js";
 import { askNotificationPermission } from "./permission-dialog.js";
 import { showTestimonials } from "./testimonials.js";
-import { createVariant } from "./variant.js";
 import {
 	createBrandingElement,
 	initSound,
 	playSound,
-	prepareEventBody,
-	renderToast,
 } from "./toast.js";
 import { showHtmlNotification } from "./html-notification.js";
-import { createWrapper } from "./wrapper.js";
 import { injectFont, getScriptConfig } from "./utils.js";
 import "./sw.js";
 import "./events.js";
@@ -144,7 +143,7 @@ const {
 					templatesIds,
 				);
 				if (!allTemplates) {
-					showPopup("Configuration Error", "Failed to load templates for PingletWidget.");
+					allTemplates = {};
 				}
 			}
 
@@ -193,16 +192,17 @@ const {
 				const parsed = JSON.parse(e.data);
 				const notifData = parsed.data;
 
-				// Premium config overrides
-				if (globalConfig?.is_tff && notifData?.overrides) {
-					Object.assign(globalConfig.config, notifData.overrides);
-				}
+				// Per-notification overrides — merged on top of global config without mutating it
+				const overrides = parsed?.overrides || notifData?.overrides || {};
 
-				// ─── Type 1: Custom Template ───
+				// ─── Type -1: Browser Push (handled by SW) ───
+				if (parsed?.type === "-1") return;
+
+				// ─── Type 1: Custom Template in Glass Container ───
 				if (parsed?.type === "1" && parsed?.template_id && parsed?.custom_template) {
 					const template = globalConfig.templates[parsed.template_id];
 					if (!template || !template.is_active) {
-						console.warn("[Pinglet] Template not found or inactive:", parsed.template_id);
+						showPopup("Template Error", `Template "${parsed.template_id}" not found or inactive.`);
 						return;
 					}
 
@@ -213,32 +213,64 @@ const {
 							"globalConfig",
 							template.compiled_text,
 						);
-						const elements = compiledFn(
+						const result = compiledFn(
 							parsed.data || {},
 							template.config || {},
 							globalConfig,
 						);
 
-						if (elements instanceof HTMLElement) {
-							createWrapper([elements], {
-								side: globalConfig.config.position?.includes("left") ? "left" : "right",
-							});
-						} else if (Array.isArray(elements)) {
-							createWrapper(elements, {
-								side: globalConfig.config.position?.includes("left") ? "left" : "right",
-							});
+						// Normalize to a single HTMLElement
+						let customElement;
+						if (result instanceof HTMLElement) {
+							customElement = result;
+						} else if (Array.isArray(result)) {
+							customElement = document.createElement("div");
+							for (const el of result) { if (el instanceof Node) customElement.appendChild(el); }
+						} else {
+							console.error("[Pinglet] Template did not return an HTMLElement.");
+							return;
 						}
+
+						const cfg = Object.assign({}, globalConfig.config, overrides);
+						if (overrides.theme && globalConfig.config.theme) {
+							cfg.theme = Object.assign({}, globalConfig.config.theme, overrides.theme);
+						}
+
+						if (cfg.sound?.play) playSound();
+
+						showHtmlNotification({
+							customContent: customElement,
+							position: cfg.position || "top-right",
+							duration: cfg.auto_dismiss === false ? 0 : (cfg.duration || 6000),
+							requireInteraction: cfg.auto_dismiss === false,
+							domain: cfg.website || window.location.hostname,
+							theme: cfg.theme?.mode || "auto",
+							branding: cfg.branding || { show: true, html: 'Notifications by <a href="https://pinglet.enjoys.in" target="_blank" rel="noopener noreferrer">Pinglet</a>' },
+							maxVisible: cfg.maxVisible || 3,
+							notification_id: `${projectId}-${Date.now()}`,
+							notification_type: "1",
+						});
 					} catch (err) {
 						console.error("[Pinglet] Template render error:", err);
 					}
 					return;
 				}
 
-				// ─── Type 2: HTML Notification (Glassmorphism) ───
-				if (parsed?.type === "2") {
+				// ─── Type 0 / 2: Glassmorphism HTML Notification ───
+				if (parsed?.body) {
 					const body = parsed.body || {};
-					const cfg = globalConfig.config;
+					const cfg = Object.assign({}, globalConfig.config, overrides);
+					if (overrides.theme && globalConfig.config.theme) {
+						cfg.theme = Object.assign({}, globalConfig.config.theme, overrides.theme);
+					}
 					const theme = cfg.theme?.mode || "auto";
+
+					if (cfg.sound?.play) playSound();
+
+					const brandingHtml = cfg.branding?.show
+						? (cfg.branding?.html || "Notifications by Pinglet")
+						: "";
+					const brandingText = brandingHtml.replace(/<[^>]*>/g, "").trim();
 
 					showHtmlNotification({
 						title: body.title || "",
@@ -251,29 +283,17 @@ const {
 								: null,
 						url: body.url || "",
 						buttons: body.buttons || [],
+						tag: parsed.tag || "",
 						position: cfg.position || "top-right",
-						duration: cfg.duration || 6000,
-						requireInteraction: !cfg.auto_dismiss,
-						domain: cfg.website ? window.location.hostname : "",
+						duration: cfg.auto_dismiss === false ? 0 : (cfg.duration || 6000),
+						requireInteraction: cfg.auto_dismiss === false,
+						domain: brandingText || cfg.website || window.location.hostname,
 						theme,
-						branding: cfg.branding,
+						branding: cfg.branding || { show: true, html: 'Notifications by <a href="https://pinglet.enjoys.in" target="_blank" rel="noopener noreferrer">Pinglet</a>' },
 						maxVisible: cfg.maxVisible || 3,
 						notification_id: `${projectId}-${Date.now()}`,
-						notification_type: "2",
+						notification_type: parsed?.type || "0",
 					});
-					return;
-				}
-
-				// ─── Type -1: Browser Push (handled by SW) ───
-				if (parsed?.type === "-1") {
-					// Push notifications are handled by the service worker
-					return;
-				}
-
-				// ─── Type 0: Toast Notification (default) ───
-				if (parsed?.body) {
-					const variant = createVariant(parsed.body, globalConfig);
-					renderToast(variant, globalConfig);
 				}
 			};
 

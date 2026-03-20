@@ -28,7 +28,7 @@ import "./main.js";
 import { createWrapper } from "./wrapper-v2.js";
 
 const scriptEl = Array.from(document.scripts).find(
-  (s) => s.src.includes("pinglet-sse") && s.dataset.endpoint
+  (s) => s.src.includes("pinglet-sse") && s.dataset.endpoint,
 );
 const currentScript = scriptEl || document.currentScript;
 
@@ -49,10 +49,11 @@ const templatesIds = currentScript?.dataset.templates;
 
   injectFont();
   askNotificationPermissionFunction(endpoint, projectId, pingletId);
-  testimonials && ShowTestimonials();
+
+  testimonials == "true" && ShowTestimonials();
 
   const PingletWidget = {
-    version: "1.2.3",
+    version: "1.3.0",
     checksum: checksum.replace("sha384-", ""),
     /**
      * Initialize the PingletWidget.
@@ -69,7 +70,7 @@ const templatesIds = currentScript?.dataset.templates;
       console.log(
         "%cPingletWidget initialized successfully.",
         "color: #1e90ff; font-weight: bold;",
-        this.version
+        this.version,
       );
 
       if (!pingletId) {
@@ -87,7 +88,7 @@ const templatesIds = currentScript?.dataset.templates;
               src: "https://pinglet.enjoys.in/docs",
             },
           ],
-          "❌"
+          "❌",
         );
         return console.error("Missing pingletId.");
       }
@@ -106,11 +107,11 @@ const templatesIds = currentScript?.dataset.templates;
               src: "https://pinglet.enjoys.in/docs",
             },
           ],
-          "❌"
+          "❌",
         );
         return console.error("Missing pingletId.");
       }
-      if (this.version !== "1.2.3") {
+      if (this.version !== "1.3.0") {
         _showPopup(
           "Pinglet Unsupported Version",
           `PingletWidget version ${this.version} is not supported. Please update to the latest version.`,
@@ -121,7 +122,7 @@ const templatesIds = currentScript?.dataset.templates;
               src: "https://pinglet.enjoys.in/docs",
             },
           ],
-          "⚠️"
+          "⚠️",
         );
         console.warn("Unsupported version detected.");
         return;
@@ -146,7 +147,7 @@ const templatesIds = currentScript?.dataset.templates;
           },
 
           credentials: "omit",
-        }
+        },
       );
       /** @type {{ result: GlobalConfig; message: string; success: boolean; }} */
       const data = await response.json();
@@ -168,7 +169,7 @@ const templatesIds = currentScript?.dataset.templates;
               src: "https://pinglet.enjoys.in/docs",
             },
           ],
-          "❌"
+          "❌",
         );
         return console.error("Failed to load configuration for PingletWidget.");
       }
@@ -182,13 +183,10 @@ const templatesIds = currentScript?.dataset.templates;
           pingletId,
           this.checksum,
           this.version,
-          templatesIds
+          templatesIds,
         );
         if (!allTemplates) {
-          _showPopup(
-            "Configuration Error",
-            "Failed to load templates for PingletWidget."
-          );
+          allTemplates = {};
         }
       }
 
@@ -212,7 +210,7 @@ const templatesIds = currentScript?.dataset.templates;
               is_default: true,
             },
           },
-          allTemplates
+          allTemplates,
         ),
         style: Object.assign({}, defaultStyles, data.result.template?.config),
         config: mergedConfig,
@@ -221,7 +219,7 @@ const templatesIds = currentScript?.dataset.templates;
       initWidget(globalConfig);
       const socket = new EventSource(
         `${endpoint}/sse?projectId=${projectId}&pingletId=${pingletId}`,
-        { withCredentials: false }
+        { withCredentials: false },
       );
       /**
        * Handle new messages from the server.
@@ -235,13 +233,10 @@ const templatesIds = currentScript?.dataset.templates;
         const parsed = JSON.parse(e.data);
 
         const data = parsed.data;
-
-        globalConfig?.is_tff &&
-          Object.assign(
-            globalConfig.config,
-            globalConfig.config,
-            data?.overrides ?? {}
-          );
+        const overrides = parsed?.overrides || data?.overrides;
+        if (globalConfig?.is_tff && overrides) {
+          Object.assign(globalConfig.config, overrides);
+        }
 
         // User created Templates will load here and we parse the data
         if (
@@ -253,12 +248,16 @@ const templatesIds = currentScript?.dataset.templates;
           /** @type {import("./types/index.js").TemplateData} */
           const template = globalConfig.templates[parsed.template_id];
           if (!template || template.compiled_text.length === 0) {
-            return console.error("Template not found");
+            _showPopup(
+              "Template Error",
+              `Template "${parsed.template_id}" not found or empty.`,
+            );
+            return;
           }
           let element;
           try {
             const func = new Function(
-              `return ${template.compiled_text?.trim()}`
+              `return ${template.compiled_text?.trim()}`,
             )();
             element = func(parsed?.custom_template);
           } catch (e) {
@@ -273,7 +272,7 @@ const templatesIds = currentScript?.dataset.templates;
           }
           wrapper.setAttribute(
             "data-notification-id",
-            `${parsed?.project_id || projectId}-${Date.now()}`
+            `${parsed?.project_id || projectId}-${Date.now()}`,
           );
           wrapper.setAttribute("data-notification-type", parsed?.type || "1");
           wrapper.addEventListener("click", () => {
@@ -290,7 +289,7 @@ const templatesIds = currentScript?.dataset.templates;
           const variantEl = createVariant(parsed.body, globalConfig);
           variantEl.setAttribute(
             "data-notification-id",
-            `${parsed?.project_id || projectId}-${Date.now()}`
+            `${parsed?.project_id || projectId}-${Date.now()}`,
           );
           variantEl.setAttribute("data-notification-type", parsed?.type || "0");
           const { toastContainer } = renderToast(variantEl, globalConfig);
@@ -309,18 +308,22 @@ const templatesIds = currentScript?.dataset.templates;
 
           // Resolve theme mode
           const themeMode = cfg.theme?.mode || "auto";
-          const prefersDark = themeMode === "dark" || (
-            themeMode === "auto" && window.matchMedia?.("(prefers-color-scheme: dark)").matches
-          );
+          const prefersDark =
+            themeMode === "dark" ||
+            (themeMode === "auto" &&
+              window.matchMedia?.("(prefers-color-scheme: dark)").matches);
 
           if (cfg.sound?.play) playSound();
 
-          // Map position from globalConfig (bottom-left → bottom-left)
-          const position = cfg.position || "top-right";
+          // Map position — type 2 defaults top-right to avoid overlap with type 0 (bottom-left)
+          const position =
+            cfg.position === "bottom-left"
+              ? "top-right"
+              : cfg.position || "top-right";
 
           // Build branding text
           const brandingHtml = cfg.branding?.show
-            ? (cfg.branding?.html || "Notifications by Pinglet")
+            ? cfg.branding?.html || "Notifications by Pinglet"
             : "";
           // Strip any HTML tags from branding for plain-text badge display
           const brandingText = brandingHtml.replace(/<[^>]*>/g, "").trim();
@@ -329,16 +332,18 @@ const templatesIds = currentScript?.dataset.templates;
             title: parsed.body.title || "",
             body: parsed.body.description || "",
             icon: parsed.body.icon || parsed.body.logo || "",
-            image: parsed.body.media?.type === "image" ? parsed.body.media.src : "",
-            media: parsed.body.media?.type && parsed.body.media?.type !== "image"
-              ? { type: parsed.body.media.type, src: parsed.body.media.src }
-              : null,
+            image:
+              parsed.body.media?.type === "image" ? parsed.body.media.src : "",
+            media:
+              parsed.body.media?.type && parsed.body.media?.type !== "image"
+                ? { type: parsed.body.media.type, src: parsed.body.media.src }
+                : null,
             url: parsed.body.url || "",
             buttons: parsed.body.buttons || [],
-            domain: cfg.website || window.location.hostname,
+            domain: brandingText || cfg.website || window.location.hostname,
             tag: parsed.tag || "",
             position,
-            duration: cfg.auto_dismiss ? (cfg.duration || 6000) : 0,
+            duration: cfg.auto_dismiss ? cfg.duration || 6000 : 0,
             requireInteraction: !cfg.auto_dismiss,
             silent: false,
             dir: "ltr",
@@ -346,14 +351,22 @@ const templatesIds = currentScript?.dataset.templates;
             data: parsed.data || {},
             notification_id: notificationId,
             notification_type: "2",
+            branding: cfg.branding || {
+              show: true,
+              html: 'Notifications by <a href="https://pinglet.enjoys.in" target="_blank" rel="noopener noreferrer">Pinglet</a>',
+            },
+            maxVisible: cfg.maxVisible || 3,
             onClick: (data) => {
               if (parsed.body.url) {
                 window.open(parsed.body.url, "_blank", "noopener,noreferrer");
               }
             },
             onAction: (action, data) => {
-              const btn = (parsed.body.buttons || []).find(b => b.action === action);
-              if (btn?.src) window.open(btn.src, "_blank", "noopener,noreferrer");
+              const btn = (parsed.body.buttons || []).find(
+                (b) => b.action === action,
+              );
+              if (btn?.src)
+                window.open(btn.src, "_blank", "noopener,noreferrer");
             },
           });
           return;
@@ -364,7 +377,7 @@ const templatesIds = currentScript?.dataset.templates;
           TriggerBrowserNotificationApi(
             parsed.body?.title || "Notification",
             parsed.body?.description || "",
-            parsed.body?.icon || ""
+            parsed.body?.icon || "",
           );
         }
         // trigger browser notification

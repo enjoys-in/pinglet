@@ -32,6 +32,7 @@ export interface PlanLimits {
 		integrations: boolean;
 		integrations_limited: boolean;
 		priority_support: boolean;
+		media_audio_video: boolean;
 	};
 }
 
@@ -54,6 +55,7 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
 			integrations: false,
 			integrations_limited: false,
 			priority_support: false,
+			media_audio_video: false,
 		},
 	},
 	[PlanType.STARTER]: {
@@ -74,6 +76,7 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
 			integrations: true,
 			integrations_limited: true,
 			priority_support: false,
+			media_audio_video: false,
 		},
 	},
 	[PlanType.PROFESSIONAL]: {
@@ -94,6 +97,7 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
 			integrations: true,
 			integrations_limited: true,
 			priority_support: true,
+			media_audio_video: true,
 		},
 	},
 	[PlanType.ENTERPRISE]: {
@@ -114,6 +118,7 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
 			integrations: true,
 			integrations_limited: false,
 			priority_support: true,
+			media_audio_video: true,
 		},
 	},
 };

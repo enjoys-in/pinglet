@@ -5,6 +5,7 @@ import {
 	DeleteDateColumn,
 	Entity,
 	Index,
+	JoinColumn,
 	ManyToOne,
 	OneToMany,
 	PrimaryGeneratedColumn,
@@ -34,6 +35,7 @@ export class WebsiteEntity {
 		() => UserEntity,
 		(user) => user.websites,
 	)
+	@JoinColumn({ name: "user_id" })
 	user!: Relation<UserEntity>;
 
 	@Column({ type: "boolean", default: true })

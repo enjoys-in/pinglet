@@ -1,6 +1,8 @@
 import { __CONFIG__ } from "@/app/config";
+import { SessionHandler } from "@/app/common/Session";
 import { HttpException } from "@enjoys/exception";
 import { type Request, type Response, Router } from "express";
+import fileUpload from "express-fileupload";
 import { JwtAuth } from "../middlewares/auth.Middleware";
 import ApiRoutes from "./api";
 import ProtectedRoutes from "./api/protected.route";
@@ -14,6 +16,8 @@ router.use(`/api/${__CONFIG__.APP.API_VERSION}`, ApiRoutes);
 router.use(
 	`/api/${__CONFIG__.APP.API_VERSION}`,
 	JwtAuth.validateUser,
+	SessionHandler.forRoot(),
+	fileUpload({ tempFileDir: "./" }),
 	ProtectedRoutes,
 );
 

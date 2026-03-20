@@ -9,6 +9,7 @@ import { UserEntity } from "@/factory/entities/users.entity";
 import { WebhookEntity } from "@/factory/entities/webhook.entity";
 import { WidgetEntity } from "@/factory/entities/widget.entity";
 import { InjectRepository } from "@/factory/typeorm";
+import { Cache } from "@/utils/services/redis/cacheService";
 import type { Repository } from "typeorm";
 
 class PlanService {
@@ -91,7 +92,8 @@ class PlanService {
 			.createQueryBuilder("n")
 			.innerJoin("n.project", "project")
 			.innerJoin("project.website", "website")
-			.where("website.user_id = :userId", { userId })
+			.innerJoin("website.user", "ws_user")
+			.where("ws_user.id = :userId", { userId })
 			.select("COALESCE(SUM(n.total_sent), 0)", "total")
 			.getRawOne();
 
@@ -100,6 +102,74 @@ class PlanService {
 			allowed: current < limits.max_notifications_per_month,
 			current,
 			max: limits.max_notifications_per_month,
+		};
+	}
+
+	/**
+	 * Single-shot check for send permissions: quota + feature flags.
+	 * Fetches the plan type ONCE and caches the monthly count in Redis (60s TTL).
+	 * Eliminates redundant DB round-trips for repeated hasFeature / canSendNotification calls.
+	 */
+	async checkSendPermissions(
+		userId: number,
+		features: (keyof PlanLimits["features"])[],
+	): Promise<{
+		quota: { allowed: boolean; current: number; max: number };
+		features: Record<string, boolean>;
+	}> {
+		// 1 DB call for plan type
+		const planType = await this.getUserPlanType(userId);
+		const limits = this.getLimitsForPlan(planType);
+
+		// Feature flags — purely in-memory lookup, zero DB calls
+		const featureResults: Record<string, boolean> = {};
+		for (const f of features) featureResults[f] = limits.features[f] ?? false;
+
+		// Quota check with Redis cache
+		if (limits.max_notifications_per_month === -1) {
+			return { quota: { allowed: true, current: 0, max: -1 }, features: featureResults };
+		}
+
+		const month = new Date().toISOString().slice(0, 7);
+		const cacheKey = `notif-quota:${userId}:${month}`;
+		let current: number;
+
+		try {
+			const cached = await Cache.cache.get(cacheKey);
+			if (cached !== null) {
+				current = Number.parseInt(cached, 10);
+			} else {
+				const result = await this.notificationRepo
+					.createQueryBuilder("n")
+					.innerJoin("n.project", "project")
+					.innerJoin("project.website", "website")
+					.innerJoin("website.user", "ws_user")
+					.where("ws_user.id = :userId", { userId })
+					.select("COALESCE(SUM(n.total_sent), 0)", "total")
+					.getRawOne();
+				current = Number.parseInt(result?.total ?? "0", 10);
+				await Cache.cache.set(cacheKey, String(current), { EX: 60 });
+			}
+		} catch {
+			// Redis down — fall through to DB
+			const result = await this.notificationRepo
+				.createQueryBuilder("n")
+				.innerJoin("n.project", "project")
+				.innerJoin("project.website", "website")
+				.innerJoin("website.user", "ws_user")
+				.where("ws_user.id = :userId", { userId })
+				.select("COALESCE(SUM(n.total_sent), 0)", "total")
+				.getRawOne();
+			current = Number.parseInt(result?.total ?? "0", 10);
+		}
+
+		return {
+			quota: {
+				allowed: current < limits.max_notifications_per_month,
+				current,
+				max: limits.max_notifications_per_month,
+			},
+			features: featureResults,
 		};
 	}
 

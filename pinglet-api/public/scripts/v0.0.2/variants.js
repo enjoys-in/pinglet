@@ -5,7 +5,7 @@
 /** @typedef {import('./types/index.js').NotificationDataBody} NotificationDataBody */
 /** @typedef {import('./types/index.js').MediaData} MediaData */
 
-import { audioPlayerElement } from "./audio-player.js";
+import { audioPlayerElement, videoPlayerElement } from "./audio-player.js";
 import {
 	_btnActions,
 	defaultConfig,
@@ -181,6 +181,7 @@ export function createVariant(data, config) {
 			data.media,
 			globalStyle.media,
 			globalStyle.controls,
+			isDark,
 		);
 		mediaEl.style.marginBottom = "12px";
 	}
@@ -326,7 +327,7 @@ export function createVariant(data, config) {
  * @param {MediaControls} controls - Controls object
  * @returns {HTMLElement | null} - Media element
  */
-function createMediaElement(media, style, controls) {
+function createMediaElement(media, style, controls, isDark = false) {
 	switch (media.type) {
 		case "image": {
 			const img = document.createElement("img");
@@ -335,24 +336,11 @@ function createMediaElement(media, style, controls) {
 			return img;
 		}
 		case "video": {
-			const video = document.createElement("video");
-			video.src = media.src;
-			video.autoplay =
-				controls?.video?.autoplay ||
-				defaultStyles.controls.video.autoplay ||
-				false;
-			video.muted =
-				controls?.video?.muted || defaultStyles.controls.video.muted || false;
-			video.loop =
-				controls?.video?.loop || defaultStyles.controls.video.loop || false;
-			video.controls =
-				controls?.video?.controls ||
-				defaultStyles.controls.video.controls ||
-				false;
-			video.style = style?.video || defaultStyles.media.video;
-			Object.assign(video.style, style?.video || defaultStyles.media.video);
-
-			return video;
+			return videoPlayerElement(
+				media.src,
+				controls?.video?.muted || defaultStyles.controls.video.muted || true,
+				isDark,
+			);
 		}
 		case "audio": {
 			return audioPlayerElement(
@@ -362,6 +350,7 @@ function createMediaElement(media, style, controls) {
 				controls?.audio?.controls ||
 					defaultStyles.controls?.audio?.controls ||
 					false,
+				isDark,
 			);
 		}
 

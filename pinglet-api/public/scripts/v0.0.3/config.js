@@ -108,7 +108,7 @@ export const defaultStyles = {
 };
 
 /** SDK version — must match backend expected version */
-export const SDK_VERSION = "1.2.3";
+export const SDK_VERSION = "1.3.0";
 
 /** Font family used across all Pinglet UI */
 export const FONT_FAMILY = "'Manrope', sans-serif";

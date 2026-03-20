@@ -26,6 +26,7 @@ export let brandingElement = null;
 
 /**
  * Initialize sound player from global config.
+ * Waits for the source to be loadable before marking ready.
  * @param {GlobalConfig} globalConfig
  * @returns {HTMLAudioElement|undefined}
  */
@@ -33,19 +34,27 @@ export function initSound(globalConfig) {
 	if (soundPlayer) return soundPlayer;
 	const sound = globalConfig.config.sound;
 	if (sound?.play && sound.src) {
-		soundPlayer = new Audio(sound.src);
-		soundPlayer.volume = sound.volume ?? 0.5;
+		const audio = new Audio();
+		audio.volume = sound.volume ?? 0.5;
+		audio.preload = "auto";
+
+		// Mark ready only when the browser can actually play the source
+		audio.addEventListener("canplaythrough", () => { soundPlayer = audio; }, { once: true });
+		audio.addEventListener("error", () => { soundPlayer = null; }, { once: true });
+
+		audio.src = sound.src;
 	}
 }
 
 /**
  * Play the notification sound.
+ * Safely guards against unsupported / unloaded sources.
  */
 export function playSound() {
-	if (soundPlayer) {
-		soundPlayer.currentTime = 0;
-		soundPlayer.play().catch(() => {});
-	}
+	if (!soundPlayer) return;
+	if (soundPlayer.readyState < HTMLMediaElement.HAVE_ENOUGH_DATA) return;
+	soundPlayer.currentTime = 0;
+	soundPlayer.play().catch(() => {});
 }
 
 // ─── Branding ───

@@ -1,6 +1,70 @@
 import { _showPopup } from "./default.js";
 import { subscribeUser } from "./subcription-registeration.js";
 
+const PERM_STYLE_ID = "__pinglet_v2_perm_css__";
+const PERM_FONT_ID = "__pinglet_v2_perm_font__";
+
+function _injectPermStyles() {
+	if (document.getElementById(PERM_STYLE_ID)) return;
+
+	if (!document.getElementById(PERM_FONT_ID)) {
+		const link = document.createElement("link");
+		link.id = PERM_FONT_ID;
+		link.rel = "stylesheet";
+		link.href = "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap";
+		document.head.appendChild(link);
+	}
+
+	const s = document.createElement("style");
+	s.id = PERM_STYLE_ID;
+	s.textContent = `
+.pgl-v2-perm{position:fixed;bottom:24px;right:24px;width:380px;z-index:2147483646;border-radius:16px;overflow:hidden;
+  background:rgba(255,255,255,0.82);backdrop-filter:blur(28px) saturate(1.5);-webkit-backdrop-filter:blur(28px) saturate(1.5);
+  border:1px solid rgba(255,255,255,0.6);box-shadow:0 20px 60px rgba(0,0,0,0.10),0 2px 12px rgba(0,0,0,0.05);
+  font-family:'Manrope',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#1c1c2e;
+  opacity:0;transform:translateX(420px);animation:pgl-v2-in .6s cubic-bezier(.22,1,.36,1) 1s forwards}
+.pgl-v2-perm.pgl-v2-dk{background:rgba(18,18,32,0.88);border:1px solid rgba(255,255,255,0.08);
+  box-shadow:0 20px 60px rgba(0,0,0,0.4),0 2px 12px rgba(0,0,0,0.2);color:#e8e8f0}
+@keyframes pgl-v2-in{to{opacity:1;transform:translateX(0)}}
+@keyframes pgl-v2-out{to{opacity:0;transform:translateX(420px)}}
+@keyframes pgl-v2-pulse{0%,100%{box-shadow:0 0 16px rgba(102,126,234,0.25)}50%{box-shadow:0 0 28px rgba(102,126,234,0.45)}}
+.pgl-v2-accent{height:3px;background:linear-gradient(90deg,#667eea,#764ba2,#ec4899)}
+.pgl-v2-inner{padding:20px 24px 20px}
+.pgl-v2-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.pgl-v2-site{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;color:#6b7280}
+.pgl-v2-dk .pgl-v2-site{color:#8b8ba0}
+.pgl-v2-dot{width:7px;height:7px;border-radius:50%;background:#22c55e;flex-shrink:0}
+.pgl-v2-x{width:28px;height:28px;border:none;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,0.04);color:#a1a1aa;transition:all .2s}
+.pgl-v2-x:hover{background:rgba(0,0,0,0.08);color:#52525b}
+.pgl-v2-dk .pgl-v2-x{background:rgba(255,255,255,0.06);color:#6b6b80}
+.pgl-v2-dk .pgl-v2-x:hover{background:rgba(255,255,255,0.12);color:#a5a5bf}
+.pgl-v2-x svg{width:13px;height:13px}
+.pgl-v2-bell{width:48px;height:48px;border-radius:12px;margin-bottom:16px;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);animation:pgl-v2-pulse 2s infinite}
+.pgl-v2-title{font-size:18px;font-weight:700;margin:0 0 8px;letter-spacing:-0.2px;line-height:1.35}
+.pgl-v2-desc{font-size:13.5px;color:#6b7280;line-height:1.55;margin:0 0 20px;font-weight:400}
+.pgl-v2-dk .pgl-v2-desc{color:#8b8ba0}
+.pgl-v2-btns{display:flex;gap:8px}
+.pgl-v2-btn{flex:1;padding:10px 16px;border-radius:10px;font-family:'Manrope',sans-serif;font-size:14px;font-weight:600;
+  cursor:pointer;transition:all .2s;border:none;letter-spacing:0.1px}
+.pgl-v2-deny{background:rgba(0,0,0,0.04);color:#6b7280;border:1px solid rgba(0,0,0,0.06)}
+.pgl-v2-deny:hover{background:rgba(0,0,0,0.08)}
+.pgl-v2-dk .pgl-v2-deny{background:rgba(255,255,255,0.06);color:#8b8ba0;border-color:rgba(255,255,255,0.08)}
+.pgl-v2-dk .pgl-v2-deny:hover{background:rgba(255,255,255,0.10)}
+.pgl-v2-allow{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;
+  box-shadow:0 4px 14px rgba(102,126,234,0.3)}
+.pgl-v2-allow:hover{box-shadow:0 6px 20px rgba(102,126,234,0.4);transform:translateY(-1px)}
+.pgl-v2-dk .pgl-v2-allow{box-shadow:0 4px 14px rgba(102,126,234,0.2)}
+.pgl-v2-trust{display:flex;align-items:center;justify-content:center;gap:5px;margin-top:12px;
+  font-size:11px;color:#9ca3af;font-weight:400}
+.pgl-v2-dk .pgl-v2-trust{color:#5c5c72}
+.pgl-v2-trust svg{width:11px;height:11px;opacity:0.7}
+@media(max-width:480px){.pgl-v2-perm{width:calc(100vw - 32px);right:16px;bottom:16px}}
+`;
+	document.head.appendChild(s);
+}
+
 /**
  * Create a notification permission dialog to ask users to allow notifications.
  * @param {{title: string, description: string, site: string, onAllow: () => void, onDeny: () => void}} options
@@ -15,188 +79,91 @@ export function createNotificationPermissionDialog(options = {}) {
 		onDeny = () => {},
 	} = options;
 
+	_injectPermStyles();
+
+	const dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+
 	const dialog = document.createElement("div");
-	dialog.className = "notification-dialog";
-	Object.assign(dialog.style, {
-		position: "fixed",
-		bottom: "24px",
-		right: "24px",
-		width: "380px",
-		background: "#fff",
-		borderRadius: "16px",
-		boxShadow:
-			"0 20px 40px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255,255,255,0.1)",
-		zIndex: "1000",
-		overflow: "hidden",
-		transform: "translateX(420px)",
-		animation: "slideIn 0.6s ease-out 1s forwards",
-		fontFamily:
-			"-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-	});
+	dialog.className = "pgl-v2-perm" + (dark ? " pgl-v2-dk" : "");
 
-	// Create animation
-	const style = document.createElement("style");
-	style.textContent = `
-        @keyframes slideIn { to { transform: translateX(0); } }
-        @keyframes pulse {
-            0%, 100% { box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); }
-            50% { box-shadow: 0 4px 20px rgba(102, 126, 234, 0.5); }
-        }
-        @media (max-width: 480px) {
-            .notification-dialog {
-                width: calc(100vw - 32px) !important;
-                right: 16px !important;
-                bottom: 16px !important;
-                transform: translateY(420px) !important;
-            }
-            @keyframes slideIn { to { transform: translateY(0); } }
-        }
-    `;
-	document.head.appendChild(style);
+	// Accent bar
+	const accent = document.createElement("div");
+	accent.className = "pgl-v2-accent";
+	dialog.appendChild(accent);
 
-	// Header
-	const header = document.createElement("div");
-	header.style.display = "flex";
-	header.style.justifyContent = "space-between";
-	header.style.padding = "20px 20px 0 20px";
+	// Inner
+	const inner = document.createElement("div");
+	inner.className = "pgl-v2-inner";
 
-	const siteInfo = document.createElement("div");
-	siteInfo.style.display = "flex";
-	siteInfo.style.alignItems = "center";
-	siteInfo.style.gap = "8px";
-	siteInfo.style.color = "#6b7280";
-	siteInfo.style.fontSize = "14px";
-	siteInfo.style.fontWeight = "500";
+	// Top: site + close
+	const topRow = document.createElement("div");
+	topRow.className = "pgl-v2-top";
 
-	const siteIcon = document.createElement("div");
-	siteIcon.style.width = "16px";
-	siteIcon.style.height = "16px";
-	siteIcon.style.borderRadius = "4px";
-	siteIcon.style.background =
-		"linear-gradient(135deg, #667eea 0%, #764ba2 100%)";
-	siteIcon.style.display = "flex";
-	siteIcon.style.alignItems = "center";
-	siteIcon.style.justifyContent = "center";
-	siteIcon.innerHTML = `<svg viewBox="0 0 16 16" fill="white" width="10" height="10"><path d="M8 0C3.58 0 0 3.58 0 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8z"/></svg>`;
-
-	const siteName = document.createElement("span");
-	siteName.textContent = site;
-
-	siteInfo.append(siteIcon, siteName);
+	const siteEl = document.createElement("div");
+	siteEl.className = "pgl-v2-site";
+	siteEl.innerHTML = '<span class="pgl-v2-dot"></span><span>' + site + '</span>';
 
 	const closeBtn = document.createElement("button");
-	closeBtn.innerHTML = `<svg viewBox="0 0 16 16" fill="currentColor" width="12" height="12">
-        <path d="M12.854 4.854a.5.5 0 0 0-.708-.708L8 8.293 3.854 4.146a.5.5 0 1 0-.708.708L7.293 9l-4.147 4.146a.5.5 0 0 0 .708.708L8 9.707l4.146 4.147a.5.5 0 0 0 .708-.708L8.707 9l4.147-4.146z"/>
-    </svg>`;
-	Object.assign(closeBtn.style, {
-		width: "24px",
-		height: "24px",
-		background: "#f3f4f6",
-		border: "none",
-		borderRadius: "6px",
-		cursor: "pointer",
-		display: "flex",
-		alignItems: "center",
-		justifyContent: "center",
-		color: "#6b7280",
-	});
-	closeBtn.onclick = () => dialog.remove();
+	closeBtn.className = "pgl-v2-x";
+	closeBtn.setAttribute("aria-label", "Close");
+	closeBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>';
+	closeBtn.onclick = () => {
+		dialog.style.animation = "pgl-v2-out .3s ease forwards";
+		dialog.addEventListener("animationend", () => dialog.remove(), { once: true });
+	};
+	topRow.append(siteEl, closeBtn);
+	inner.appendChild(topRow);
 
-	header.append(siteInfo, closeBtn);
+	// Bell icon
+	const bell = document.createElement("div");
+	bell.className = "pgl-v2-bell";
+	bell.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="24" height="24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>';
+	inner.appendChild(bell);
 
-	// Content
-	const content = document.createElement("div");
-	content.style.padding = "16px 24px 24px 24px";
-
-	const icon = document.createElement("div");
-	icon.style.width = "48px";
-	icon.style.height = "48px";
-	icon.style.borderRadius = "12px";
-	icon.style.marginBottom = "16px";
-	icon.style.animation = "pulse 2s infinite";
-	icon.style.background = "linear-gradient(135deg, #667eea 0%, #764ba2 100%)";
-	icon.style.display = "flex";
-	icon.style.alignItems = "center";
-	icon.style.justifyContent = "center";
-	icon.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="24" height="24">
-        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-    </svg>`;
-
-	const titleEl = document.createElement("h3");
+	// Title
+	const titleEl = document.createElement("div");
+	titleEl.className = "pgl-v2-title";
 	titleEl.textContent = title;
-	Object.assign(titleEl.style, {
-		fontSize: "18px",
-		fontWeight: "600",
-		color: "#111827",
-		marginBottom: "8px",
-	});
+	inner.appendChild(titleEl);
 
-	const descEl = document.createElement("p");
+	// Description
+	const descEl = document.createElement("div");
+	descEl.className = "pgl-v2-desc";
 	descEl.textContent = description;
-	Object.assign(descEl.style, {
-		fontSize: "14px",
-		color: "#6b7280",
-		lineHeight: "1.5",
-		marginBottom: "20px",
-	});
+	inner.appendChild(descEl);
 
 	// Buttons
-	const actions = document.createElement("div");
-	actions.style.display = "flex";
-	actions.style.gap = "8px";
+	const btns = document.createElement("div");
+	btns.className = "pgl-v2-btns";
 
 	const btnNo = document.createElement("button");
+	btnNo.className = "pgl-v2-btn pgl-v2-deny";
 	btnNo.textContent = "Not now";
-	Object.assign(btnNo.style, {
-		flex: 1,
-		padding: "10px 16px",
-		borderRadius: "8px",
-		fontSize: "14px",
-		fontWeight: "500",
-		border: "1px solid #e5e7eb",
-		background: "#f9fafb",
-		color: "#6b7280",
-		cursor: "pointer",
-	});
 	btnNo.onclick = () => {
 		onDeny();
-		dialog.remove();
+		dialog.style.animation = "pgl-v2-out .3s ease forwards";
+		dialog.addEventListener("animationend", () => dialog.remove(), { once: true });
 	};
 
 	const btnYes = document.createElement("button");
+	btnYes.className = "pgl-v2-btn pgl-v2-allow";
 	btnYes.textContent = "Allow notifications";
-	Object.assign(btnYes.style, {
-		flex: 1,
-		padding: "10px 16px",
-		borderRadius: "8px",
-		fontSize: "14px",
-		fontWeight: "500",
-		border: "none",
-		background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-		color: "#fff",
-		boxShadow: "0 2px 8px rgba(102, 126, 234, 0.3)",
-		cursor: "pointer",
-	});
 	btnYes.onclick = () => {
 		onAllow();
-		dialog.remove();
+		dialog.style.animation = "pgl-v2-out .3s ease forwards";
+		dialog.addEventListener("animationend", () => dialog.remove(), { once: true });
 	};
 
-	actions.append(btnNo, btnYes);
+	btns.append(btnNo, btnYes);
+	inner.appendChild(btns);
 
-	// Trust text
+	// Trust footer
 	const trust = document.createElement("div");
-	trust.style.marginTop = "12px";
-	trust.style.display = "flex";
-	trust.style.alignItems = "center";
-	trust.style.justifyContent = "center";
-	trust.style.gap = "6px";
-	trust.style.color = "#9ca3af";
-	trust.style.fontSize = "12px";
-	trust.innerHTML = `<svg viewBox="0 0 16 16" fill="currentColor" width="12" height="12"><path d="M8 0c-.69 0-1.843.265-2.928.56-1.11.3-2.229.655-2.887.87a1.54 1.54 0 0 0-1.044 1.262c-.596 4.477.787 7.795 2.465 9.99a11.777 11.777 0 0 0 2.517 2.453c.386.273.744.482 1.048.625.28.132.581.24.829.24s.548-.108.829-.24a7.159 7.159 0 0 0 1.048-.625 11.775 11.775 0 0 0 2.517-2.453c1.678-2.195 3.061-5.513 2.465-9.99a1.541 1.541 0 0 0-1.044-1.263 62.467 62.467 0 0 0-2.887-.87C9.843.266 8.69 0 8 0z"/></svg><span>Secure & private • Unsubscribe anytime</span>`;
+	trust.className = "pgl-v2-trust";
+	trust.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg><span>Secure & private \u2022 Unsubscribe anytime</span>';
+	inner.appendChild(trust);
 
-	content.append(icon, titleEl, descEl, actions, trust);
-	dialog.append(header, content);
+	dialog.appendChild(inner);
 	document.body.appendChild(dialog);
 }
 

@@ -3,7 +3,6 @@ import { join } from "node:path";
 import { useHttpsRedirection } from "@/app/common/HttpsRedirection";
 import { Interceptor } from "@/app/common/Interceptors";
 import { RouteResolver } from "@/app/common/RouteResolver";
-import { SessionHandler } from "@/app/common/Session";
 import { Logging } from "@/logs";
 import { AppMiddlewares } from "@/middlewares/app.middleware";
 import AppRoutes from "@/routes/web";
@@ -18,7 +17,6 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import { Cors } from "@/app/common/Cors";
 import express, { type Application } from "express";
-import fileUpload from "express-fileupload";
 import helmet from "helmet";
 import morgan from "morgan";
 import { Modifiers } from "./app/common/Modifiers";
@@ -66,8 +64,6 @@ class AppServer {
 		AppServer.App.use(bodyParser.json({ limit: "1mb" }));
 		AppServer.App.use(bodyParser.urlencoded({ extended: false }));
 		AppServer.App.use(useHttpsRedirection);
-		AppServer.App.use(SessionHandler.forRoot());
-		AppServer.App.use(fileUpload({ tempFileDir: "./" }));
 		AppServer.App.use(AppMiddlewares.attachIoToRequestHandler(io));
 	}
 	/**
@@ -115,7 +111,7 @@ class AppServer {
 			__CONFIG__.APP.APP_ENV.toUpperCase() === "PROD"
 		) {
 			AppServer.App.use(AppMiddlewares.IRequestHeaders());
-			AppServer.App.use(AppMiddlewares.isApiProtected());
+
 		}
 		/** Enable Signature header validation on api routes */
 		// AppServer.App.use(AppMiddlewares.SecureApiRoutesWithValidateSignature)
@@ -142,7 +138,15 @@ class AppServer {
 	 */
 	private RegisterRoutes(): void {
 		Logging.dev("Registering Routes");
-		AppServer.App.use(AppRoutes);
+		if (
+			__CONFIG__.APP.APP_ENV.toUpperCase() === "PRODUCTION" ||
+			__CONFIG__.APP.APP_ENV.toUpperCase() === "PROD"
+		) {
+			AppServer.App.use(AppMiddlewares.isApiProtected(), AppRoutes);
+		} else {
+			AppServer.App.use(AppRoutes);
+		}
+
 		RouteResolver.Mapper(AppServer.App, { listEndpoints: true });
 	}
 	/**

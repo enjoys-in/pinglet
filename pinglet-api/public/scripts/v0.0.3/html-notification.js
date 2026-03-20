@@ -1,13 +1,16 @@
 /**
- * Pinglet SDK v0.0.3 — HTML Notification (Glassmorphism)
- * Renders Chrome-push-style notifications as in-page HTML elements.
- * Supports dark/light mode, 4-corner positioning, auto-close with progress bar,
- * pause-on-hover, tag dedup, max 3 buttons, media, XSS-safe, accessible, mobile responsive.
- * Fires Pinglet SDK tracking events (clicked/closed/dropped).
+ * Pinglet SDK v0.0.3 — Glassmorphism Notification
+ * The only notification renderer for v0.0.3.
+ * Type 0: Full SDK-built content (title, body, icon, media, buttons).
+ * Type 1: User-provided template element inside the glass container.
+ * Container provides: positioning, stacking, dark mode, branding, progress bar,
+ * auto-close, pause-on-hover, tag dedup, dismiss, tracking events.
  */
 
 import { fireTrackingEvent } from "./events.js";
 import { escapeHtml, relativeTime, safeUrl } from "./utils.js";
+import { audioPlayerElement } from "./audio-player.js";
+import { videoPlayerElement } from "./video-player.js";
 
 const STYLE_ID = "__pinglet_html_ntfy_css__";
 const CONTAINER_ID = "__pinglet_html_ntfy_container__";
@@ -70,6 +73,8 @@ function _ensureStyles() {
 @keyframes pn-slideInRight{from{opacity:0;transform:translateX(100%)}to{opacity:1;transform:translateX(0)}}
 @keyframes pn-slideInLeft{from{opacity:0;transform:translateX(-100%)}to{opacity:1;transform:translateX(0)}}
 @keyframes pn-fadeOut{to{opacity:0;transform:scale(.95) translateY(-8px)}}
+@keyframes pn-replaceIn{from{opacity:0;transform:scale(0.97)}to{opacity:1;transform:scale(1)}}
+.pn-card.pn-replace{animation:pn-replaceIn .25s cubic-bezier(.16,1,.3,1) forwards}
 
 /* Header */
 .pn-header{display:flex;align-items:center;justify-content:space-between;padding:14px 14px 0 14px}
@@ -121,6 +126,9 @@ function _ensureStyles() {
 .pn-dark .pn-branding{color:#686890}
 .pn-dark .pn-branding a{color:#6da8e0}
 
+/* Custom template content */
+.pn-custom{padding:12px 14px;pointer-events:auto}
+
 /* Mobile */
 @media(max-width:440px){
   .pn-card{width:calc(100vw - 24px);border-radius:14px}
@@ -168,6 +176,7 @@ function _getContainer(position) {
  * @property {"light"|"dark"|"auto"} [theme]
  * @property {{ show?: boolean, html?: string }} [branding]
  * @property {number} [maxVisible]
+ * @property {HTMLElement} [customContent] - User-provided template element (type 1). When set, replaces SDK-built content.
  * @property {(data?: Object) => void} [onClick]
  * @property {(data?: Object) => void} [onClose]
  * @property {(action: string, data?: Object) => void} [onAction]
@@ -204,14 +213,35 @@ export function showHtmlNotification(opts = {}) {
 		theme = "auto",
 		branding = null,
 		maxVisible = 3,
+		customContent = null,
 		onClick = null,
 		onClose = null,
 		onAction = null,
 	} = opts;
 
-	// Tag dedup
+	// Tag dedup — smooth crossfade replacement
+	let isTagReplace = false;
 	if (tag && _activeByTag.has(tag)) {
-		_activeByTag.get(tag).close();
+		isTagReplace = true;
+		const entry = _activeByTag.get(tag);
+		if (entry.element) {
+			// Quick fade-out for smooth transition
+			const oldCard = entry.element;
+			oldCard.style.transition = "opacity 0.15s ease, transform 0.15s ease";
+			oldCard.style.opacity = "0";
+			oldCard.style.transform += " scale(0.98)";
+			// Remove from position tracking (new card will take its slot)
+			for (const [pos, list] of _activeByPosition) {
+				const idx = list.indexOf(oldCard);
+				if (idx !== -1) { list.splice(idx, 1); break; }
+			}
+			setTimeout(() => {
+				oldCard.remove();
+				const container = oldCard.parentElement;
+				if (container && container.children.length === 0) container.remove();
+			}, 160);
+		}
+		_activeByTag.delete(tag);
 	}
 
 	// Stacking: queue if over maxVisible
@@ -245,7 +275,7 @@ export function showHtmlNotification(opts = {}) {
 
 	// Card
 	const card = document.createElement("div");
-	const enterCls = silent ? " pn-silent" : isRight ? " pn-enter-right" : " pn-enter-left";
+	const enterCls = silent ? " pn-silent" : isTagReplace ? " pn-replace" : isRight ? " pn-enter-right" : " pn-enter-left";
 	card.className = "pn-card" + enterCls + (dark ? " pn-dark" : "");
 	card.setAttribute("role", "alert");
 	card.setAttribute("aria-live", "polite");
@@ -289,116 +319,121 @@ export function showHtmlNotification(opts = {}) {
 	header.append(headerLeft, closeBtn);
 	card.appendChild(header);
 
-	// ─ Content row ─
-	const content = document.createElement("div");
-	content.className = "pn-content";
+	// ─ Content (SDK-built or custom template) ─
+	let contentEl = null;
 
-	if (icon) {
-		const iconEl = document.createElement("img");
-		iconEl.className = "pn-icon";
-		iconEl.src = safeUrl(icon);
-		iconEl.alt = "";
-		iconEl.decoding = "async";
-		content.appendChild(iconEl);
-	}
+	let _videoGetDuration = null;
 
-	const textWrap = document.createElement("div");
-	textWrap.className = "pn-text-wrap";
-	if (title) {
-		const titleEl = document.createElement("p");
-		titleEl.className = "pn-title";
-		titleEl.textContent = title;
-		textWrap.appendChild(titleEl);
-	}
-	if (body) {
-		const bodyEl = document.createElement("p");
-		bodyEl.className = "pn-body-text";
-		bodyEl.textContent = body;
-		textWrap.appendChild(bodyEl);
-	}
-	content.appendChild(textWrap);
-	card.appendChild(content);
+	if (customContent) {
+		// Type 1 template: user-provided element inside glass container
+		const customWrap = document.createElement("div");
+		customWrap.className = "pn-custom";
+		customWrap.appendChild(customContent);
+		card.appendChild(customWrap);
+	} else {
+		// Type 0 default: SDK-built content
+		contentEl = document.createElement("div");
+		contentEl.className = "pn-content";
 
-	// ─ Media ─
-	const mediaType = media?.type || (image ? "image" : null);
-	const mediaSrc = safeUrl(media?.src || image);
-	if (mediaType && mediaSrc) {
-		const mediaWrap = document.createElement("div");
-		mediaWrap.className = "pn-media";
-
-		if (mediaType === "image") {
-			const img = document.createElement("img");
-			img.src = mediaSrc;
-			img.alt = escapeHtml(title);
-			img.loading = "lazy";
-			img.decoding = "async";
-			mediaWrap.appendChild(img);
-		} else if (mediaType === "video") {
-			const vid = document.createElement("video");
-			vid.src = mediaSrc;
-			vid.controls = true;
-			vid.muted = true;
-			vid.playsInline = true;
-			vid.preload = "metadata";
-			mediaWrap.appendChild(vid);
-		} else if (mediaType === "audio") {
-			const aud = document.createElement("audio");
-			aud.src = mediaSrc;
-			aud.controls = true;
-			aud.preload = "metadata";
-			mediaWrap.appendChild(aud);
-		} else if (mediaType === "iframe") {
-			const ifr = document.createElement("iframe");
-			ifr.src = mediaSrc;
-			ifr.style.cssText = "height:180px;border:none";
-			ifr.setAttribute("sandbox", "allow-scripts allow-same-origin");
-			ifr.loading = "lazy";
-			mediaWrap.appendChild(ifr);
+		if (icon) {
+			const iconEl = document.createElement("img");
+			iconEl.className = "pn-icon";
+			iconEl.src = safeUrl(icon);
+			iconEl.alt = "";
+			iconEl.decoding = "async";
+			contentEl.appendChild(iconEl);
 		}
-		card.appendChild(mediaWrap);
-	}
 
-	// ─ Buttons (max 3) ─
-	const safeButtons = Array.isArray(buttons) ? buttons.slice(0, 3) : [];
-	if (safeButtons.length > 0) {
-		const actionsWrap = document.createElement("div");
-		actionsWrap.className = "pn-actions";
+		const textWrap = document.createElement("div");
+		textWrap.className = "pn-text-wrap";
+		if (title) {
+			const titleEl = document.createElement("p");
+			titleEl.className = "pn-title";
+			titleEl.textContent = title;
+			textWrap.appendChild(titleEl);
+		}
+		if (body) {
+			const bodyEl = document.createElement("p");
+			bodyEl.className = "pn-body-text";
+			bodyEl.textContent = body;
+			textWrap.appendChild(bodyEl);
+		}
+		contentEl.appendChild(textWrap);
+		card.appendChild(contentEl);
 
-		for (const btn of safeButtons) {
-			const b = document.createElement("button");
-			b.className = "pn-btn";
-			if (btn.icon) {
-				const bIcon = document.createElement("img");
-				bIcon.src = safeUrl(btn.icon);
-				bIcon.alt = "";
-				b.appendChild(bIcon);
+		// ─ Media ─
+		const mediaType = media?.type || (image ? "image" : null);
+		const mediaSrc = safeUrl(media?.src || image);
+		if (mediaType && mediaSrc) {
+			const mediaWrap = document.createElement("div");
+			mediaWrap.className = "pn-media";
+
+			if (mediaType === "image") {
+				const img = document.createElement("img");
+				img.src = mediaSrc;
+				img.alt = escapeHtml(title);
+				img.loading = "lazy";
+				img.decoding = "async";
+				mediaWrap.appendChild(img);
+			} else if (mediaType === "video") {
+				const vp = videoPlayerElement(mediaSrc, true, dark);
+				mediaWrap.appendChild(vp.element);
+				_videoGetDuration = vp.getDuration;
+			} else if (mediaType === "audio") {
+				mediaWrap.appendChild(audioPlayerElement(mediaSrc, false, false, false, dark));
+			} else if (mediaType === "iframe") {
+				const ifr = document.createElement("iframe");
+				ifr.src = mediaSrc;
+				ifr.style.cssText = "height:180px;border:none";
+				ifr.setAttribute("sandbox", "allow-scripts allow-same-origin");
+				ifr.loading = "lazy";
+				mediaWrap.appendChild(ifr);
 			}
-			const bText = document.createElement("span");
-			bText.textContent = btn.text || btn.action || "";
-			b.appendChild(bText);
-
-			b.addEventListener("click", (e) => {
-				e.stopPropagation();
-				dismissReason = "clicked";
-				dismissReasonText = "action:" + (btn.action || btn.text || "");
-
-				// Custom event dispatch — action: "event"
-				if (btn.action === "event") {
-					const evtName = btn.event || btn.eventName || btn.src;
-					if (evtName) {
-						const detail = btn.payload || btn.data || {};
-						window.dispatchEvent(
-							new CustomEvent(evtName, { detail }),
-						);
-					}
-				}
-
-				if (typeof onAction === "function") onAction(btn.action, { ...data, ...(btn.payload || {}) });
-				dismiss();
-			});
-			actionsWrap.appendChild(b);
+			card.appendChild(mediaWrap);
 		}
-		card.appendChild(actionsWrap);
+
+		// ─ Buttons (max 3) ─
+		const safeButtons = Array.isArray(buttons) ? buttons.slice(0, 3) : [];
+		if (safeButtons.length > 0) {
+			const actionsWrap = document.createElement("div");
+			actionsWrap.className = "pn-actions";
+
+			for (const btn of safeButtons) {
+				const b = document.createElement("button");
+				b.className = "pn-btn";
+				if (btn.icon) {
+					const bIcon = document.createElement("img");
+					bIcon.src = safeUrl(btn.icon);
+					bIcon.alt = "";
+					b.appendChild(bIcon);
+				}
+				const bText = document.createElement("span");
+				bText.textContent = btn.text || btn.action || "";
+				b.appendChild(bText);
+
+				b.addEventListener("click", (e) => {
+					e.stopPropagation();
+					dismissReason = "clicked";
+					dismissReasonText = "action:" + (btn.action || btn.text || "");
+
+					// Custom event dispatch — action: "event"
+					if (btn.action === "event") {
+						const evtName = btn.event || btn.eventName || btn.src;
+						if (evtName) {
+							const detail = btn.payload || btn.data || {};
+							window.dispatchEvent(
+								new CustomEvent(evtName, { detail }),
+							);
+						}
+					}
+
+					if (typeof onAction === "function") onAction(btn.action, { ...data, ...(btn.payload || {}) });
+					dismiss();
+				});
+				actionsWrap.appendChild(b);
+			}
+			card.appendChild(actionsWrap);
+		}
 	}
 
 	// ─ Branding footer ─
@@ -410,11 +445,17 @@ export function showHtmlNotification(opts = {}) {
 	}
 
 	// ─ Progress bar ─
-	const autoClose = !requireInteraction && duration > 0;
+	// If there's a video, use its duration (+ 1.5 s buffer) instead of the config duration
+	let _effectiveDuration = duration;
+	if (_videoGetDuration) {
+		const vidMs = _videoGetDuration();
+		if (vidMs > 0) _effectiveDuration = vidMs + 1500;
+	}
+	const autoClose = !requireInteraction && _effectiveDuration > 0;
 	let progressBar = null;
 	let autoCloseTimer = null;
 	let pausedAt = 0;
-	let remaining = duration;
+	let remaining = _effectiveDuration;
 
 	if (autoClose) {
 		const progressWrap = document.createElement("div");
@@ -463,6 +504,17 @@ export function showHtmlNotification(opts = {}) {
 	// ─ Timer with hover pause ─
 	function startTimer() {
 		if (!autoClose) return;
+
+		// Video duration may not be available at mount time (metadata loads async).
+		// Re-check once right before the first timer starts.
+		if (_videoGetDuration && remaining === _effectiveDuration) {
+			const vidMs = _videoGetDuration();
+			if (vidMs > 0) {
+				_effectiveDuration = vidMs + 1500;
+				remaining = _effectiveDuration;
+			}
+		}
+
 		pausedAt = Date.now();
 		progressBar.style.transition = "width " + remaining + "ms linear";
 		progressBar.style.width = "0%";
@@ -478,7 +530,7 @@ export function showHtmlNotification(opts = {}) {
 		clearTimeout(autoCloseTimer);
 		const elapsed = Date.now() - pausedAt;
 		remaining = Math.max(remaining - elapsed, 200);
-		const pct = (remaining / duration) * 100;
+		const pct = (remaining / _effectiveDuration) * 100;
 		progressBar.style.transition = "none";
 		progressBar.style.width = pct + "%";
 	}
@@ -494,14 +546,16 @@ export function showHtmlNotification(opts = {}) {
 		dismiss();
 	});
 
-	content.addEventListener("click", () => {
-		dismissReason = "clicked";
-		dismissReasonText = "user-click";
-		if (typeof onClick === "function") onClick(data);
-		const safeLink = safeUrl(url);
-		if (safeLink) window.open(safeLink, "_blank", "noopener,noreferrer");
-		dismiss();
-	});
+	if (contentEl) {
+		contentEl.addEventListener("click", () => {
+			dismissReason = "clicked";
+			dismissReasonText = "user-click";
+			if (typeof onClick === "function") onClick(data);
+			const safeLink = safeUrl(url);
+			if (safeLink) window.open(safeLink, "_blank", "noopener,noreferrer");
+			dismiss();
+		});
+	}
 
 	// ─ Mount ─
 	container.appendChild(card);

@@ -60,7 +60,7 @@ router.post("/log/track", sdkCors, pushNtfyController.logEvent);
 router.post(
 	"/notifications/send",
 	sdkCors,
-	Limiter.forRoute("/notifications/subscribe", {
+	Limiter.forRoute("/notifications/send", {
 		windowMs: 1 * 60 * 1000, // 1 minutes
 		max: 30,
 		standardHeaders: "draft-7",

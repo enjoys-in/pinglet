@@ -154,9 +154,13 @@ class PushNtfyController {
 	loadTemplates = async (req: Request, res: Response) => {
 		try {
 			const query = req.query as { projectId: string; templatesIds: string };
-
-			if (!query.projectId || !query.templatesIds) {
-				throw new Error("Missing projectIds or templatesIds");
+			 
+			if (!query.projectId ) {
+				throw new Error("Missing projectId or templatesIds");
+			}
+			if (!query.templatesIds ) {
+				 
+				return res.json({ message: "OK", result: {}, success: true }).end();
 			}
 			const duplicationKey = Buffer.from(
 				`${query.projectId}-${query.templatesIds}`,
@@ -417,7 +421,14 @@ class PushNtfyController {
 			}
 
 			if (project?.user?.id) {
-				const quota = await planService.canSendNotification(project.user.id);
+				// Single consolidated check: plan type (1 DB call) + quota (Redis-cached) + feature flags (in-memory)
+				const featuresToCheck: Array<"white_label" | "media_audio_video"> = [];
+				if (rest.overrides?.branding) featuresToCheck.push("white_label");
+				const mediaType = rest.body?.media?.type;
+				if (mediaType === "audio" || mediaType === "video") featuresToCheck.push("media_audio_video");
+
+				const { quota, features } = await planService.checkSendPermissions(project.user.id, featuresToCheck);
+
 				if (!quota.allowed) {
 					res
 						.status(403)
@@ -430,17 +441,22 @@ class PushNtfyController {
 					return;
 				}
 
-				// White-label gate: prevent branding override for non-Enterprise plans
-				if (rest.overrides?.branding) {
-					const hasWhiteLabel = await planService.hasFeature(project.user.id, "white_label");
-					if (!hasWhiteLabel) {
-						res.status(403).json({
-							message: "Branding customization requires an Enterprise plan",
-							result: null,
-							success: false,
-						}).end();
-						return;
-					}
+				if (rest.overrides?.branding && !features.white_label) {
+					res.status(403).json({
+						message: "Branding customization requires an Enterprise plan",
+						result: null,
+						success: false,
+					}).end();
+					return;
+				}
+
+				if ((mediaType === "audio" || mediaType === "video") && !features.media_audio_video) {
+					res.status(403).json({
+						message: "Audio and video media require a Professional or Enterprise plan",
+						result: null,
+						success: false,
+					}).end();
+					return;
 				}
 			}
 
