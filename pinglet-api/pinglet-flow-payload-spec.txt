@@ -1,0 +1,529 @@
+================================================================================
+  PINGLET NOTIFICATION FLOW — PAYLOAD SPECIFICATION
+  For Backend / API Integration
+  Generated: 2026-03-20
+================================================================================
+
+
+1. TOP-LEVEL FLOW OBJECT (FlowExport)
+================================================================================
+
+{
+  "id":          string,            // Unique flow ID, e.g. "flow_1711000000000_abc123"
+  "name":        string,            // User-defined flow name
+  "description": string | null,     // Optional description
+  "projectId":   string,            // Project ID (from /api/v1/projects)
+  "status":      "draft" | "active" | "paused",
+  "createdAt":   string,            // ISO 8601 timestamp
+  "updatedAt":   string,            // ISO 8601 timestamp
+  "nodes":       FlowNode[],        // Array of nodes (see §2)
+  "edges":       FlowEdge[]         // Array of connections (see §3)
+}
+
+
+2. NODE STRUCTURE
+================================================================================
+
+Each node in the "nodes" array:
+
+{
+  "id":       string,               // Unique node ID, e.g. "event_trigger_1"
+  "type":     NodeType,             // One of the types listed below
+  "data":     NodeData,             // Type-specific data object (see §4)
+  "position": {
+    "x": number,
+    "y": number
+  }
+}
+
+NodeType = 
+  | "event_trigger"
+  | "condition"
+  | "delay"
+  | "notification"
+  | "webhook"
+  | "ab_split"
+  | "filter"
+  | "schedule"
+  | "rate_limit"
+  | "presence_check"
+  | "transform"
+  | "email"
+  | "merge"
+  | "diverge"
+  | "note"
+
+
+3. EDGE STRUCTURE
+================================================================================
+
+Each edge in the "edges" array:
+
+{
+  "id":           string,           // Unique edge ID, e.g. "reactflow__edge-node1-node2"
+  "source":       string,           // Source node ID
+  "target":       string,           // Target node ID
+  "sourceHandle": string | null,    // Source handle ID (for multi-output nodes)
+  "label":        string | undefined
+}
+
+Handle IDs by node type:
+  - condition:    "true" | "false"
+  - ab_split:     "a" | "b"
+  - diverge:      "out-0" | "out-1" | "out-2" | "out-3" | "out-4"
+  - merge:        Target handles: "in-1" | "in-2"
+  - All others:   null (single default handle)
+
+
+4. NODE DATA INTERFACES (per type)
+================================================================================
+
+
+4.1  event_trigger — EventTriggerData
+--------------------------------------
+{
+  "label":       string,            // Display label (e.g. "User Signup")
+  "eventName":   string,            // Event key (e.g. "user:signup", "order:placed")
+                                    // Can be any custom string the user types
+  "description": string | undefined,
+  "payload":     string | undefined // JSON string of sample/template payload
+                                    // Example: "{\"userId\": \"{{userId}}\", \"email\": \"{{email}}\"}"
+}
+
+Preset events available in UI:
+  user:signup, user:login, user:profile_updated, user:cart,
+  order:placed, payment:success, payment:failed,
+  subscription:created, subscription:cancelled,
+  feature:used, feedback:submitted, + any custom event
+
+
+4.2  condition — ConditionData
+--------------------------------------
+{
+  "label":      string,
+  "field":      string,             // Dot-path field (e.g. "payload.amount", "user.plan")
+  "operator":   "==" | "!=" | ">" | "<" | ">=" | "<=" | "contains" | "not_contains" | "exists" | "not_exists",
+  "value":      string,
+  "trueLabel":  string | undefined, // Label for true branch (default: "Yes")
+  "falseLabel": string | undefined  // Label for false branch (default: "No")
+}
+
+Outputs: sourceHandle="true" and sourceHandle="false"
+
+
+4.3  delay — DelayData
+--------------------------------------
+{
+  "label":    string,
+  "duration": number,               // Positive integer
+  "unit":     "seconds" | "minutes" | "hours" | "days"
+}
+
+
+4.4  notification — NotificationData
+--------------------------------------
+{
+  "label":             string,
+  "notificationType":  "0" | "1" | "2" | "-1",
+                       // "0"  = In-Tab Toast
+                       // "1"  = Custom Template
+                       // "2"  = Glassmorphism Overlay
+                       // "-1" = Browser Push Notification
+  "title":             string,
+  "description":       string | undefined,
+
+  // Type 0 (Toast) & Type 2 (Glassmorphism) specific:
+  "icon":              string | undefined,   // Icon URL
+  "logo":              string | undefined,   // Logo URL
+  "url":               string | undefined,   // Click-through URL
+  "variant":           string | undefined,   // "default" | "success" | "error" | "warning" | "info" (type 0 only)
+
+  // Type -1 (Browser Push) specific:
+  "pushIcon":          string | undefined,   // Push notification icon URL
+  "pushImage":         string | undefined,   // Push notification image URL
+  "pushUrl":           string | undefined,   // Push click URL
+  "requireInteraction": boolean | undefined, // Require user dismiss
+
+  // Type 1 (Template) specific:
+  "templateId":        string | undefined,   // Template ID reference
+
+  // Buttons (all types):
+  "buttons": [
+    {
+      "text":   string,              // Button label
+      "action": string,              // URL or action identifier
+      "event":  string | undefined   // Custom event to fire on click
+    }
+  ] | undefined
+  // Max 3 buttons for type 0/2, max 2 for type -1
+}
+
+
+4.5  webhook — WebhookData
+--------------------------------------
+{
+  "label":      string,
+  "url":        string,              // Full URL (e.g. "https://api.example.com/webhook")
+  "method":     "GET" | "POST" | "PUT" | "PATCH" | "DELETE",
+  "headers":    string | undefined,  // JSON string (e.g. "{\"Authorization\": \"Bearer ...\"}")
+  "body":       string | undefined,  // JSON string (e.g. "{\"userId\": \"{{userId}}\"}")
+  "retryCount": number | undefined   // 0-5
+}
+
+
+4.6  ab_split — ABSplitData
+--------------------------------------
+{
+  "label":       string,
+  "splitA":      number,             // Percentage 0-100
+  "splitB":      number,             // Percentage 0-100 (splitA + splitB = 100)
+  "splitALabel": string | undefined, // (default: "A")
+  "splitBLabel": string | undefined  // (default: "B")
+}
+
+Outputs: sourceHandle="a" and sourceHandle="b"
+
+
+4.7  filter — FilterData
+--------------------------------------
+{
+  "label":     string,
+  "field":     string,               // Dot-path (e.g. "user.plan", "payload.country")
+  "operator":  "==" | "!=" | ">" | "<" | ">=" | "<=" | "contains" | "not_contains" | "exists" | "not_exists" | "in" | "not_in",
+  "value":     string,
+  "attribute": string | undefined    // User attribute for segment filtering
+}
+
+Only passes through data that matches the condition (no false branch).
+
+
+4.8  schedule — ScheduleData
+--------------------------------------
+{
+  "label":     string,
+  "days":      string[],             // Array of: "mon","tue","wed","thu","fri","sat","sun"
+  "startHour": number,               // 0-23
+  "endHour":   number,               // 0-23
+  "timezone":  string                // IANA timezone (e.g. "UTC", "America/New_York")
+}
+
+Only executes downstream nodes during the scheduled window.
+
+
+4.9  rate_limit — RateLimitData
+--------------------------------------
+{
+  "label":      string,
+  "maxCount":   number,              // Max notifications in the window
+  "window":     number,              // Window size
+  "windowUnit": "seconds" | "minutes" | "hours" | "days",
+  "key":        string | undefined   // Grouping key (e.g. "userId") for per-user limits
+}
+
+
+4.10  presence_check — PresenceCheckData
+--------------------------------------
+{
+  "label":          string,
+  "checkType":      "online" | "offline",
+  "fallbackAction": "queue" | "skip" | "email" | undefined
+                    // "queue" = save & deliver when user comes online
+                    // "skip"  = discard
+                    // "email" = send email fallback instead
+}
+
+
+4.11  transform — TransformData
+--------------------------------------
+{
+  "label":    string,
+  "mappings": string                 // JSON string of key → expression mappings
+                                     // e.g. "{\"fullName\": \"payload.firstName + ' ' + payload.lastName\",
+                                     //        \"totalPrice\": \"payload.price * payload.qty\"}"
+}
+
+
+4.12  email — EmailData
+--------------------------------------
+{
+  "label":      string,
+  "to":         string,              // Recipient: "{{email}}" (dynamic) or static address
+  "subject":    string,
+  "body":       string,              // HTML or plain text body
+  "templateId": string | undefined,  // Email template ID (overrides body)
+  "replyTo":    string | undefined   // Reply-to address
+}
+
+
+4.13  merge — MergeData
+--------------------------------------
+{
+  "label":     string,
+  "mergeMode": "all" | "any"
+               // "all" = wait for ALL incoming edges to fire before continuing
+               // "any" = continue as soon as ANY incoming edge fires
+}
+
+Target handles: "in-1" and "in-2"
+Single source output.
+
+
+4.14  diverge — DivergeData
+--------------------------------------
+{
+  "label":        string,
+  "outputCount":  number,            // 2-5 parallel outputs
+  "outputLabels": string[]           // Optional labels for each output (can be empty [])
+}
+
+Single target input.
+Source handles: "out-0", "out-1", ..., "out-{outputCount-1}"
+All connected downstream nodes execute in parallel.
+
+
+4.15  note — NoteData
+--------------------------------------
+{
+  "label":   string,
+  "content": string,                 // Free-text notes/documentation
+  "color":   string | undefined      // Optional color hint
+}
+
+No connections — purely visual annotation. Backend should IGNORE these nodes.
+
+
+5. FULL EXAMPLE PAYLOAD
+================================================================================
+
+{
+  "id": "flow_1711000000000_abc123",
+  "name": "Welcome Series — New User Signup",
+  "description": "Sends push notification + welcome email when a user signs up",
+  "projectId": "42",
+  "status": "active",
+  "createdAt": "2026-03-20T10:00:00.000Z",
+  "updatedAt": "2026-03-20T14:30:00.000Z",
+  "nodes": [
+    {
+      "id": "event_trigger_1",
+      "type": "event_trigger",
+      "data": {
+        "label": "User Signup",
+        "eventName": "user:signup",
+        "payload": "{\"userId\": \"{{userId}}\", \"email\": \"{{email}}\", \"name\": \"{{name}}\"}"
+      },
+      "position": { "x": 400, "y": 0 }
+    },
+    {
+      "id": "presence_check_1",
+      "type": "presence_check",
+      "data": {
+        "label": "User Online?",
+        "checkType": "online",
+        "fallbackAction": "email"
+      },
+      "position": { "x": 400, "y": 120 }
+    },
+    {
+      "id": "diverge_1",
+      "type": "diverge",
+      "data": {
+        "label": "Send Both",
+        "outputCount": 2,
+        "outputLabels": ["Push", "Email"]
+      },
+      "position": { "x": 400, "y": 240 }
+    },
+    {
+      "id": "notification_1",
+      "type": "notification",
+      "data": {
+        "label": "Welcome Push",
+        "notificationType": "-1",
+        "title": "Welcome, {{name}}!",
+        "description": "Thanks for joining. Explore your dashboard now.",
+        "pushIcon": "https://cdn.example.com/icon.png",
+        "requireInteraction": false,
+        "buttons": [
+          { "text": "Open Dashboard", "action": "https://app.example.com/u", "event": "push:clicked" }
+        ]
+      },
+      "position": { "x": 200, "y": 380 }
+    },
+    {
+      "id": "delay_1",
+      "type": "delay",
+      "data": {
+        "label": "Wait 2 min",
+        "duration": 2,
+        "unit": "minutes"
+      },
+      "position": { "x": 600, "y": 380 }
+    },
+    {
+      "id": "email_1",
+      "type": "email",
+      "data": {
+        "label": "Welcome Email",
+        "to": "{{email}}",
+        "subject": "Welcome to Pinglet, {{name}}!",
+        "body": "<h1>Welcome!</h1><p>We're glad to have you on board.</p>",
+        "templateId": "tpl_welcome_v2",
+        "replyTo": "support@pinglet.enjoys.in"
+      },
+      "position": { "x": 600, "y": 500 }
+    },
+    {
+      "id": "condition_1",
+      "type": "condition",
+      "data": {
+        "label": "Has Premium Plan?",
+        "field": "payload.plan",
+        "operator": "==",
+        "value": "premium",
+        "trueLabel": "Premium",
+        "falseLabel": "Free"
+      },
+      "position": { "x": 600, "y": 640 }
+    },
+    {
+      "id": "webhook_1",
+      "type": "webhook",
+      "data": {
+        "label": "Notify Slack",
+        "url": "https://hooks.slack.com/services/XXX/YYY/ZZZ",
+        "method": "POST",
+        "headers": "{\"Content-Type\": \"application/json\"}",
+        "body": "{\"text\": \"New premium user: {{name}} ({{email}})\"}",
+        "retryCount": 2
+      },
+      "position": { "x": 400, "y": 780 }
+    },
+    {
+      "id": "note_1",
+      "type": "note",
+      "data": {
+        "label": "Dev Note",
+        "content": "This flow handles the full welcome series.\nSlack webhook fires only for premium users."
+      },
+      "position": { "x": 50, "y": 0 }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e-trigger-presence",
+      "source": "event_trigger_1",
+      "target": "presence_check_1",
+      "sourceHandle": null
+    },
+    {
+      "id": "e-presence-diverge",
+      "source": "presence_check_1",
+      "target": "diverge_1",
+      "sourceHandle": null
+    },
+    {
+      "id": "e-diverge-push",
+      "source": "diverge_1",
+      "target": "notification_1",
+      "sourceHandle": "out-0"
+    },
+    {
+      "id": "e-diverge-delay",
+      "source": "diverge_1",
+      "target": "delay_1",
+      "sourceHandle": "out-1"
+    },
+    {
+      "id": "e-delay-email",
+      "source": "delay_1",
+      "target": "email_1",
+      "sourceHandle": null
+    },
+    {
+      "id": "e-email-condition",
+      "source": "email_1",
+      "target": "condition_1",
+      "sourceHandle": null
+    },
+    {
+      "id": "e-condition-slack",
+      "source": "condition_1",
+      "target": "webhook_1",
+      "sourceHandle": "true",
+      "label": "Premium"
+    }
+  ]
+}
+
+
+6. EXECUTION FLOW (for backend reference)
+================================================================================
+
+The backend should:
+
+1. LISTEN for the event specified in "event_trigger" nodes.
+2. When event fires, traverse the graph starting from that node.
+3. Follow edges, executing each node's logic:
+   - condition     → evaluate field/operator/value, follow "true" or "false" edge
+   - delay         → wait the specified duration, then continue
+   - notification  → send Pinglet SDK notification via SSE/push
+   - webhook       → make HTTP request to URL
+   - email         → send email via configured provider
+   - ab_split      → randomly route to "a" or "b" based on percentages
+   - filter        → check condition, only continue if matched (drop if not)
+   - schedule      → check if current time is in window, queue if not
+   - rate_limit    → check counter, block if over limit
+   - presence_check → check user online status, apply fallback if offline
+   - transform     → reshape the payload using mappings before passing downstream
+   - merge         → wait for all/any inputs, then continue
+   - diverge       → fire ALL downstream edges in parallel
+   - note          → SKIP (visual only, no execution)
+4. Edges with sourceHandle indicate multi-output nodes.
+5. Template variables like {{userId}}, {{email}} should be resolved from the
+   event payload at runtime.
+
+
+7. API ENDPOINTS (suggested)
+================================================================================
+
+POST   /api/v1/flows                  → Create flow (body: FlowExport)
+GET    /api/v1/flows                  → List all flows for project
+GET    /api/v1/flows/:id              → Get single flow
+PUT    /api/v1/flows/:id              → Update flow
+DELETE /api/v1/flows/:id              → Delete flow
+PATCH  /api/v1/flows/:id/status       → Toggle status (active/paused/draft)
+POST   /api/v1/flows/:id/execute      → Manually trigger flow (for testing)
+GET    /api/v1/flows/:id/logs         → Get execution logs
+
+Query params:
+  ?projectId=42                       → Filter by project
+
+
+8. NODE TYPE ENUM (for DB schema)
+================================================================================
+
+CREATE TYPE flow_node_type AS ENUM (
+  'event_trigger',
+  'condition',
+  'delay',
+  'notification',
+  'webhook',
+  'ab_split',
+  'filter',
+  'schedule',
+  'rate_limit',
+  'presence_check',
+  'transform',
+  'email',
+  'merge',
+  'diverge',
+  'note'
+);
+
+CREATE TYPE flow_status AS ENUM ('draft', 'active', 'paused');
+
+
+================================================================================
+  END OF SPECIFICATION
+================================================================================

@@ -15,3 +15,4 @@ export * as ActivityController from "./activity.controller";
 export * as InboxController from "./inbox.controller";
 export * as UnsubscribeAnalyticsController from "./unsubscribe-analytics.controller";
 export * as PresenceController from "./presence.controller";
+export * as FlowController from "./flow.controller";

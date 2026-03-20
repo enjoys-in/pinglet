@@ -2,6 +2,7 @@ import {
 	ActivityController,
 	AnalyticsController,
 	DashboardController,
+	FlowController,
 	InboxController,
 	NotificationController,
 	PlanController,
@@ -146,5 +147,15 @@ router.get("/unsubscribe-analytics/summary", UnsubscribeAnalyticsController.defa
 // Live Presence
 router.get("/presence/online", PresenceController.default.getOnlineCount);
 router.get("/presence/all", PresenceController.default.getAllOnlineCounts);
+
+// Flows
+router.get("/flows", FlowController.default.getAllFlows);
+router.get("/flows/stats", FlowController.default.getStats);
+router.get("/flows/:id", FlowController.default.getFlow);
+router.post("/flows", FlowController.default.createFlow);
+router.put("/flows/:id", FlowController.default.updateFlow);
+router.delete("/flows/:id", FlowController.default.deleteFlow);
+router.patch("/flows/:id/status", FlowController.default.updateStatus);
+router.get("/flows/:id/logs", FlowController.default.getExecutions);
 
 export default router;

@@ -39,6 +39,8 @@ export const CacheKeys = {
 	userFeature: (userId: number, feature: string) => `user:${userId}:feature:${feature}`,
 	userNotifications: (userId: number) => `user:${userId}:notifications`,
 	userSubscriptions: (userId: number) => `user:${userId}:subscriptions`,
+	userFlows: (userId: number) => `user:${userId}:flows`,
+	userFlowStats: (userId: number) => `user:${userId}:flow-stats`,
 
 	// ---- Per-resource ----
 	project: (projectId: number) => `project:${projectId}`,
@@ -47,6 +49,7 @@ export const CacheKeys = {
 	webhook: (webhookId: number) => `webhook:${webhookId}`,
 	template: (templateId: number) => `template:${templateId}`,
 	notification: (notificationId: number) => `notification:${notificationId}`,
+	flow: (flowId: string) => `flow:${flowId}`,
 
 	// ---- Per-user + resource compound ----
 	userProjectNotifications: (userId: number, projectId: number | string) =>
@@ -100,4 +103,10 @@ export const CacheInvalidation = {
 	plan: (userId: number) => [
 		CacheKeys.userPlanSummary(userId),
 	],
+	/** Call after flow create/update/delete */
+	flow: (userId: number, flowId?: string) => {
+		const keys = [CacheKeys.userFlows(userId), CacheKeys.userFlowStats(userId)];
+		if (flowId) keys.push(CacheKeys.flow(flowId));
+		return keys;
+	},
 } as const;
