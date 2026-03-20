@@ -39,20 +39,33 @@ export async function findMatchingFlows(
 		return flow.nodes.some(
 			(n) =>
 				n.type === FlowNodeType.EVENT_TRIGGER &&
-				(n.data?.event === triggerEvent || n.data?.event === "*"),
+				// Spec uses "eventName" as the field, also support legacy "event"
+				(n.data?.eventName === triggerEvent ||
+				 n.data?.event === triggerEvent ||
+				 n.data?.eventName === "*" ||
+				 n.data?.event === "*"),
 		);
 	});
 }
 
 // ─── Build adjacency map from edges ─────────────────────────
 function buildAdjacency(edges: FlowEdge[]) {
-	// Map<sourceNodeId, Array<{ targetNodeId, sourceHandle }>>
 	const adj = new Map<string, Array<{ target: string; sourceHandle?: string | null }>>();
 	for (const edge of edges) {
 		if (!adj.has(edge.source)) adj.set(edge.source, []);
 		adj.get(edge.source)!.push({ target: edge.target, sourceHandle: edge.sourceHandle });
 	}
 	return adj;
+}
+
+// ─── Build reverse adjacency (for MERGE inbound count) ──────
+function buildReverseAdjacency(edges: FlowEdge[]) {
+	const rev = new Map<string, Set<string>>();
+	for (const edge of edges) {
+		if (!rev.has(edge.target)) rev.set(edge.target, new Set());
+		rev.get(edge.target)!.add(edge.source);
+	}
+	return rev;
 }
 
 // ─── Core execution ─────────────────────────────────────────
@@ -80,9 +93,11 @@ export async function executeFlow(data: ExecuteFlowJobData): Promise<void> {
 		userId: data.userId,
 		triggerPayload: data.triggerPayload,
 		variables: {},
+		mergeCounters: new Map(),
 	};
 
 	const adj = buildAdjacency(flow.edges || []);
+	const revAdj = buildReverseAdjacency(flow.edges || []);
 	const nodesMap = new Map<string, FlowNode>();
 	for (const n of flow.nodes) nodesMap.set(n.id, n);
 
@@ -90,7 +105,10 @@ export async function executeFlow(data: ExecuteFlowJobData): Promise<void> {
 	const triggerNodes = flow.nodes.filter(
 		(n) =>
 			n.type === FlowNodeType.EVENT_TRIGGER &&
-			(n.data?.event === data.triggerEvent || n.data?.event === "*"),
+			(n.data?.eventName === data.triggerEvent ||
+			 n.data?.event === data.triggerEvent ||
+			 n.data?.eventName === "*" ||
+			 n.data?.event === "*"),
 	);
 
 	if (triggerNodes.length === 0) {
@@ -103,6 +121,7 @@ export async function executeFlow(data: ExecuteFlowJobData): Promise<void> {
 	}
 
 	let totalNotifications = 0;
+	let totalEmails = 0;
 	const visited = new Set<string>(); // prevent infinite loops
 	const MAX_NODES = 500; // safety cap
 
@@ -113,15 +132,27 @@ export async function executeFlow(data: ExecuteFlowJobData): Promise<void> {
 	while (queue.length > 0 && execution.nodes_executed < MAX_NODES) {
 		const { nodeId, delayMs } = queue.shift()!;
 
-		if (visited.has(nodeId)) continue;
-		visited.add(nodeId);
-
 		const node = nodesMap.get(nodeId);
 		if (!node) continue;
 
+		// ── MERGE gate: check if all inbound edges have arrived ──
+		if (node.type === FlowNodeType.MERGE && node.data?.mergeMode === "all") {
+			const inbound = revAdj.get(nodeId)?.size || 1;
+			const arrivals = (ctx.mergeCounters.get(nodeId) || 0) + 1;
+			ctx.mergeCounters.set(nodeId, arrivals);
+
+			if (arrivals < inbound) continue; // wait for more inputs
+		}
+
+		// Skip already-visited (except MERGE nodes which handle their own gating)
+		if (node.type !== FlowNodeType.MERGE) {
+			if (visited.has(nodeId)) continue;
+		}
+		visited.add(nodeId);
+
 		// Handle delay: actual wait in worker (non-blocking to API)
 		if (delayMs && delayMs > 0) {
-			await sleep(Math.min(delayMs, 3600000)); // cap at 1 hour per delay
+			await sleep(Math.min(delayMs, 86_400_000)); // cap at 24h per delay
 		}
 
 		const nodeStart = Date.now();
@@ -153,6 +184,9 @@ export async function executeFlow(data: ExecuteFlowJobData): Promise<void> {
 		if (node.type === FlowNodeType.NOTIFICATION && result.status === "success") {
 			totalNotifications++;
 		}
+		if (node.type === FlowNodeType.EMAIL && result.status === "success") {
+			totalEmails++;
+		}
 
 		// Merge output into variables for downstream nodes
 		if (result.output) Object.assign(ctx.variables, result.output);
@@ -160,27 +194,24 @@ export async function executeFlow(data: ExecuteFlowJobData): Promise<void> {
 		// If node errored, stop this branch but continue others
 		if (result.status === "error") continue;
 
-		// If node wants to pause (DELAY) — it already slept above via result
-		if (result.pause && result.pauseMs) {
-			// The delay was handled in the executor — queue next nodes with delay
-			const outEdges = adj.get(nodeId) || [];
-			for (const edge of outEdges) {
-				if (!visited.has(edge.target)) {
-					queue.push({ nodeId: edge.target, delayMs: result.pauseMs });
-				}
-			}
-			continue;
-		}
+		// If note — decorative, no outgoing edges
+		if (node.type === FlowNodeType.NOTE) continue;
 
 		// Determine which edges to follow
 		const outEdges = adj.get(nodeId) || [];
 		const nextHandles = result.nextHandles;
 
-		for (const edge of outEdges) {
-			if (visited.has(edge.target)) continue;
+		// DELAY: queue downstream with pauseMs
+		if (result.pause && result.pauseMs) {
+			for (const edge of outEdges) {
+				queue.push({ nodeId: edge.target, delayMs: result.pauseMs });
+			}
+			continue;
+		}
 
+		for (const edge of outEdges) {
 			// If nextHandles is null/undefined → follow all edges
-			// If nextHandles is [] → follow none (filter stopped)
+			// If nextHandles is [] → follow none (schedule/rate-limit/filter stopped)
 			// If nextHandles has values → only follow matching sourceHandle
 			if (nextHandles === null || nextHandles === undefined) {
 				queue.push({ nodeId: edge.target });
@@ -189,7 +220,7 @@ export async function executeFlow(data: ExecuteFlowJobData): Promise<void> {
 					queue.push({ nodeId: edge.target });
 				}
 			}
-			// nextHandles === [] → don't push anything (filtered out)
+			// nextHandles === [] → don't push anything
 		}
 	}
 
@@ -197,15 +228,16 @@ export async function executeFlow(data: ExecuteFlowJobData): Promise<void> {
 	execution.status = execution.execution_log.some((l) => l.status === "error")
 		? FlowExecutionStatus.FAILED
 		: FlowExecutionStatus.COMPLETED;
-	execution.notifications_sent = totalNotifications;
+	execution.notifications_sent = totalNotifications + totalEmails;
 	execution.duration_ms = Date.now() - startTime;
 	execution.completed_at = new Date();
 	await execRepo.save(execution);
 
 	// Update flow counters
 	await flowRepo.increment({ id: flow.id }, "total_executions", 1);
-	if (totalNotifications > 0) {
-		await flowRepo.increment({ id: flow.id }, "total_notifications_sent", totalNotifications);
+	const totalSent = totalNotifications + totalEmails;
+	if (totalSent > 0) {
+		await flowRepo.increment({ id: flow.id }, "total_notifications_sent", totalSent);
 	}
 	if (execution.status === FlowExecutionStatus.FAILED) {
 		await flowRepo.increment({ id: flow.id }, "total_errors", 1);
