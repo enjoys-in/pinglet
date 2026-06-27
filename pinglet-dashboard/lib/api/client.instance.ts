@@ -8,6 +8,8 @@ const security = new Security();
 const instance = axios.create({
     baseURL: __config.APP.BASE_URL,
     withCredentials: true,
+    // Prevent requests from hanging forever when the backend is slow/unreachable.
+    timeout: 30000,
     headers: {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': __config.APP.APP_ENV === "DEV" ? "http://localhost:9500" : "https://pinglet.enjoys.in",

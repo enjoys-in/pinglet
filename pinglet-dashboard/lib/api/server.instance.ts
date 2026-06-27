@@ -8,6 +8,10 @@ const security = new Security();
 const serverAxios = axios.create({
     baseURL: __config.APP.BASE_URL,
     withCredentials: true,
+    // Fail fast if the backend stalls. Without a timeout (axios default is 0 = wait
+    // forever) a slow/hung backend leaves SSR requests open indefinitely, piling up
+    // until the Next.js server runs out of resources and stops responding.
+    timeout: 15000,
     headers: {
         'X-App-Version': '1.0.0',
         'X-App-Name': 'AirSend',
