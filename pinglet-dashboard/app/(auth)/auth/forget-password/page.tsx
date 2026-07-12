@@ -32,7 +32,7 @@ export default function ForgotPassword() {
   const onSubmit = async (data: ForgotPasswordFormData) => {
     setIsLoading(true);
     try {
-      const { data: res } = await API.resetPassword(data.email);
+      const { data: res } = await API.forgetPassword(data.email);
       if (res.success) {
         setIsSubmitted(true);
       } else {
